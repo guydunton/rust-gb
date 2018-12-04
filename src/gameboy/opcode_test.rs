@@ -3,14 +3,41 @@ use gameboy::cpu::CPU;
 use gameboy::register::{ RegisterLabel8, RegisterLabel16 };
 use gameboy::read_write_register::ReadWriteRegister;
 
+macro_rules! setup_cpu {
+    ( [ $( $x:expr ),* ] , $cpu:ident , $memory:ident, $opcode:ident ) => {
+        let mut $memory = vec![$($x,)*];
+        let $opcode = decode_instruction(0, &$memory);
+        let mut $cpu = CPU::new();
+    }
+}
+
+macro_rules! run_cpu {
+    ( $cpu:ident, $memory:ident, $opcode:ident ) => {
+        $opcode.run::<CPU>(&mut $cpu, &mut $memory);
+    }
+}
+
 #[test]
 fn load_instruction() {
-    let mut memory = vec![0x31, 0xFE, 0xFF];
-    let opcode = decode_instruction(0, &memory);
+    setup_cpu!([0x31, 0xFE, 0xFF], cpu, memory, opcode);
 
-    let mut cpu = CPU::new();
-    opcode.run::<CPU>(&mut cpu, &mut memory);
+    run_cpu!(cpu, memory, opcode);
 
     assert_eq!(cpu.read_16_bits(RegisterLabel16::StackPointer), 0xFFFE);
     assert_eq!(cpu.read_16_bits(RegisterLabel16::ProgramCounter), 0x0003);
+}
+
+#[test]
+fn xor_instruction() {
+    setup_cpu!([0xAF], cpu, memory, opcode);
+
+    cpu.write_8_bits(RegisterLabel8::A, 0x01);
+    cpu.write_8_bits(RegisterLabel8::F, 0b1111_0000);
+
+    run_cpu!(cpu, memory, opcode);
+
+    assert_eq!(cpu.read_8_bits(RegisterLabel8::A), 0x00);
+    assert_eq!(cpu.read_16_bits(RegisterLabel16::ProgramCounter), 0x01);
+
+    assert_eq!(cpu.read_8_bits(RegisterLabel8::F), 0x00);
 }

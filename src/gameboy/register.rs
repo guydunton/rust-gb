@@ -1,7 +1,7 @@
 
 use super::endian::*;
 
-#[derive(PartialEq, Copy, Clone)]
+#[derive(PartialEq, Copy, Clone, Debug)]
 pub enum RegisterLabel8 {
     A,
     F,
@@ -13,7 +13,7 @@ pub enum RegisterLabel8 {
     L,
 }
 
-#[derive(PartialEq, Copy, Clone)]
+#[derive(PartialEq, Copy, Clone, Debug)]
 pub enum RegisterLabel16 {
     AF,
     BC,

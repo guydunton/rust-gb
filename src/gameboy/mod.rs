@@ -1,6 +1,7 @@
 mod register;
 mod endian;
 mod cpu;
+mod flags_register;
 
 pub mod screen;
 pub mod read_write_register;
