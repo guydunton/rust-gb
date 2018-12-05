@@ -6,65 +6,101 @@ use super::endian::*;
 pub fn decode_instruction(program_counter: u16, program_code: &Vec<u8>) -> OpCode {
     match program_code[program_counter as usize] {
         0x00 => OpCode::new(Catagory::NOP),
-        0x31 => { 
-            OpCode::new_with_args(
-                Catagory::LD16, vec![
-                    Argument::Register16Constant(RegisterLabel16::StackPointer),
-                    Argument::LargeValue(le_to_u16(get_slice(&program_code, program_counter + 1, 2))),
-                ])
-        },
-        0xAF => {
-            OpCode::new_with_args(
-                Catagory::XOR, vec![
-                    Argument::Register8Constant(RegisterLabel8::A)
-                ])
-        },
+        0x21 => OpCode::new_with_args(
+                    Catagory::LD16, vec![
+                        Argument::Register16Constant(RegisterLabel16::HL),
+                        Argument::LargeValue(le_to_u16(get_slice(&program_code, program_counter + 1, 2))),
+                    ]),
+        0x31 => OpCode::new_with_args(
+                    Catagory::LD16, vec![
+                        Argument::Register16Constant(RegisterLabel16::StackPointer),
+                        Argument::LargeValue(le_to_u16(get_slice(&program_code, program_counter + 1, 2))),
+                    ]),
+        0x32 => OpCode::new_with_args(
+                    Catagory::LD8, vec![
+                        Argument::RegisterIndirectDec(RegisterLabel16::HL),
+                        Argument::Register8Constant(RegisterLabel8::A),
+                    ]),
+        0xAF => OpCode::new_with_args(
+                    Catagory::XOR, vec![
+                        Argument::Register8Constant(RegisterLabel8::A)
+                    ]),
         _ => OpCode::new(Catagory::NOP),
     }
 }
 
 pub struct OpCode {
-    mneumonic: Catagory,
-    arguments: Vec<Argument>,
+    catagory: Catagory,
+    args: Vec<Argument>,
 }
 
 impl OpCode {
 
     pub fn run<T: ReadWriteRegister>(&self, cpu: &mut ReadWriteRegister, memory: &mut Vec<u8>) {
-        match self.mneumonic {
+        match self.catagory {
             Catagory::LD16 => {
-                assert_eq!(self.arguments.len(), 2);
+                assert_eq!(self.args.len(), 2);
 
                 let mut dest = |val: u16| {
-                    match self.arguments[0] {
+                    match self.args[0] {
                         Argument::Register16Constant(register) => cpu.write_16_bits(register, val),
-                        _ => panic!("Command does not support argument {:?}", self.arguments[0])
+                        _ => panic!("Command does not support argument {:?}", self.args[0])
                     }
                 };
 
                 let source = || {
-                    match self.arguments[1] {
+                    match self.args[1] {
                         Argument::LargeValue(val) => val,
-                        _ => panic!("Command does not support argument {:?}", self.arguments[1])
+                        _ => panic!("Command does not support argument {:?}", self.args[1])
                     }
                 };
 
                 dest(source());
             },
+            Catagory::LD8 => {
+                assert_eq!(self.args.len(), 2);
+                {
+                    let mut dest = |val: u8| {
+                        match self.args[0] {
+                            Argument::RegisterIndirectDec(register) => {
+                                memory[cpu.read_16_bits(register) as usize] = val
+                            },
+                            _ => panic!("Command does not support argument {:?}", self.args[0])
+                        }
+                    };
+
+                    let source = || {
+                        match self.args[1] {
+                            Argument::Register8Constant(register) => cpu.read_8_bits(register),
+                            _ => panic!("Command does not support argument {:?}", self.args[0])
+                        }
+                    };
+
+                    dest(source());
+                }
+
+                match self.args[0] {
+                    Argument::RegisterIndirectDec(register) => { 
+                        let new_val = cpu.read_16_bits(register) - 1;
+                        cpu.write_16_bits(register, new_val);
+                    },
+                    _ => {} // Do nothing 
+                }
+            },
             Catagory::NOP => {
                 // Do nothing
             },
             Catagory::XOR => {
-                assert_eq!(self.arguments.len(), 1);
+                assert_eq!(self.args.len(), 1);
 
-                match self.arguments[0] {
+                match self.args[0] {
                     Argument::Register8Constant(register) => {
                         let new_val = cpu.read_8_bits(RegisterLabel8::A) ^ cpu.read_8_bits(register);
                         cpu.write_8_bits(RegisterLabel8::A, new_val);
+                        cpu.write_8_bits(RegisterLabel8::F, 0);
                     }
-                    _ => panic!("Argument not supported: {:?}", self.arguments[0])
+                    _ => panic!("Argument not supported: {:?}", self.args[0])
                 }
-
             },
         };
 
@@ -73,25 +109,26 @@ impl OpCode {
         cpu.write_16_bits(RegisterLabel16::ProgramCounter, program_counter + self.size());
     }
 
-    fn new(mneumonic: Catagory) -> OpCode {
+    fn new(catagory: Catagory) -> OpCode {
         OpCode {
-            mneumonic,
-            arguments: Vec::new(),
+            catagory,
+            args: Vec::new(),
         }
     }
 
-    fn new_with_args(mneumonic: Catagory, args: Vec<Argument>) -> OpCode {
+    fn new_with_args(catagory: Catagory, args: Vec<Argument>) -> OpCode {
         OpCode {
-            mneumonic,
-            arguments: args,
+            catagory,
+            args: args,
         }
     }
 
     fn size(&self) -> u16 {
-        self.arguments.iter()
+        self.args.iter()
             .map(|arg| match arg {
                 Argument::Register8Constant(_) => 0,
                 Argument::Register16Constant(_) => 0,
+                Argument::RegisterIndirectDec(_) => 0,
                 Argument::LargeValue(_) => 2,
             })
             .sum::<u16>() + 1
@@ -107,6 +144,7 @@ fn get_slice(arr: &Vec<u8>, index: u16, size: u16) -> &[u8] {
 enum Catagory {
     NOP,
     LD16,
+    LD8,
     XOR,
 }
 
@@ -114,5 +152,8 @@ enum Catagory {
 enum Argument {
     Register8Constant(RegisterLabel8),
     Register16Constant(RegisterLabel16),
+    RegisterIndirectDec(RegisterLabel16),
     LargeValue(u16),
 }
+
+
