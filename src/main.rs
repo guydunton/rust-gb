@@ -12,8 +12,8 @@ use opengl_graphics::{ GlGraphics, OpenGL };
 use rand::prelude::*;
 
 mod gameboy;
-use gameboy::Gameboy;
-use gameboy::screen::*;
+use crate::gameboy::Gameboy;
+use crate::gameboy::screen::*;
 
 fn screen_color_to_color(c : ScreenColor) -> [f32;4] {
     match c {

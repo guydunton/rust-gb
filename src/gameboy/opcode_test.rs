@@ -1,10 +1,10 @@
 #[cfg(test)]
 mod opcode_tests { 
 
-    use gameboy::opcode_library::{ decode_instruction };
-    use gameboy::cpu::CPU;
-    use gameboy::register::{ RegisterLabel8, RegisterLabel16 };
-    use gameboy::read_write_register::ReadWriteRegister;
+    use crate::gameboy::opcode_library::{ decode_instruction };
+    use crate::gameboy::cpu::CPU;
+    use crate::gameboy::register::{ RegisterLabel8, RegisterLabel16 };
+    use crate::gameboy::read_write_register::ReadWriteRegister;
 
     macro_rules! setup_cpu {
         ( [ $( $x:expr ),* ] , $cpu:ident , $memory:ident, $opcode:ident ) => {
