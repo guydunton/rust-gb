@@ -1,10 +1,10 @@
 #[cfg(test)]
-mod opcode_tests { 
+mod opcode_tests {
 
-    use crate::gameboy::opcode_library::{ decode_instruction };
     use crate::gameboy::cpu::CPU;
-    use crate::gameboy::register::{ RegisterLabel8, RegisterLabel16 };
+    use crate::gameboy::opcode_library::decode_instruction;
     use crate::gameboy::read_write_register::ReadWriteRegister;
+    use crate::gameboy::register::{RegisterLabel16, RegisterLabel8};
 
     macro_rules! setup_cpu {
         ( [ $( $x:expr ),* ] , $cpu:ident , $memory:ident, $opcode:ident ) => {
@@ -17,12 +17,13 @@ mod opcode_tests {
     macro_rules! run_cpu {
         ( $cpu:ident, $memory:ident, $opcode:ident ) => {
             $opcode.run::<CPU>(&mut $cpu, &mut $memory);
-        }
+        };
     }
 
     #[test]
     fn load16_instructions() {
-        { // LD SP d16
+        {
+            // LD SP d16
             setup_cpu!([0x31, 0xFE, 0xFF], cpu, memory, opcode);
 
             run_cpu!(cpu, memory, opcode);
@@ -30,7 +31,8 @@ mod opcode_tests {
             assert_eq!(cpu.read_16_bits(RegisterLabel16::StackPointer), 0xFFFE);
             assert_eq!(cpu.read_16_bits(RegisterLabel16::ProgramCounter), 0x0003);
         }
-        { // LD HL d16
+        {
+            // LD HL d16
             setup_cpu!([0x21, 0xFF, 0x9F], cpu, memory, opcode);
             run_cpu!(cpu, memory, opcode);
 

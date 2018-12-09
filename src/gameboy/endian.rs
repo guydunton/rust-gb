@@ -21,7 +21,6 @@ pub fn le_to_u16(vals: &[u8]) -> u16 {
     result
 }
 
-
 #[test]
 fn u16_test() {
     assert_eq!(u16_to_big_endian(0xffff), [0xff, 0xff]);
@@ -39,7 +38,6 @@ fn big_endian_test() {
     assert_eq!(be_to_u16(&[0xff, 0x00]), 0xff00);
     assert_eq!(be_to_u16(&[0x12, 0x34]), 0x1234);
 }
-
 
 #[test]
 fn little_endian_test() {

@@ -1,13 +1,12 @@
-
-use piston::{ window::WindowSettings, event_loop::*, input::* };
 use glutin_window::GlutinWindow as Window;
-use opengl_graphics::{ GlGraphics, OpenGL };
+use opengl_graphics::{GlGraphics, OpenGL};
+use piston::{event_loop::*, input::*, window::WindowSettings};
 use rand::prelude::*;
 
 mod gameboy;
-use crate::gameboy::{ Gameboy, screen::* };
+use crate::gameboy::{screen::*, Gameboy};
 
-fn screen_color_to_color(c : ScreenColor) -> [f32;4] {
+fn screen_color_to_color(c: ScreenColor) -> [f32; 4] {
     match c {
         ScreenColor::Black => [0.1, 0.2, 0.1, 1.0],
         ScreenColor::Dark => [0.2, 0.4, 0.2, 1.0],
@@ -17,21 +16,20 @@ fn screen_color_to_color(c : ScreenColor) -> [f32;4] {
 }
 
 fn render_screen(screen: &Screen, c: &graphics::Context, gl: &mut GlGraphics) {
-        use graphics::*;
-        let square = rectangle::square(0.0, 0.0, 2.0);
+    use graphics::*;
+    let square = rectangle::square(0.0, 0.0, 2.0);
 
-        for row in 0..144 {
-            for col in 0..160 {
+    for row in 0..144 {
+        for col in 0..160 {
+            let pixel = screen.pixels()[col + row * 160];
+            let color = screen_color_to_color(pixel);
+            let (x, y) = (col * 2, row * 2);
 
-                let pixel = screen.pixels()[col + row * 160];
-                let color = screen_color_to_color(pixel);
-                let (x, y) = (col * 2, row * 2);
-
-                let transform = c.transform.trans(x as f64, y as f64);
-                rectangle(color, square, transform, gl);
-            }
+            let transform = c.transform.trans(x as f64, y as f64);
+            rectangle(color, square, transform, gl);
         }
     }
+}
 
 pub struct App {
     gl: GlGraphics,
@@ -52,7 +50,6 @@ impl App {
     }
 
     fn update(&mut self, _args: &UpdateArgs, rng: &mut ThreadRng) {
-
         self.gb.tick();
 
         let mut pixels = Vec::new();
@@ -72,18 +69,14 @@ impl App {
 }
 
 fn main() {
-
     let opengl = OpenGL::V3_2;
 
-    let mut window: Window = WindowSettings::new(
-        "Gameboy",
-        [320, 288]
-    )
-    .opengl(opengl)
-    .exit_on_esc(true)
-    .resizable(false)
-    .build()
-    .unwrap();
+    let mut window: Window = WindowSettings::new("Gameboy", [320, 288])
+        .opengl(opengl)
+        .exit_on_esc(true)
+        .resizable(false)
+        .build()
+        .unwrap();
 
     let mut app = App {
         gl: GlGraphics::new(opengl),

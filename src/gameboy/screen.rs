@@ -7,25 +7,21 @@ pub enum ScreenColor {
     Black = 3,
 }
 
-const MAX_WIDTH : usize = 160;
-const MAX_HEIGHT : usize = 144;
-const MAX_LENGTH : usize = MAX_WIDTH * MAX_HEIGHT;
+const MAX_WIDTH: usize = 160;
+const MAX_HEIGHT: usize = 144;
+const MAX_LENGTH: usize = MAX_WIDTH * MAX_HEIGHT;
 
 pub struct Screen {
-    pixels : Vec<ScreenColor>,
+    pixels: Vec<ScreenColor>,
     index: usize,
 }
 
 impl Screen {
-
     pub fn new() -> Screen {
         let pixels = vec![ScreenColor::White; MAX_LENGTH];
         let index = 0;
 
-        Screen {
-            pixels, 
-            index
-        }
+        Screen { pixels, index }
     }
 
     pub fn push_pixels(&mut self, pixels: &Vec<ScreenColor>) {
