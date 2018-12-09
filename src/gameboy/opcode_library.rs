@@ -36,7 +36,7 @@ pub struct OpCode {
 
 impl OpCode {
 
-    pub fn run<T: ReadWriteRegister>(&self, cpu: &mut ReadWriteRegister, memory: &mut Vec<u8>) {
+    pub fn run<T: ReadWriteRegister>(&self, cpu: &mut dyn ReadWriteRegister, memory: &mut Vec<u8>) {
         match self.catagory {
             Catagory::LD16 => {
                 assert_eq!(self.args.len(), 2);
