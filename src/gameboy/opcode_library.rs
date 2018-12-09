@@ -3,7 +3,8 @@ use super::read_write_register::ReadWriteRegister;
 use super::register::{RegisterLabel16, RegisterLabel8};
 
 pub fn decode_instruction(program_counter: u16, program_code: &Vec<u8>) -> OpCode {
-    match program_code[program_counter as usize] {
+    let code = program_code[program_counter as usize];
+    match code {
         0x00 => OpCode::new(Catagory::NOP),
         0x21 => OpCode::new_with_args(
             Catagory::LD16,
@@ -30,7 +31,7 @@ pub fn decode_instruction(program_counter: u16, program_code: &Vec<u8>) -> OpCod
             Catagory::XOR,
             vec![Argument::Register8Constant(RegisterLabel8::A)],
         ),
-        _ => OpCode::new(Catagory::NOP),
+        _ => panic!("Unkown command {:#X}", code),
     }
 }
 
