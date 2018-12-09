@@ -1,19 +1,11 @@
 
-use graphics;
-
-
-use rand;
-
-use piston::window::WindowSettings;
-use piston::event_loop::*;
-use piston::input::*;
+use piston::{ window::WindowSettings, event_loop::*, input::* };
 use glutin_window::GlutinWindow as Window;
 use opengl_graphics::{ GlGraphics, OpenGL };
 use rand::prelude::*;
 
 mod gameboy;
-use crate::gameboy::Gameboy;
-use crate::gameboy::screen::*;
+use crate::gameboy::{ Gameboy, screen::* };
 
 fn screen_color_to_color(c : ScreenColor) -> [f32;4] {
     match c {
@@ -80,8 +72,6 @@ impl App {
 }
 
 fn main() {
-
-    
 
     let opengl = OpenGL::V3_2;
 
