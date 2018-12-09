@@ -1,7 +1,7 @@
 mod register;
 mod endian;
 mod cpu;
-mod flags_register;
+//mod flags_register; // Not yet needed
 
 pub mod screen;
 pub mod read_write_register;
