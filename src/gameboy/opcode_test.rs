@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod opcode_tests { 
 
-    use gameboy::opcode_library::{ decode_instruction, OpCode };
+    use gameboy::opcode_library::{ decode_instruction };
     use gameboy::cpu::CPU;
     use gameboy::register::{ RegisterLabel8, RegisterLabel16 };
     use gameboy::read_write_register::ReadWriteRegister;
