@@ -44,9 +44,7 @@ impl Gameboy {
 
         let mut memory = vec![0u8; u16::MAX as usize];
 
-        for i in 0..bootloader.len() {
-            memory[i] = bootloader[i];
-        }
+        memory[..bootloader.len()].clone_from_slice(&bootloader[..]);
 
         Gameboy {
             cpu: CPU::new(),

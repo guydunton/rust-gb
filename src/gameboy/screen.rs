@@ -24,7 +24,7 @@ impl Screen {
         Screen { pixels, index }
     }
 
-    pub fn push_pixels(&mut self, pixels: &Vec<ScreenColor>) {
+    pub fn push_pixels(&mut self, pixels: &[ScreenColor]) {
         for p in pixels.iter() {
             self.pixels[self.index] = *p;
             self.index = (self.index + 1) % MAX_LENGTH;

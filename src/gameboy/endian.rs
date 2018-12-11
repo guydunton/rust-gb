@@ -9,15 +9,15 @@ pub fn u16_to_big_endian(val: u16) -> [u8; 2] {
 
 pub fn be_to_u16(vals: &[u8]) -> u16 {
     let mut result;
-    result = vals[1] as u16;
-    result += (vals[0] as u16) << 8;
+    result = u16::from(vals[1]);
+    result += u16::from(vals[0]) << 8;
     result
 }
 
 pub fn le_to_u16(vals: &[u8]) -> u16 {
     let mut result;
-    result = vals[0] as u16;
-    result += (vals[1] as u16) << 8;
+    result = u16::from(vals[0]);
+    result += u16::from(vals[1]) << 8;
     result
 }
 

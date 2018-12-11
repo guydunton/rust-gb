@@ -2,7 +2,7 @@ use super::endian::*;
 use super::read_write_register::ReadWriteRegister;
 use super::register::{RegisterLabel16, RegisterLabel8};
 
-pub fn decode_instruction(program_counter: u16, program_code: &Vec<u8>) -> OpCode {
+pub fn decode_instruction(program_counter: u16, program_code: &[u8]) -> OpCode {
     let code = program_code[program_counter as usize];
     match code {
         0x00 => OpCode::new(Catagory::NOP),
@@ -118,10 +118,7 @@ impl OpCode {
     }
 
     fn new_with_args(catagory: Catagory, args: Vec<Argument>) -> OpCode {
-        OpCode {
-            catagory,
-            args: args,
-        }
+        OpCode { catagory, args }
     }
 
     fn size(&self) -> u16 {
@@ -138,7 +135,7 @@ impl OpCode {
     }
 }
 
-fn get_slice(arr: &Vec<u8>, index: u16, size: u16) -> &[u8] {
+fn get_slice(arr: &[u8], index: u16, size: u16) -> &[u8] {
     let start = index as usize;
     let end = (index + size) as usize;
     &arr[start..end]

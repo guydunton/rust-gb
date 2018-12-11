@@ -49,7 +49,7 @@ impl App {
         });
     }
 
-    fn update(&mut self, _args: &UpdateArgs, rng: &mut ThreadRng) {
+    fn update(&mut self, _args: UpdateArgs, rng: &mut ThreadRng) {
         self.gb.tick();
 
         let mut pixels = Vec::new();
@@ -93,7 +93,7 @@ fn main() {
         }
 
         if let Some(u) = e.update_args() {
-            app.update(&u, &mut rnd);
+            app.update(u, &mut rnd);
         }
     }
 }
