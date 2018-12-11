@@ -1,7 +1,7 @@
 mod cpu;
 mod endian;
 mod register;
-//mod flags_register; // Not yet needed
+mod flags_register;
 
 pub mod opcode_library;
 pub mod read_write_register;

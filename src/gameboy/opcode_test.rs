@@ -2,6 +2,7 @@
 mod opcode_tests {
 
     use crate::gameboy::cpu::CPU;
+    use crate::gameboy::flags_register::*;
     use crate::gameboy::opcode_library::decode_instruction;
     use crate::gameboy::read_write_register::ReadWriteRegister;
     use crate::gameboy::register::{RegisterLabel16, RegisterLabel8};
@@ -66,5 +67,41 @@ mod opcode_tests {
         assert_eq!(cpu.read_16_bits(RegisterLabel16::ProgramCounter), 0x01);
 
         assert_eq!(cpu.read_8_bits(RegisterLabel8::F), 0x00);
+    }
+
+    #[test]
+    fn bit_instruction() {
+        // BIT 7,H
+        {
+            // Check the bit flag when the bit is already set to 1
+            setup_cpu!([0xCB, 0x7C], cpu, memory, opcode);
+            cpu.write_8_bits(RegisterLabel8::H, 0b1000_0000);
+            let carry_flag = get_flag(cpu.read_8_bits(RegisterLabel8::F), Flags::C);
+            run_cpu!(cpu, memory, opcode);
+
+            assert_eq!(
+                get_flag(cpu.read_8_bits(RegisterLabel8::F), Flags::Z), // TODO: FiX tHe FoMaTtInG
+                false
+            );
+            assert_eq!(
+                get_flag(cpu.read_8_bits(RegisterLabel8::F), Flags::N),
+                false
+            );
+            assert_eq!(get_flag(cpu.read_8_bits(RegisterLabel8::F), Flags::H), true);
+            assert_eq!(
+                get_flag(cpu.read_8_bits(RegisterLabel8::F), Flags::C),
+                carry_flag
+            ); // The carry flag is unaffected
+
+            assert_eq!(cpu.read_16_bits(RegisterLabel16::ProgramCounter), 0x2);
+        }
+        {
+            // Check the bit flag when the bit is 0
+            setup_cpu!([0xCB, 0x7C], cpu, memory, opcode);
+            cpu.write_8_bits(RegisterLabel8::H, 0x0);
+            run_cpu!(cpu, memory, opcode);
+
+            assert_eq!(get_flag(cpu.read_8_bits(RegisterLabel8::F), Flags::Z), true);
+        }
     }
 }

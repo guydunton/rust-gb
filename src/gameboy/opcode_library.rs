@@ -1,4 +1,5 @@
 use super::endian::*;
+use super::flags_register::*;
 use super::read_write_register::ReadWriteRegister;
 use super::register::{RegisterLabel16, RegisterLabel8};
 
@@ -31,6 +32,20 @@ pub fn decode_instruction(program_counter: u16, program_code: &[u8]) -> OpCode {
             Catagory::XOR,
             vec![Argument::Register8Constant(RegisterLabel8::A)],
         ),
+        0xCB => {
+            // 0xCB is prefix and the next byte shows the actual instruction
+            let cb_instruction = program_code[program_counter as usize + 1];
+            match cb_instruction {
+                0x7C => OpCode::new_with_args(
+                    Catagory::BIT,
+                    vec![
+                        Argument::Bit(7),
+                        Argument::Register8Constant(RegisterLabel8::H),
+                    ], // TODO: Need a declarative way of specifying flags settings
+                ),
+                _ => panic!("Unknown command 0xCB {:#X}", cb_instruction),
+            }
+        }
         _ => panic!("Unkown command {:#X}", code),
     }
 }
@@ -100,6 +115,24 @@ impl OpCode {
                     _ => panic!("Argument not supported: {:?}", self.args[0]),
                 }
             }
+            Catagory::BIT => {
+                assert_eq!(self.args.len(), 2);
+
+                match (self.args[0], self.args[1]) {
+                    (Argument::Bit(bit), Argument::Register8Constant(register)) => {
+                        let register = cpu.read_8_bits(register);
+                        let mut flags = cpu.read_8_bits(RegisterLabel8::F);
+
+                        // TODO: Can we create a version which uses a cpu?
+                        let result = (((0x1 << bit) ^ register) >> bit) == 1;
+                        flags = set_flag(flags, Flags::Z, result);
+                        flags = set_flag(flags, Flags::N, false);
+                        flags = set_flag(flags, Flags::H, true);
+                        cpu.write_8_bits(RegisterLabel8::F, flags);
+                    }
+                    _ => panic!("Invalid arguments"),
+                }
+            }
         };
 
         // Update the program counter
@@ -129,6 +162,7 @@ impl OpCode {
                 Argument::Register16Constant(_) => 0,
                 Argument::RegisterIndirectDec(_) => 0,
                 Argument::LargeValue(_) => 2,
+                Argument::Bit(_) => 1,
             })
             .sum::<u16>()
             + 1
@@ -146,6 +180,7 @@ enum Catagory {
     LD16,
     LD8,
     XOR,
+    BIT,
 }
 
 #[derive(Copy, Clone, Debug)]
@@ -154,4 +189,5 @@ enum Argument {
     Register16Constant(RegisterLabel16),
     RegisterIndirectDec(RegisterLabel16),
     LargeValue(u16),
+    Bit(u8),
 }
