@@ -121,14 +121,11 @@ impl OpCode {
                 match (self.args[0], self.args[1]) {
                     (Argument::Bit(bit), Argument::Register8Constant(register)) => {
                         let register = cpu.read_8_bits(register);
-                        let mut flags = cpu.read_8_bits(RegisterLabel8::F);
 
-                        // TODO: Can we create a version which uses a cpu?
                         let result = (((0x1 << bit) ^ register) >> bit) == 1;
-                        flags = set_flag(flags, Flags::Z, result);
-                        flags = set_flag(flags, Flags::N, false);
-                        flags = set_flag(flags, Flags::H, true);
-                        cpu.write_8_bits(RegisterLabel8::F, flags);
+                        write_flag::<T>(cpu, Flags::Z, result);
+                        write_flag::<T>(cpu, Flags::N, false);
+                        write_flag::<T>(cpu, Flags::H, true);
                     }
                     _ => panic!("Invalid arguments"),
                 }

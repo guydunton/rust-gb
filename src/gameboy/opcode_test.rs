@@ -76,22 +76,13 @@ mod opcode_tests {
             // Check the bit flag when the bit is already set to 1
             setup_cpu!([0xCB, 0x7C], cpu, memory, opcode);
             cpu.write_8_bits(RegisterLabel8::H, 0b1000_0000);
-            let carry_flag = get_flag(cpu.read_8_bits(RegisterLabel8::F), Flags::C);
+            let carry_flag = read_flag::<CPU>(&cpu, Flags::C);
             run_cpu!(cpu, memory, opcode);
 
-            assert_eq!(
-                get_flag(cpu.read_8_bits(RegisterLabel8::F), Flags::Z), // TODO: FiX tHe FoMaTtInG
-                false
-            );
-            assert_eq!(
-                get_flag(cpu.read_8_bits(RegisterLabel8::F), Flags::N),
-                false
-            );
-            assert_eq!(get_flag(cpu.read_8_bits(RegisterLabel8::F), Flags::H), true);
-            assert_eq!(
-                get_flag(cpu.read_8_bits(RegisterLabel8::F), Flags::C),
-                carry_flag
-            ); // The carry flag is unaffected
+            assert_eq!(read_flag::<CPU>(&cpu, Flags::Z), false);
+            assert_eq!(read_flag::<CPU>(&cpu, Flags::N), false);
+            assert_eq!(read_flag::<CPU>(&cpu, Flags::H), true);
+            assert_eq!(read_flag::<CPU>(&cpu, Flags::C), carry_flag); // The carry flag is unaffected
 
             assert_eq!(cpu.read_16_bits(RegisterLabel16::ProgramCounter), 0x2);
         }
@@ -101,7 +92,7 @@ mod opcode_tests {
             cpu.write_8_bits(RegisterLabel8::H, 0x0);
             run_cpu!(cpu, memory, opcode);
 
-            assert_eq!(get_flag(cpu.read_8_bits(RegisterLabel8::F), Flags::Z), true);
+            assert_eq!(read_flag::<CPU>(&cpu, Flags::Z), true);
         }
     }
 }
