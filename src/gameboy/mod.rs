@@ -1,17 +1,36 @@
 mod cpu;
 mod endian;
 mod flags_register;
+mod read_write_register;
 mod register;
 
 pub mod opcode_library;
-pub mod read_write_register;
 pub mod screen;
 
 mod opcode_test;
 
 use self::cpu::CPU;
 use self::read_write_register::ReadWriteRegister;
+use self::register::{RegisterLabel16, RegisterLabel8};
+use std::collections::HashMap;
 use std::u16;
+
+pub struct Registers {
+    registers: HashMap<String, String>,
+}
+
+impl Registers {
+    pub fn get_register_val(&self, register: &String) -> String {
+        self.registers
+            .get(register)
+            .map(|x| x.clone())
+            .unwrap_or("Invalid register".to_string())
+    }
+
+    pub fn get_registers(&self) -> Vec<&String> {
+        self.registers.keys().collect()
+    }
+}
 
 pub struct Gameboy {
     cpu: CPU,
@@ -58,5 +77,45 @@ impl Gameboy {
         let opcode = opcode_library::decode_instruction(counter, &self.memory);
 
         opcode.run::<CPU>(&mut self.cpu, &mut self.memory);
+    }
+
+    pub fn get_registers(&self) -> Registers {
+        let mut registers = HashMap::new();
+        registers.insert(
+            "A".to_string(),
+            format!("{:#X}", self.cpu.read_8_bits(RegisterLabel8::A)),
+        );
+        let registers8 = vec![
+            ("A", RegisterLabel8::A),
+            ("F", RegisterLabel8::F),
+            ("B", RegisterLabel8::B),
+            ("C", RegisterLabel8::C),
+            ("D", RegisterLabel8::D),
+            ("E", RegisterLabel8::E),
+            ("H", RegisterLabel8::H),
+            ("L", RegisterLabel8::L),
+        ];
+        let registers16 = vec![
+            ("AF", RegisterLabel16::AF),
+            ("BC", RegisterLabel16::BC),
+            ("DE", RegisterLabel16::DE),
+            ("HL", RegisterLabel16::HL),
+            ("SP", RegisterLabel16::StackPointer),
+            ("PC", RegisterLabel16::ProgramCounter),
+        ];
+
+        registers8.iter().for_each(|(label, register)| {
+            registers.insert(
+                label.to_string(),
+                format!("{:#X}", self.cpu.read_8_bits(*register)),
+            );
+        });
+        registers16.iter().for_each(|(label, register)| {
+            registers.insert(
+                label.to_string(),
+                format!("{:#X}", self.cpu.read_16_bits(*register)),
+            );
+        });
+        Registers { registers }
     }
 }

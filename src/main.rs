@@ -2,9 +2,12 @@ use glutin_window::GlutinWindow as Window;
 use opengl_graphics::{GlGraphics, OpenGL};
 use piston::{event_loop::*, input::*, window::WindowSettings};
 use rand::prelude::*;
+use std::env;
 
 mod gameboy;
 use crate::gameboy::{screen::*, Gameboy};
+
+use std::io;
 
 fn screen_color_to_color(c: ScreenColor) -> [f32; 4] {
     match c {
@@ -35,6 +38,13 @@ pub struct App {
     gl: GlGraphics,
     screen: Screen,
     gb: Gameboy,
+    is_debug: bool,
+}
+
+fn print_help() {
+    println!("c => continue");
+    println!("r => print registers");
+    println!("h => help");
 }
 
 impl App {
@@ -50,6 +60,23 @@ impl App {
     }
 
     fn update(&mut self, _args: UpdateArgs, rng: &mut ThreadRng) {
+        if self.is_debug {
+            loop {
+                println!("Continue? (h for help)");
+                let mut text = String::new();
+                io::stdin()
+                    .read_line(&mut text)
+                    .expect("Input failed unexpectadly");
+                let trimmed = text.trim();
+                match trimmed.as_ref() {
+                    "c" => break,
+                    "r" => self.print_registers(),
+                    "h" => print_help(),
+                    _ => print_help(),
+                }
+            }
+        }
+
         self.gb.tick();
 
         let mut pixels = Vec::new();
@@ -66,6 +93,13 @@ impl App {
 
         self.screen.push_pixels(&pixels);
     }
+
+    fn print_registers(&self) {
+        let registers = self.gb.get_registers();
+        for register in registers.get_registers() {
+            println!("{}: {}", register, registers.get_register_val(register));
+        }
+    }
 }
 
 fn main() {
@@ -78,10 +112,13 @@ fn main() {
         .build()
         .unwrap();
 
+    let args: Vec<String> = env::args().collect();
+
     let mut app = App {
         gl: GlGraphics::new(opengl),
         screen: Screen::new(),
         gb: Gameboy::new(),
+        is_debug: args.contains(&String::from("-d")),
     };
 
     let mut rnd = rand::thread_rng();
