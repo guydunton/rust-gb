@@ -3,46 +3,65 @@ use super::flags_register::*;
 use super::read_write_register::ReadWriteRegister;
 use super::register::{RegisterLabel16, RegisterLabel8};
 
+fn catagory_from_str(cat: &str) -> Catagory {
+    match cat {
+        "NOP" => Catagory::NOP,
+        "LD16" => Catagory::LD16,
+        "LD8" => Catagory::LD8,
+        "XOR" => Catagory::XOR,
+        "BIT" => Catagory::BIT,
+        _ => Catagory::NOP,
+    }
+}
+
 pub fn decode_instruction(program_counter: u16, program_code: &[u8]) -> OpCode {
     let code = program_code[program_counter as usize];
+
+    // Needs to be closure to capture values from memory
+    let arg_from_str = |arg: &str| -> Argument {
+        match arg {
+            "HL" => Argument::Register16Constant(RegisterLabel16::HL),
+            "SP" => Argument::Register16Constant(RegisterLabel16::StackPointer),
+            "(HL-)" => Argument::RegisterIndirectDec(RegisterLabel16::HL),
+            "A" => Argument::Register8Constant(RegisterLabel8::A),
+            "H" => Argument::Register8Constant(RegisterLabel8::H),
+            "d16" => {
+                Argument::LargeValue(le_to_u16(get_slice(&program_code, program_counter + 1, 2)))
+            }
+            "7" => Argument::Bit(7),
+            _ => panic!("Unknown argument: {}", arg),
+        }
+    };
+
+    let opcode = |text: &str| -> OpCode {
+        let parts = text.split(' ').collect::<Vec<&str>>();
+        let catagory = catagory_from_str(parts[0]);
+        let args = parts[1..]
+            .iter()
+            .map(|arg| arg_from_str(arg))
+            .collect::<Vec<Argument>>();
+
+        OpCode::new(catagory, args)
+    };
+
     match code {
-        0x00 => OpCode::new(Catagory::NOP),
-        0x21 => OpCode::new_with_args(
-            Catagory::LD16,
+        0x00 => opcode("NOP"),
+        0x20 => OpCode::new(
+            Catagory::JR,
             vec![
-                Argument::Register16Constant(RegisterLabel16::HL),
-                Argument::LargeValue(le_to_u16(get_slice(&program_code, program_counter + 1, 2))),
+                Argument::JumpArgument(JumpCondition::NotZero),
+                Argument::JumpDistance(program_code[(program_counter + 1) as usize] as i8),
             ],
         ),
-        0x31 => OpCode::new_with_args(
-            Catagory::LD16,
-            vec![
-                Argument::Register16Constant(RegisterLabel16::StackPointer),
-                Argument::LargeValue(le_to_u16(get_slice(&program_code, program_counter + 1, 2))),
-            ],
-        ),
-        0x32 => OpCode::new_with_args(
-            Catagory::LD8,
-            vec![
-                Argument::RegisterIndirectDec(RegisterLabel16::HL),
-                Argument::Register8Constant(RegisterLabel8::A),
-            ],
-        ),
-        0xAF => OpCode::new_with_args(
-            Catagory::XOR,
-            vec![Argument::Register8Constant(RegisterLabel8::A)],
-        ),
+        0x21 => opcode("LD16 HL d16"),
+        0x31 => opcode("LD16 SP d16"),
+        0x32 => opcode("LD8 (HL-) A"),
+        0xAF => opcode("XOR A"),
         0xCB => {
             // 0xCB is prefix and the next byte shows the actual instruction
             let cb_instruction = program_code[program_counter as usize + 1];
             match cb_instruction {
-                0x7C => OpCode::new_with_args(
-                    Catagory::BIT,
-                    vec![
-                        Argument::Bit(7),
-                        Argument::Register8Constant(RegisterLabel8::H),
-                    ], // TODO: Need a declarative way of specifying flags settings
-                ),
+                0x7C => opcode("BIT 7 H"),
                 _ => panic!("Unknown command 0xCB {:#X}", cb_instruction),
             }
         }
@@ -130,24 +149,54 @@ impl OpCode {
                     _ => panic!("Invalid arguments"),
                 }
             }
+            Catagory::JR => {
+                assert_eq!(self.args.len(), 2);
+
+                // Arg 1 is the condition
+                let condition = match self.args[0] {
+                    Argument::JumpArgument(condition) => condition,
+                    _ => panic!("Invalid argument for jump statement {:?}", self.args[0]),
+                };
+
+                let condition_checker = || -> bool {
+                    match condition {
+                        JumpCondition::NotZero => read_flag::<T>(cpu, Flags::Z) == false,
+                    }
+                };
+
+                if condition_checker() {
+                    // Arg 2 is relative location
+
+                    let distance = match self.args[1] {
+                        Argument::JumpDistance(distance) => distance,
+                        _ => panic!("Invalid argument"),
+                    };
+
+                    let program_counter = cpu.read_16_bits(RegisterLabel16::ProgramCounter);
+                    cpu.write_16_bits(
+                        RegisterLabel16::ProgramCounter,
+                        (i32::from(program_counter) + i32::from(distance)) as u16,
+                    );
+                }
+            }
         };
 
-        // Update the program counter
-        let program_counter = cpu.read_16_bits(RegisterLabel16::ProgramCounter);
-        cpu.write_16_bits(
-            RegisterLabel16::ProgramCounter,
-            program_counter + self.size(),
-        );
-    }
-
-    fn new(catagory: Catagory) -> OpCode {
-        OpCode {
-            catagory,
-            args: Vec::new(),
+        // Update the program counter if not a jump
+        match self.catagory {
+            Catagory::JR => {
+                // Do nothing
+            }
+            _ => {
+                let program_counter = cpu.read_16_bits(RegisterLabel16::ProgramCounter);
+                cpu.write_16_bits(
+                    RegisterLabel16::ProgramCounter,
+                    program_counter + self.size(),
+                );
+            }
         }
     }
 
-    fn new_with_args(catagory: Catagory, args: Vec<Argument>) -> OpCode {
+    fn new(catagory: Catagory, args: Vec<Argument>) -> OpCode {
         OpCode { catagory, args }
     }
 
@@ -158,7 +207,9 @@ impl OpCode {
                 Argument::Register8Constant(_) => 0,
                 Argument::Register16Constant(_) => 0,
                 Argument::RegisterIndirectDec(_) => 0,
+                Argument::JumpArgument(_) => 0,
                 Argument::LargeValue(_) => 2,
+                Argument::JumpDistance(_) => 1,
                 Argument::Bit(_) => 1,
             })
             .sum::<u16>()
@@ -178,6 +229,12 @@ enum Catagory {
     LD8,
     XOR,
     BIT,
+    JR,
+}
+
+#[derive(Copy, Clone, Debug)]
+enum JumpCondition {
+    NotZero,
 }
 
 #[derive(Copy, Clone, Debug)]
@@ -186,5 +243,7 @@ enum Argument {
     Register16Constant(RegisterLabel16),
     RegisterIndirectDec(RegisterLabel16),
     LargeValue(u16),
+    JumpDistance(i8),
     Bit(u8),
+    JumpArgument(JumpCondition),
 }

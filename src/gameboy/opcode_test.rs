@@ -95,4 +95,19 @@ mod opcode_tests {
             assert_eq!(read_flag::<CPU>(&cpu, Flags::Z), true);
         }
     }
+
+    #[test]
+    fn jump_instruction() {
+        // JR NZ
+        let mut memory = vec![0x00, 0x00, 0x00, 0x00, 0x00, 0x20, 0xFB];
+        let mut cpu = CPU::new();
+
+        cpu.write_16_bits(RegisterLabel16::ProgramCounter, 0x0005);
+        write_flag::<CPU>(&mut cpu, Flags::Z, false);
+
+        let opcode = decode_instruction(cpu.read_16_bits(RegisterLabel16::ProgramCounter), &memory);
+        run_cpu!(cpu, memory, opcode);
+
+        assert_eq!(cpu.read_16_bits(RegisterLabel16::ProgramCounter), 0x0000);
+    }
 }
