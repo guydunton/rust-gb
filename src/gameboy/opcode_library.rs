@@ -196,6 +196,18 @@ impl OpCode {
         }
     }
 
+    pub fn to_string(&self) -> String {
+        let catagory = format!("{:?}", self.catagory);
+
+        let args = self
+            .args
+            .iter()
+            .map(|arg| format!("{:?}", arg))
+            .collect::<Vec<String>>()
+            .join(" ");
+        format!("{} {}", catagory, args)
+    }
+
     fn new(catagory: Catagory, args: Vec<Argument>) -> OpCode {
         OpCode { catagory, args }
     }
@@ -223,6 +235,7 @@ fn get_slice(arr: &[u8], index: u16, size: u16) -> &[u8] {
     &arr[start..end]
 }
 
+#[derive(Debug)]
 enum Catagory {
     NOP,
     LD16,

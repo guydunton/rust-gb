@@ -79,6 +79,35 @@ impl Gameboy {
         opcode.run::<CPU>(&mut self.cpu, &mut self.memory);
     }
 
+    pub fn print_opcode(&self) -> String {
+        use self::register::RegisterLabel16;
+        let counter = self.cpu.read_16_bits(RegisterLabel16::ProgramCounter);
+        let opcode = opcode_library::decode_instruction(counter, &self.memory);
+        opcode.to_string()
+    }
+
+    pub fn print_flags(&self) -> Vec<String> {
+        use self::flags_register::*;
+        let flags = vec![Flags::Z, Flags::N, Flags::H, Flags::C];
+
+        let flag_data = flags
+            .iter()
+            .map(|f| (format!("{:?}", f), f))
+            .map(|(label, flag)| {
+                (
+                    label,
+                    match read_flag::<CPU>(&self.cpu, *flag) {
+                        true => "1".to_string(),
+                        false => "0".to_string(),
+                    },
+                )
+            })
+            .map(|(label, text)| format!("{}: {}", label, text))
+            .collect::<Vec<String>>();
+
+        flag_data
+    }
+
     pub fn get_registers(&self) -> Registers {
         let mut registers = HashMap::new();
         registers.insert(

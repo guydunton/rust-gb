@@ -44,6 +44,8 @@ pub struct App {
 fn print_help() {
     println!("c => continue");
     println!("r => print registers");
+    println!("o => print current opcode");
+    println!("f => print flags");
     println!("h => help");
 }
 
@@ -71,6 +73,8 @@ impl App {
                 match trimmed.as_ref() {
                     "c" => break,
                     "r" => self.print_registers(),
+                    "o" => println!("{}", self.gb.print_opcode()),
+                    "f" => println!("{:?}", self.gb.print_flags()),
                     "h" => print_help(),
                     _ => print_help(),
                 }
@@ -96,8 +100,15 @@ impl App {
 
     fn print_registers(&self) {
         let registers = self.gb.get_registers();
-        for register in registers.get_registers() {
-            println!("{}: {}", register, registers.get_register_val(register));
+        let register_order = vec![
+            "A", "F", "AF", "B", "C", "BC", "D", "E", "DE", "H", "L", "HL", "PC", "SP",
+        ];
+        for register in register_order {
+            println!(
+                "{}: {}",
+                register,
+                registers.get_register_val(&register.to_string())
+            );
         }
     }
 }

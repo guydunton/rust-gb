@@ -1,7 +1,7 @@
 use super::read_write_register::ReadWriteRegister;
 use super::register::RegisterLabel8;
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug)]
 pub enum Flags {
     Z, // Zero
     N, // Subtract
