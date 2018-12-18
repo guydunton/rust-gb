@@ -3,21 +3,67 @@ mod opcode_tests {
 
     use crate::gameboy::cpu::CPU;
     use crate::gameboy::flags_register::*;
-    use crate::gameboy::opcode_library::decode_instruction;
+    use crate::gameboy::opcode_library::{decode_instruction, OpCode};
     use crate::gameboy::read_write_register::ReadWriteRegister;
     use crate::gameboy::register::{RegisterLabel16, RegisterLabel8};
 
-    macro_rules! setup_cpu {
-        ( [ $( $x:expr ),* ] , $cpu:ident , $memory:ident, $opcode:ident ) => {
-            let mut $memory = vec![$($x,)*];
-            let $opcode = decode_instruction(0, &$memory);
-            let mut $cpu = CPU::new();
+    struct TestGB {
+        cpu: CPU,
+        memory: Vec<u8>,
+    }
+
+    impl TestGB {
+        fn new(data: Vec<u8>) -> TestGB {
+            TestGB {
+                cpu: CPU::new(),
+                memory: data,
+            }
+        }
+
+        fn decode(&self) -> OpCode {
+            decode_instruction(
+                self.cpu.read_16_bits(RegisterLabel16::ProgramCounter),
+                &self.memory,
+            )
+        }
+
+        fn run(&mut self, opcode: &OpCode) -> u32 {
+            opcode.run::<CPU>(&mut self.cpu, &mut self.memory)
+        }
+
+        fn decode_and_run(&mut self) -> u32 {
+            let opcode = self.decode();
+            self.run(&opcode)
+        }
+
+        fn set_flag(&mut self, flag: Flags, val: bool) {
+            write_flag::<CPU>(&mut self.cpu, flag, val);
+        }
+
+        fn get_flag(&self, flag: Flags) -> bool {
+            read_flag::<CPU>(&self.cpu, flag)
+        }
+
+        fn write_16(&mut self, register: RegisterLabel16, val: u16) {
+            self.cpu.write_16_bits(register, val);
+        }
+
+        fn read_16(&self, register: RegisterLabel16) -> u16 {
+            self.cpu.read_16_bits(register)
+        }
+
+        fn write_8(&mut self, register: RegisterLabel8, val: u8) {
+            self.cpu.write_8_bits(register, val);
+        }
+
+        fn read_8(&self, register: RegisterLabel8) -> u8 {
+            self.cpu.read_8_bits(register)
         }
     }
 
-    macro_rules! run_cpu {
-        ( $cpu:ident, $memory:ident, $opcode:ident ) => {
-            $opcode.run::<CPU>(&mut $cpu, &mut $memory);
+    macro_rules! testgb {
+        ([ $( $x:expr ),* ]) => {
+            TestGB::new( vec![$($x,)*])
         };
     }
 
@@ -25,48 +71,52 @@ mod opcode_tests {
     fn load16_instructions() {
         {
             // LD SP d16
-            setup_cpu!([0x31, 0xFE, 0xFF], cpu, memory, opcode);
+            let mut gb = testgb!([0x31, 0xFE, 0xFF]);
+            let cycles = gb.decode_and_run();
 
-            run_cpu!(cpu, memory, opcode);
-
-            assert_eq!(cpu.read_16_bits(RegisterLabel16::StackPointer), 0xFFFE);
-            assert_eq!(cpu.read_16_bits(RegisterLabel16::ProgramCounter), 0x0003);
+            assert_eq!(gb.read_16(RegisterLabel16::StackPointer), 0xFFFE);
+            assert_eq!(gb.read_16(RegisterLabel16::ProgramCounter), 0x0003);
+            assert_eq!(cycles, 12);
         }
         {
             // LD HL d16
-            setup_cpu!([0x21, 0xFF, 0x9F], cpu, memory, opcode);
-            run_cpu!(cpu, memory, opcode);
+            let mut gb = testgb!([0x21, 0xFF, 0x9F]);
+            let cycles = gb.decode_and_run();
 
-            assert_eq!(cpu.read_16_bits(RegisterLabel16::HL), 0x9FFF);
-            assert_eq!(cpu.read_16_bits(RegisterLabel16::ProgramCounter), 0x0003);
+            assert_eq!(gb.read_16(RegisterLabel16::HL), 0x9FFF);
+            assert_eq!(gb.read_16(RegisterLabel16::ProgramCounter), 0x0003);
+            assert_eq!(cycles, 12);
         }
     }
 
     #[test]
     fn load8_instructions() {
-        setup_cpu!([0x32, 0x00], cpu, memory, opcode); // LD (HL-) A
-        cpu.write_16_bits(RegisterLabel16::HL, 0x0001);
-        cpu.write_8_bits(RegisterLabel8::A, 0x01);
-        run_cpu!(cpu, memory, opcode);
+        // LD (HL-) A
+        let mut gb = testgb!([0x32, 0x00]);
+        gb.write_16(RegisterLabel16::HL, 0x0001);
+        gb.write_8(RegisterLabel8::A, 0x01);
+        let cycles = gb.decode_and_run();
 
-        assert_eq!(cpu.read_16_bits(RegisterLabel16::HL), 0x0000);
-        assert_eq!(memory[1], 0x01);
-        assert_eq!(cpu.read_16_bits(RegisterLabel16::ProgramCounter), 0x0001);
+        assert_eq!(gb.read_16(RegisterLabel16::HL), 0x0000);
+        assert_eq!(gb.memory[1], 0x01);
+        assert_eq!(gb.read_16(RegisterLabel16::ProgramCounter), 0x0001);
+        assert_eq!(cycles, 8);
     }
 
     #[test]
     fn xor_instruction() {
-        setup_cpu!([0xAF], cpu, memory, opcode);
+        let mut gb = testgb!([0xAF]);
 
-        cpu.write_8_bits(RegisterLabel8::A, 0x01);
-        cpu.write_8_bits(RegisterLabel8::F, 0b1111_0000);
+        gb.write_8(RegisterLabel8::A, 0x01);
+        gb.write_8(RegisterLabel8::F, 0b1111_0000);
 
-        run_cpu!(cpu, memory, opcode);
+        let cycles = gb.decode_and_run();
 
-        assert_eq!(cpu.read_8_bits(RegisterLabel8::A), 0x00);
-        assert_eq!(cpu.read_16_bits(RegisterLabel16::ProgramCounter), 0x01);
+        assert_eq!(gb.read_8(RegisterLabel8::A), 0x00);
+        assert_eq!(gb.read_16(RegisterLabel16::ProgramCounter), 0x01);
 
-        assert_eq!(cpu.read_8_bits(RegisterLabel8::F), 0x00);
+        assert_eq!(gb.read_8(RegisterLabel8::F), 0x00);
+        assert_eq!(cycles, 4);
     }
 
     #[test]
@@ -74,40 +124,64 @@ mod opcode_tests {
         // BIT 7,H
         {
             // Check the bit flag when the bit is already set to 1
-            setup_cpu!([0xCB, 0x7C], cpu, memory, opcode);
-            cpu.write_8_bits(RegisterLabel8::H, 0b1000_0000);
-            let carry_flag = read_flag::<CPU>(&cpu, Flags::C);
-            run_cpu!(cpu, memory, opcode);
+            let mut gb = testgb!([0xCB, 0x7C]);
+            gb.write_8(RegisterLabel8::H, 0b1000_0000);
+            let carry_flag = gb.get_flag(Flags::C);
+            let cycles = gb.decode_and_run();
 
-            assert_eq!(read_flag::<CPU>(&cpu, Flags::Z), false);
-            assert_eq!(read_flag::<CPU>(&cpu, Flags::N), false);
-            assert_eq!(read_flag::<CPU>(&cpu, Flags::H), true);
-            assert_eq!(read_flag::<CPU>(&cpu, Flags::C), carry_flag); // The carry flag is unaffected
+            assert_eq!(gb.get_flag(Flags::Z), false);
+            assert_eq!(gb.get_flag(Flags::N), false);
+            assert_eq!(gb.get_flag(Flags::H), true);
+            assert_eq!(gb.get_flag(Flags::C), carry_flag); // The carry flag is unaffected
 
-            assert_eq!(cpu.read_16_bits(RegisterLabel16::ProgramCounter), 0x2);
+            assert_eq!(gb.read_16(RegisterLabel16::ProgramCounter), 0x2);
+            assert_eq!(cycles, 12);
         }
         {
             // Check the bit flag when the bit is 0
-            setup_cpu!([0xCB, 0x7C], cpu, memory, opcode);
-            cpu.write_8_bits(RegisterLabel8::H, 0x0);
-            run_cpu!(cpu, memory, opcode);
+            let mut gb = testgb!([0xCB, 0x7C]);
+            gb.write_8(RegisterLabel8::H, 0x0);
+            let cycles = gb.decode_and_run();
 
-            assert_eq!(read_flag::<CPU>(&cpu, Flags::Z), true);
+            assert_eq!(gb.get_flag(Flags::Z), true);
+            assert_eq!(cycles, 12);
         }
     }
 
     #[test]
     fn jump_instruction() {
-        // JR NZ
-        let mut memory = vec![0x00, 0x00, 0x00, 0x00, 0x00, 0x20, 0xFB];
-        let mut cpu = CPU::new();
+        // JR NZ -5
 
-        cpu.write_16_bits(RegisterLabel16::ProgramCounter, 0x0005);
-        write_flag::<CPU>(&mut cpu, Flags::Z, false);
+        let mut gb = TestGB::new(vec![0x00, 0x00, 0x00, 0x20, 0xFB]);
 
-        let opcode = decode_instruction(cpu.read_16_bits(RegisterLabel16::ProgramCounter), &memory);
-        run_cpu!(cpu, memory, opcode);
+        {
+            gb.write_16(RegisterLabel16::ProgramCounter, 0x0003);
+            gb.set_flag(Flags::Z, false);
 
-        assert_eq!(cpu.read_16_bits(RegisterLabel16::ProgramCounter), 0x0000);
+            let opcode = gb.decode();
+            let cycles = gb.run(&opcode);
+
+            assert_eq!(gb.read_16(RegisterLabel16::ProgramCounter), 0x0000);
+            assert_eq!(cycles, 12); // cycles different for action vs no action
+        }
+
+        {
+            gb.write_16(RegisterLabel16::ProgramCounter, 0x0003);
+            gb.set_flag(Flags::Z, true);
+
+            let opcode = gb.decode();
+            let cycles = gb.run(&opcode);
+
+            assert_eq!(cycles, 8);
+        }
+    }
+
+    #[test]
+    fn nop_instruction() {
+        let mut gb = testgb!([0x00]);
+        let cycles = gb.decode_and_run();
+
+        assert_eq!(gb.read_16(RegisterLabel16::ProgramCounter), 0x1);
+        assert_eq!(cycles, 4);
     }
 }

@@ -75,7 +75,20 @@ pub struct OpCode {
 }
 
 impl OpCode {
-    pub fn run<T: ReadWriteRegister>(&self, cpu: &mut dyn ReadWriteRegister, memory: &mut Vec<u8>) {
+    pub fn run<T: ReadWriteRegister>(
+        &self,
+        cpu: &mut dyn ReadWriteRegister,
+        memory: &mut Vec<u8>,
+    ) -> u32 {
+        // Update the program counter if not a jump
+        let program_counter = cpu.read_16_bits(RegisterLabel16::ProgramCounter);
+        cpu.write_16_bits(
+            RegisterLabel16::ProgramCounter,
+            program_counter + self.size(),
+        );
+
+        let mut cycles = 0;
+
         match self.catagory {
             Catagory::LD16 => {
                 assert_eq!(self.args.len(), 2);
@@ -91,12 +104,15 @@ impl OpCode {
                 };
 
                 dest(source());
+
+                cycles += 12;
             }
             Catagory::LD8 => {
                 assert_eq!(self.args.len(), 2);
                 {
                     let mut dest = |val: u8| match self.args[0] {
                         Argument::RegisterIndirectDec(register) => {
+                            cycles += 4;
                             memory[cpu.read_16_bits(register) as usize] = val
                         }
                         _ => panic!("Command does not support argument {:?}", self.args[0]),
@@ -108,6 +124,8 @@ impl OpCode {
                     };
 
                     dest(source());
+
+                    cycles += 4;
                 }
 
                 match self.args[0] {
@@ -120,6 +138,7 @@ impl OpCode {
             }
             Catagory::NOP => {
                 // Do nothing
+                cycles += 4;
             }
             Catagory::XOR => {
                 assert_eq!(self.args.len(), 1);
@@ -133,6 +152,8 @@ impl OpCode {
                     }
                     _ => panic!("Argument not supported: {:?}", self.args[0]),
                 }
+
+                cycles += 4;
             }
             Catagory::BIT => {
                 assert_eq!(self.args.len(), 2);
@@ -148,9 +169,14 @@ impl OpCode {
                     }
                     _ => panic!("Invalid arguments"),
                 }
+
+                cycles += 12;
             }
             Catagory::JR => {
                 assert_eq!(self.args.len(), 2);
+
+                // 8 cycles by default
+                cycles += 8;
 
                 // Arg 1 is the condition
                 let condition = match self.args[0] {
@@ -177,23 +203,13 @@ impl OpCode {
                         RegisterLabel16::ProgramCounter,
                         (i32::from(program_counter) + i32::from(distance)) as u16,
                     );
+
+                    cycles += 4;
                 }
             }
         };
 
-        // Update the program counter if not a jump
-        match self.catagory {
-            Catagory::JR => {
-                // Do nothing
-            }
-            _ => {
-                let program_counter = cpu.read_16_bits(RegisterLabel16::ProgramCounter);
-                cpu.write_16_bits(
-                    RegisterLabel16::ProgramCounter,
-                    program_counter + self.size(),
-                );
-            }
-        }
+        cycles
     }
 
     pub fn to_string(&self) -> String {

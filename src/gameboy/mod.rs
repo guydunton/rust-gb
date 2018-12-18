@@ -71,12 +71,31 @@ impl Gameboy {
         }
     }
 
-    pub fn tick(&mut self) {
+    pub fn tick(&mut self, dt: f64) {
+        use self::register::RegisterLabel16;
+
+        let cycles_to_use = (dt * 1000000f64) as u32;
+        let mut total_cycles_used = 0;
+
+        loop {
+            let counter = self.cpu.read_16_bits(RegisterLabel16::ProgramCounter);
+            let opcode = opcode_library::decode_instruction(counter, &self.memory);
+
+            let cycles_used = opcode.run::<CPU>(&mut self.cpu, &mut self.memory);
+
+            total_cycles_used += cycles_used;
+            if total_cycles_used > cycles_to_use {
+                break;
+            }
+        }
+    }
+
+    pub fn step_once(&mut self) {
         use self::register::RegisterLabel16;
         let counter = self.cpu.read_16_bits(RegisterLabel16::ProgramCounter);
         let opcode = opcode_library::decode_instruction(counter, &self.memory);
 
-        opcode.run::<CPU>(&mut self.cpu, &mut self.memory);
+        let _ = opcode.run::<CPU>(&mut self.cpu, &mut self.memory);
     }
 
     pub fn print_opcode(&self) -> String {

@@ -61,7 +61,7 @@ impl App {
         });
     }
 
-    fn update(&mut self, _args: UpdateArgs, rng: &mut ThreadRng) {
+    fn update(&mut self, args: UpdateArgs, rng: &mut ThreadRng) {
         if self.is_debug {
             loop {
                 println!("Continue? (h for help)");
@@ -81,7 +81,11 @@ impl App {
             }
         }
 
-        self.gb.tick();
+        if self.is_debug {
+            self.gb.step_once();
+        } else {
+            self.gb.tick(args.dt);
+        }
 
         let mut pixels = Vec::new();
         for _ in 0..160 {
