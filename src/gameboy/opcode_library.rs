@@ -27,6 +27,7 @@ pub fn decode_instruction(program_counter: u16, program_code: &[u8]) -> OpCode {
             "A" => Argument::Register8Constant(RegisterLabel8::A),
             "C" => Argument::Register8Constant(RegisterLabel8::C),
             "H" => Argument::Register8Constant(RegisterLabel8::H),
+            "(C)" => Argument::HighOffsetRegister(RegisterLabel8::C),
             "d16" => {
                 Argument::LargeValue(le_to_u16(get_slice(&program_code, program_counter + 1, 2)))
             }
@@ -66,13 +67,7 @@ pub fn decode_instruction(program_counter: u16, program_code: &[u8]) -> OpCode {
                 _ => panic!("Unknown command 0xCB {:#X}", cb_instruction),
             }
         }
-        0xE2 => OpCode::new(
-            Catagory::LD8,
-            vec![
-                Argument::HighOffsetRegister(RegisterLabel8::C),
-                Argument::Register8Constant(RegisterLabel8::A),
-            ],
-        ),
+        0xE2 => opcode("LD8 (C) A"),
         _ => panic!("Unkown command {:#X}", code),
     }
 }
