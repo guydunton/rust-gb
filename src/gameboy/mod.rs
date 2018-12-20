@@ -26,10 +26,6 @@ impl Registers {
             .map(|x| x.clone())
             .unwrap_or("Invalid register".to_string())
     }
-
-    pub fn get_registers(&self) -> Vec<&String> {
-        self.registers.keys().collect()
-    }
 }
 
 pub struct Gameboy {

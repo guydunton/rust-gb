@@ -14,9 +14,12 @@ mod opcode_tests {
 
     impl TestGB {
         fn new(data: Vec<u8>) -> TestGB {
+            let mut memory = vec![0; 0xFFFF];
+            memory[..data.len()].clone_from_slice(&data[..]);
+
             TestGB {
                 cpu: CPU::new(),
-                memory: data,
+                memory,
             }
         }
 
@@ -91,16 +94,44 @@ mod opcode_tests {
 
     #[test]
     fn load8_instructions() {
-        // LD (HL-) A
-        let mut gb = testgb!([0x32, 0x00]);
-        gb.write_16(RegisterLabel16::HL, 0x0001);
-        gb.write_8(RegisterLabel8::A, 0x01);
-        let cycles = gb.decode_and_run();
+        {
+            // LD (HL-) A
+            let mut gb = testgb!([0x32, 0x00]);
+            gb.write_16(RegisterLabel16::HL, 0x0001);
+            gb.write_8(RegisterLabel8::A, 0x01);
+            let cycles = gb.decode_and_run();
 
-        assert_eq!(gb.read_16(RegisterLabel16::HL), 0x0000);
-        assert_eq!(gb.memory[1], 0x01);
-        assert_eq!(gb.read_16(RegisterLabel16::ProgramCounter), 0x0001);
-        assert_eq!(cycles, 8);
+            assert_eq!(gb.read_16(RegisterLabel16::HL), 0x0000);
+            assert_eq!(gb.memory[1], 0x01);
+            assert_eq!(gb.read_16(RegisterLabel16::ProgramCounter), 0x0001);
+            assert_eq!(cycles, 8);
+        }
+
+        let ld8_test = |byte_code, register| {
+            let mut gb = testgb!([byte_code, 0x01]);
+            let _ = gb.decode_and_run();
+            assert_eq!(gb.read_8(register), 0x01);
+            assert_eq!(gb.read_16(RegisterLabel16::ProgramCounter), 0x02);
+        };
+
+        // LD c d8
+        ld8_test(0x0E, RegisterLabel8::C);
+
+        // LD A d8
+        ld8_test(0x3E, RegisterLabel8::A);
+
+        {
+            // LD (C) A
+            let mut gb = testgb!([0xE2]);
+            gb.write_8(RegisterLabel8::C, 0x01);
+            gb.write_8(RegisterLabel8::A, 0x02);
+
+            let cycles = gb.decode_and_run();
+
+            assert_eq!(gb.memory[0xFF01], 0x02);
+            assert_eq!(gb.read_16(RegisterLabel16::ProgramCounter), 0x02);
+            assert_eq!(cycles, 8);
+        }
     }
 
     #[test]
@@ -172,6 +203,7 @@ mod opcode_tests {
             let opcode = gb.decode();
             let cycles = gb.run(&opcode);
 
+            assert_eq!(gb.read_16(RegisterLabel16::ProgramCounter), 0x0005);
             assert_eq!(cycles, 8);
         }
     }

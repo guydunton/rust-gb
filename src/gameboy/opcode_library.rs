@@ -10,6 +10,7 @@ fn catagory_from_str(cat: &str) -> Catagory {
         "LD8" => Catagory::LD8,
         "XOR" => Catagory::XOR,
         "BIT" => Catagory::BIT,
+        "JR" => Catagory::JR,
         _ => Catagory::NOP,
     }
 }
@@ -24,10 +25,14 @@ pub fn decode_instruction(program_counter: u16, program_code: &[u8]) -> OpCode {
             "SP" => Argument::Register16Constant(RegisterLabel16::StackPointer),
             "(HL-)" => Argument::RegisterIndirectDec(RegisterLabel16::HL),
             "A" => Argument::Register8Constant(RegisterLabel8::A),
+            "C" => Argument::Register8Constant(RegisterLabel8::C),
             "H" => Argument::Register8Constant(RegisterLabel8::H),
             "d16" => {
                 Argument::LargeValue(le_to_u16(get_slice(&program_code, program_counter + 1, 2)))
             }
+            "d8" => Argument::SmallValue(program_code[(program_counter + 1) as usize]),
+            "NZ" => Argument::JumpArgument(JumpCondition::NotZero),
+            "r8" => Argument::JumpDistance(program_code[(program_counter + 1) as usize] as i8),
             "7" => Argument::Bit(7),
             _ => panic!("Unknown argument: {}", arg),
         }
@@ -46,16 +51,12 @@ pub fn decode_instruction(program_counter: u16, program_code: &[u8]) -> OpCode {
 
     match code {
         0x00 => opcode("NOP"),
-        0x20 => OpCode::new(
-            Catagory::JR,
-            vec![
-                Argument::JumpArgument(JumpCondition::NotZero),
-                Argument::JumpDistance(program_code[(program_counter + 1) as usize] as i8),
-            ],
-        ),
+        0x0E => opcode("LD8 C d8"),
+        0x20 => opcode("JR NZ r8"),
         0x21 => opcode("LD16 HL d16"),
         0x31 => opcode("LD16 SP d16"),
         0x32 => opcode("LD8 (HL-) A"),
+        0x3E => opcode("LD8 A d8"),
         0xAF => opcode("XOR A"),
         0xCB => {
             // 0xCB is prefix and the next byte shows the actual instruction
@@ -65,6 +66,13 @@ pub fn decode_instruction(program_counter: u16, program_code: &[u8]) -> OpCode {
                 _ => panic!("Unknown command 0xCB {:#X}", cb_instruction),
             }
         }
+        0xE2 => OpCode::new(
+            Catagory::LD8,
+            vec![
+                Argument::HighOffsetRegister(RegisterLabel8::C),
+                Argument::Register8Constant(RegisterLabel8::A),
+            ],
+        ),
         _ => panic!("Unkown command {:#X}", code),
     }
 }
@@ -110,20 +118,29 @@ impl OpCode {
             Catagory::LD8 => {
                 assert_eq!(self.args.len(), 2);
                 {
+                    let source = match self.args[1] {
+                        Argument::Register8Constant(register) => cpu.read_8_bits(register),
+                        Argument::SmallValue(val) => val,
+                        _ => panic!("Command does not support argument {:?}", self.args[0]),
+                    };
+
                     let mut dest = |val: u8| match self.args[0] {
                         Argument::RegisterIndirectDec(register) => {
                             cycles += 4;
-                            memory[cpu.read_16_bits(register) as usize] = val
+                            memory[cpu.read_16_bits(register) as usize] = val;
+                        }
+                        Argument::Register8Constant(register) => {
+                            cpu.write_8_bits(register, val);
+                        }
+                        Argument::HighOffsetRegister(register) => {
+                            cycles += 4;
+                            let offset = cpu.read_8_bits(register) as u16;
+                            memory[(0xFF00 + offset) as usize] = val;
                         }
                         _ => panic!("Command does not support argument {:?}", self.args[0]),
                     };
 
-                    let source = || match self.args[1] {
-                        Argument::Register8Constant(register) => cpu.read_8_bits(register),
-                        _ => panic!("Command does not support argument {:?}", self.args[0]),
-                    };
-
-                    dest(source());
+                    dest(source);
 
                     cycles += 4;
                 }
@@ -235,8 +252,10 @@ impl OpCode {
                 Argument::Register8Constant(_) => 0,
                 Argument::Register16Constant(_) => 0,
                 Argument::RegisterIndirectDec(_) => 0,
+                Argument::HighOffsetRegister(_) => 1,
                 Argument::JumpArgument(_) => 0,
                 Argument::LargeValue(_) => 2,
+                Argument::SmallValue(_) => 1,
                 Argument::JumpDistance(_) => 1,
                 Argument::Bit(_) => 1,
             })
@@ -271,7 +290,9 @@ enum Argument {
     Register8Constant(RegisterLabel8),
     Register16Constant(RegisterLabel16),
     RegisterIndirectDec(RegisterLabel16),
+    HighOffsetRegister(RegisterLabel8),
     LargeValue(u16),
+    SmallValue(u8),
     JumpDistance(i8),
     Bit(u8),
     JumpArgument(JumpCondition),
