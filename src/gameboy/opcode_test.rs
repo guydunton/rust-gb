@@ -132,6 +132,18 @@ mod opcode_tests {
             assert_eq!(gb.read_16(RegisterLabel16::ProgramCounter), 0x02);
             assert_eq!(cycles, 8);
         }
+
+        {
+            // LD (HL) A
+            let mut gb = testgb!([0x77]);
+            gb.write_16(RegisterLabel16::HL, 0x0005);
+            gb.write_8(RegisterLabel8::A, 0x01);
+            let cycles = gb.decode_and_run();
+
+            assert_eq!(gb.memory[0x0005], 0x01);
+            assert_eq!(gb.read_16(RegisterLabel16::ProgramCounter), 0x01);
+            assert_eq!(cycles, 8);
+        }
     }
 
     #[test]

@@ -28,6 +28,7 @@ pub fn decode_instruction(program_counter: u16, program_code: &[u8]) -> OpCode {
             "C" => Argument::Register8Constant(RegisterLabel8::C),
             "H" => Argument::Register8Constant(RegisterLabel8::H),
             "(C)" => Argument::HighOffsetRegister(RegisterLabel8::C),
+            "(HL)" => Argument::RegisterIndirect(RegisterLabel16::HL),
             "d16" => {
                 Argument::LargeValue(le_to_u16(get_slice(&program_code, program_counter + 1, 2)))
             }
@@ -58,6 +59,7 @@ pub fn decode_instruction(program_counter: u16, program_code: &[u8]) -> OpCode {
         0x31 => opcode("LD16 SP d16"),
         0x32 => opcode("LD8 (HL-) A"),
         0x3E => opcode("LD8 A d8"),
+        0x77 => opcode("LD8 (HL) A"),
         0xAF => opcode("XOR A"),
         0xCB => {
             // 0xCB is prefix and the next byte shows the actual instruction
@@ -68,7 +70,7 @@ pub fn decode_instruction(program_counter: u16, program_code: &[u8]) -> OpCode {
             }
         }
         0xE2 => opcode("LD8 (C) A"),
-        _ => panic!("Unkown command {:#X}", code),
+        _ => panic!("Unknown command {:#X}", code),
     }
 }
 
@@ -123,6 +125,11 @@ impl OpCode {
                         Argument::RegisterIndirectDec(register) => {
                             cycles += 4;
                             memory[cpu.read_16_bits(register) as usize] = val;
+                        }
+                        Argument::RegisterIndirect(register) => {
+                            let address = cpu.read_16_bits(register);
+                            memory[address as usize] = val;
+                            cycles += 4;
                         }
                         Argument::Register8Constant(register) => {
                             cpu.write_8_bits(register, val);
@@ -246,6 +253,7 @@ impl OpCode {
             .map(|arg| match arg {
                 Argument::Register8Constant(_) => 0,
                 Argument::Register16Constant(_) => 0,
+                Argument::RegisterIndirect(_) => 0,
                 Argument::RegisterIndirectDec(_) => 0,
                 Argument::HighOffsetRegister(_) => 1,
                 Argument::JumpArgument(_) => 0,
@@ -285,6 +293,7 @@ enum Argument {
     Register8Constant(RegisterLabel8),
     Register16Constant(RegisterLabel16),
     RegisterIndirectDec(RegisterLabel16),
+    RegisterIndirect(RegisterLabel16),
     HighOffsetRegister(RegisterLabel8),
     LargeValue(u16),
     SmallValue(u8),
