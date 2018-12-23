@@ -21,6 +21,7 @@ pub fn decode_instruction(program_counter: u16, program_code: &[u8]) -> OpCode {
     // Needs to be closure to capture values from memory
     let arg_from_str = |arg: &str| -> Argument {
         match arg {
+            "DE" => Argument::Register16Constant(RegisterLabel16::DE),
             "HL" => Argument::Register16Constant(RegisterLabel16::HL),
             "SP" => Argument::Register16Constant(RegisterLabel16::StackPointer),
             "(HL-)" => Argument::RegisterIndirectDec(RegisterLabel16::HL),
@@ -28,7 +29,9 @@ pub fn decode_instruction(program_counter: u16, program_code: &[u8]) -> OpCode {
             "C" => Argument::Register8Constant(RegisterLabel8::C),
             "H" => Argument::Register8Constant(RegisterLabel8::H),
             "(C)" => Argument::HighOffsetRegister(RegisterLabel8::C),
+            "(DE)" => Argument::RegisterIndirect(RegisterLabel16::DE),
             "(HL)" => Argument::RegisterIndirect(RegisterLabel16::HL),
+            "(a8)" => Argument::HighOffsetConstant(program_code[program_counter as usize + 1]),
             "d16" => {
                 Argument::LargeValue(le_to_u16(get_slice(&program_code, program_counter + 1, 2)))
             }
@@ -54,6 +57,8 @@ pub fn decode_instruction(program_counter: u16, program_code: &[u8]) -> OpCode {
     match code {
         0x00 => opcode("NOP"),
         0x0E => opcode("LD8 C d8"),
+        0x11 => opcode("LD16 DE d16"),
+        0x1A => opcode("LD8 A (DE)"),
         0x20 => opcode("JR NZ r8"),
         0x21 => opcode("LD16 HL d16"),
         0x31 => opcode("LD16 SP d16"),
@@ -69,6 +74,7 @@ pub fn decode_instruction(program_counter: u16, program_code: &[u8]) -> OpCode {
                 _ => panic!("Unknown command 0xCB {:#X}", cb_instruction),
             }
         }
+        0xE0 => opcode("LD8 (a8) A"),
         0xE2 => opcode("LD8 (C) A"),
         _ => panic!("Unknown command {:#X}", code),
     }
@@ -117,8 +123,12 @@ impl OpCode {
                 {
                     let source = match self.args[1] {
                         Argument::Register8Constant(register) => cpu.read_8_bits(register),
+                        Argument::RegisterIndirect(register) => {
+                            cycles += 4;
+                            memory[cpu.read_16_bits(register) as usize]
+                        }
                         Argument::SmallValue(val) => val,
-                        _ => panic!("Command does not support argument {:?}", self.args[0]),
+                        _ => panic!("Command does not support argument {:?}", self.args[1]),
                     };
 
                     let mut dest = |val: u8| match self.args[0] {
@@ -130,6 +140,11 @@ impl OpCode {
                             let address = cpu.read_16_bits(register);
                             memory[address as usize] = val;
                             cycles += 4;
+                        }
+                        Argument::HighOffsetConstant(offset) => {
+                            let address = (0xFF00 as usize) + (offset as usize);
+                            memory[address] = val;
+                            cycles += 8;
                         }
                         Argument::Register8Constant(register) => {
                             cpu.write_8_bits(register, val);
@@ -255,7 +270,8 @@ impl OpCode {
                 Argument::Register16Constant(_) => 0,
                 Argument::RegisterIndirect(_) => 0,
                 Argument::RegisterIndirectDec(_) => 0,
-                Argument::HighOffsetRegister(_) => 1,
+                Argument::HighOffsetRegister(_) => 0,
+                Argument::HighOffsetConstant(_) => 1,
                 Argument::JumpArgument(_) => 0,
                 Argument::LargeValue(_) => 2,
                 Argument::SmallValue(_) => 1,
@@ -295,6 +311,7 @@ enum Argument {
     RegisterIndirectDec(RegisterLabel16),
     RegisterIndirect(RegisterLabel16),
     HighOffsetRegister(RegisterLabel8),
+    HighOffsetConstant(u8),
     LargeValue(u16),
     SmallValue(u8),
     JumpDistance(i8),

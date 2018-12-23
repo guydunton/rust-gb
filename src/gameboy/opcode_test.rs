@@ -72,24 +72,23 @@ mod opcode_tests {
 
     #[test]
     fn load16_instructions() {
-        {
-            // LD SP d16
-            let mut gb = testgb!([0x31, 0xFE, 0xFF]);
+        let ld_16_test = |byte_code, register| {
+            let mut gb = testgb!([byte_code, 0xFE, 0xFF]);
             let cycles = gb.decode_and_run();
 
-            assert_eq!(gb.read_16(RegisterLabel16::StackPointer), 0xFFFE);
+            assert_eq!(gb.read_16(register), 0xFFFE);
             assert_eq!(gb.read_16(RegisterLabel16::ProgramCounter), 0x0003);
             assert_eq!(cycles, 12);
-        }
-        {
-            // LD HL d16
-            let mut gb = testgb!([0x21, 0xFF, 0x9F]);
-            let cycles = gb.decode_and_run();
+        };
 
-            assert_eq!(gb.read_16(RegisterLabel16::HL), 0x9FFF);
-            assert_eq!(gb.read_16(RegisterLabel16::ProgramCounter), 0x0003);
-            assert_eq!(cycles, 12);
-        }
+        // LD SP d16
+        ld_16_test(0x31, RegisterLabel16::StackPointer);
+
+        // LD HL d16
+        ld_16_test(0x21, RegisterLabel16::HL);
+
+        // LD DE d16
+        ld_16_test(0x11, RegisterLabel16::DE);
     }
 
     #[test]
@@ -129,7 +128,7 @@ mod opcode_tests {
             let cycles = gb.decode_and_run();
 
             assert_eq!(gb.memory[0xFF01], 0x02);
-            assert_eq!(gb.read_16(RegisterLabel16::ProgramCounter), 0x02);
+            assert_eq!(gb.read_16(RegisterLabel16::ProgramCounter), 0x01);
             assert_eq!(cycles, 8);
         }
 
@@ -143,6 +142,28 @@ mod opcode_tests {
             assert_eq!(gb.memory[0x0005], 0x01);
             assert_eq!(gb.read_16(RegisterLabel16::ProgramCounter), 0x01);
             assert_eq!(cycles, 8);
+        }
+
+        {
+            // LDH (a8) A
+            let mut gb = testgb!([0xE0, 0x01]);
+            gb.write_8(RegisterLabel8::A, 0x02);
+
+            let cycles = gb.decode_and_run();
+            assert_eq!(gb.memory[0xFF01 as usize], 0x02);
+            assert_eq!(cycles, 12);
+            assert_eq!(gb.read_16(RegisterLabel16::ProgramCounter), 0x02);
+        }
+
+        {
+            // LD A (DE)
+            let mut gb = testgb!([0x1A, 0x01]);
+            gb.write_16(RegisterLabel16::DE, 0x01);
+
+            let cycles = gb.decode_and_run();
+            assert_eq!(cycles, 8);
+            assert_eq!(gb.read_8(RegisterLabel8::A), 0x01);
+            assert_eq!(gb.read_16(RegisterLabel16::ProgramCounter), 0x01);
         }
     }
 
