@@ -28,6 +28,21 @@ impl Registers {
     }
 }
 
+pub struct Instruction {
+    address: u16,
+    opcode: String,
+}
+
+impl Instruction {
+    pub fn get_address(&self) -> u16 {
+        self.address
+    }
+
+    pub fn get_opcode(&self) -> String {
+        self.opcode.clone()
+    }
+}
+
 pub struct Gameboy {
     cpu: CPU,
     memory: Vec<u8>,
@@ -78,7 +93,7 @@ impl Gameboy {
 
         loop {
             let counter = self.cpu.read_16_bits(RegisterLabel16::ProgramCounter);
-            let opcode = opcode_library::decode_instruction(counter, &self.memory);
+            let opcode = opcode_library::decode_instruction(counter, &self.memory).unwrap();
 
             let cycles_used = opcode.run::<CPU>(&mut self.cpu, &mut self.memory);
 
@@ -92,7 +107,7 @@ impl Gameboy {
     pub fn step_once(&mut self) {
         use self::register::RegisterLabel16;
         let counter = self.cpu.read_16_bits(RegisterLabel16::ProgramCounter);
-        let opcode = opcode_library::decode_instruction(counter, &self.memory);
+        let opcode = opcode_library::decode_instruction(counter, &self.memory).unwrap();
 
         let _ = opcode.run::<CPU>(&mut self.cpu, &mut self.memory);
     }
@@ -101,7 +116,9 @@ impl Gameboy {
         use self::register::RegisterLabel16;
         let counter = self.cpu.read_16_bits(RegisterLabel16::ProgramCounter);
         let opcode = opcode_library::decode_instruction(counter, &self.memory);
-        opcode.to_string()
+        opcode
+            .map(|op| op.to_string())
+            .unwrap_or("Unknown opcode".to_owned())
     }
 
     pub fn print_flags(&self) -> Vec<String> {
@@ -164,5 +181,12 @@ impl Gameboy {
             );
         });
         Registers { registers }
+    }
+
+    /// Print the first x instructions until can't decode
+    pub fn print_instructions(&self) -> Vec<Instruction> {
+        let program_counter = self.cpu.read_16_bits(RegisterLabel16::ProgramCounter);
+
+        vec![]
     }
 }
