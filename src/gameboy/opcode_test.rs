@@ -28,7 +28,8 @@ mod opcode_tests {
             decode_instruction(
                 self.cpu.read_16_bits(RegisterLabel16::ProgramCounter),
                 &self.memory,
-            ).unwrap()
+            )
+            .unwrap()
         }
 
         fn run(&mut self, opcode: &OpCode) -> u32 {
@@ -252,10 +253,10 @@ mod opcode_tests {
     }
 
     test_suite! {
-        test_case!("increment tests") {
+        test_case("increment tests") {
             let mut gb = testgb!([0x0C]); // INC C
 
-            section!("increment increases the value in the registry") {
+            section("increment increases the value in the registry") {
                 let cycles = gb.decode_and_run();
 
                 assert_eq!(gb.read_8(RegisterLabel8::C), 0x01);
@@ -264,14 +265,14 @@ mod opcode_tests {
                 assert_eq!(cycles, 4);
             }
 
-            section!("increment can cause a half overflow") {
+            section("increment can cause a half overflow") {
                 gb.write_8(RegisterLabel8::C, 0b1111);
                 gb.decode_and_run();
 
                 assert_eq!(gb.get_flag(Flags::H), true);
             }
 
-            section!("increment from max causes overflow") {
+            section("increment from max causes overflow") {
                 gb.write_8(RegisterLabel8::C, 0xFF);
                 gb.decode_and_run();
 
@@ -279,7 +280,7 @@ mod opcode_tests {
                 assert_eq!(gb.get_flag(Flags::Z), true);
             }
 
-            section!("increment doesnt reset flags set flags") {
+            section("increment doesnt reset flags set flags") {
                 // Increment doesn't reset the Z and H if they are already set
                 gb.set_flag(Flags::Z, true);
                 gb.set_flag(Flags::H, true);
@@ -291,7 +292,7 @@ mod opcode_tests {
                 assert_eq!(gb.get_flag(Flags::H), true);
             }
 
-            section!("N flag is set to 0") {
+            section("N flag is set to 0") {
                 gb.set_flag(Flags::N, true);
                 gb.decode_and_run();
 

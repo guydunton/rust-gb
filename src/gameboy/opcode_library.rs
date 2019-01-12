@@ -2,6 +2,7 @@ use super::endian::*;
 use super::flags_register::*;
 use super::read_write_register::ReadWriteRegister;
 use super::register::{RegisterLabel16, RegisterLabel8};
+use std::fmt;
 
 fn catagory_from_str(cat: &str) -> Catagory {
     match cat {
@@ -285,23 +286,11 @@ impl OpCode {
         cycles
     }
 
-    pub fn to_string(&self) -> String {
-        let catagory = format!("{:?}", self.catagory);
-
-        let args = self
-            .args
-            .iter()
-            .map(|arg| format!("{:?}", arg))
-            .collect::<Vec<String>>()
-            .join(" ");
-        format!("{} {}", catagory, args)
-    }
-
     fn new(catagory: Catagory, args: Vec<Argument>) -> OpCode {
         OpCode { catagory, args }
     }
 
-    fn size(&self) -> u16 {
+    pub fn size(&self) -> u16 {
         self.args
             .iter()
             .map(|arg| match arg {
@@ -319,6 +308,37 @@ impl OpCode {
             })
             .sum::<u16>()
             + 1
+    }
+}
+
+impl fmt::Display for OpCode {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let catagory = format!("{:?}", self.catagory);
+
+        fn unwrap_arg(arg: &Argument) -> String {
+            match arg {
+                Argument::Register8Constant(reg) => format!("{:?}", reg),
+                Argument::Register16Constant(reg) => format!("{:?}", reg),
+                Argument::RegisterIndirectDec(reg) => format!("{:?}", reg),
+                Argument::RegisterIndirect(reg) => format!("{:?}", reg),
+                Argument::HighOffsetRegister(reg) => format!("{:?}", reg),
+                Argument::HighOffsetConstant(val) => format!("0xFF{}", val),
+                Argument::LargeValue(val) => format!("{:#X}", val),
+                Argument::SmallValue(val) => format!("{:#X}", val),
+                Argument::JumpDistance(val) => format!("{}", val),
+                Argument::Bit(val) => format!("{}", val),
+                Argument::JumpArgument(val) => format!("{:?}", val),
+            }
+        }
+
+        let args = self
+            .args
+            .iter()
+            .map(|arg| format!("{}", unwrap_arg(arg)))
+            .collect::<Vec<String>>()
+            .join(" ");
+
+        write!(f, "{} {}", catagory, args)
     }
 }
 

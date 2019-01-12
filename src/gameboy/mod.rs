@@ -117,7 +117,7 @@ impl Gameboy {
         let counter = self.cpu.read_16_bits(RegisterLabel16::ProgramCounter);
         let opcode = opcode_library::decode_instruction(counter, &self.memory);
         opcode
-            .map(|op| op.to_string())
+            .map(|op| format!("{}", op))
             .unwrap_or("Unknown opcode".to_owned())
     }
 
@@ -185,8 +185,30 @@ impl Gameboy {
 
     /// Print the first x instructions until can't decode
     pub fn print_instructions(&self) -> Vec<Instruction> {
-        let program_counter = self.cpu.read_16_bits(RegisterLabel16::ProgramCounter);
+        let mut counter = 0u16;
 
-        vec![]
+        let mut instructions = Vec::new();
+
+        loop {
+            let opcode = opcode_library::decode_instruction(counter, &self.memory);
+            
+            let op_str = opcode
+                .as_ref()
+                .map(|op| format!("{}", op))
+                .unwrap_or(String::from("unknown instruction"));
+
+            instructions.push(Instruction {
+                address: counter,
+                opcode: op_str,
+            });
+
+            if opcode.is_err() {
+                break;
+            } else {
+                counter += opcode.unwrap().size();
+            }
+        }
+
+        instructions
     }
 }

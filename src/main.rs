@@ -46,6 +46,7 @@ fn print_help() {
     println!("r => print registers");
     println!("o => print current opcode");
     println!("f => print flags");
+    println!("p => print opcodes");
     println!("h => help");
 }
 
@@ -76,6 +77,7 @@ impl App {
                     "o" => println!("{}", self.gb.print_opcode()),
                     "f" => println!("{:?}", self.gb.print_flags()),
                     "h" => print_help(),
+                    "p" => self.print_opcodes(),
                     _ => print_help(),
                 }
             }
@@ -114,6 +116,23 @@ impl App {
                 registers.get_register_val(&register.to_string())
             );
         }
+    }
+
+    fn print_opcodes(&self) {
+        let instructions = self.gb.print_instructions();
+
+        println!("-------------------------------------------");
+        println!("{:<width$} : {}", "Address", "Opcode", width = 10);
+        println!("-------------------------------------------");
+        for instruction in instructions {
+            println!(
+                "{:<#width$X} : {}",
+                instruction.get_address(),
+                instruction.get_opcode(),
+                width = 10
+            );
+        }
+        println!("-------------------------------------------");
     }
 }
 
