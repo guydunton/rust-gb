@@ -4,8 +4,12 @@ use piston::{event_loop::*, input::*, window::WindowSettings};
 use rand::prelude::*;
 use std::env;
 
+mod debug_widgets;
 mod gameboy;
+mod layout;
+use crate::debug_widgets::{OpCodeWidget, RegistersWidget};
 use crate::gameboy::{screen::*, Gameboy};
+use crate::layout::Layout;
 
 use std::io;
 
@@ -80,6 +84,15 @@ impl App {
                     "p" => self.print_opcodes(),
                     _ => print_help(),
                 }
+            }
+
+            {
+                let opcodes = OpCodeWidget::new(&self.gb);
+                let registers = RegistersWidget::new(&self.gb);
+                let mut layout = Layout::new();
+                layout.add_widget(Box::new(opcodes), 0);
+                layout.add_widget(Box::new(registers), 1);
+                layout.draw();
             }
         }
 
