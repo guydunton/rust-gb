@@ -26,6 +26,7 @@ pub fn decode_instruction(program_counter: u16, program_code: &[u8]) -> Result<O
             "SP" => Ok(Argument::Register16Constant(RegisterLabel16::StackPointer)),
             "(HL-)" => Ok(Argument::RegisterIndirectDec(RegisterLabel16::HL)),
             "A" => Ok(Argument::Register8Constant(RegisterLabel8::A)),
+            "B" => Ok(Argument::Register8Constant(RegisterLabel8::B)),
             "C" => Ok(Argument::Register8Constant(RegisterLabel8::C)),
             "H" => Ok(Argument::Register8Constant(RegisterLabel8::H)),
             "(C)" => Ok(Argument::HighOffsetRegister(RegisterLabel8::C)),
@@ -66,6 +67,7 @@ pub fn decode_instruction(program_counter: u16, program_code: &[u8]) -> Result<O
 
     match code {
         0x00 => opcode("NOP"),
+        0x06 => opcode("LD8 B d8"),
         0x0C => Ok(OpCode::new(
             Catagory::INC,
             vec![Argument::Register8Constant(RegisterLabel8::C)],
@@ -78,6 +80,7 @@ pub fn decode_instruction(program_counter: u16, program_code: &[u8]) -> Result<O
         0x31 => opcode("LD16 SP d16"),
         0x32 => opcode("LD8 (HL-) A"),
         0x3E => opcode("LD8 A d8"),
+        0x4F => opcode("LD8 C A"),
         0x77 => opcode("LD8 (HL) A"),
         0xAF => opcode("XOR A"),
         0xCB => {
