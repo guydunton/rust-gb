@@ -299,6 +299,45 @@ mod opcode_tests {
                 assert_eq!(gb.get_flag(Flags::N), false);
             }
         }
+
+        test_case("Call instruction tests") {
+            // call 0x0004        0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06
+            let mut gb = testgb!([0xCD, 0x04, 0x00, 0x03, 0x04, 0x05, 0x06]);
+            gb.write_16(RegisterLabel16::StackPointer, 0x07);
+
+            /*
+            0x00 : instruction
+            0x01 : arg part 2
+            0x02 : arg part 1
+            0x03 : return point and location added to the stack
+            0x04 : point where we call to
+            0x05 : Part 2 of the stack
+            0x06 : part 1 of the stack
+            */
+
+            section("Call moves the program counter to the call location") {
+                let _ = gb.decode_and_run();
+                assert_eq!(gb.read_16(RegisterLabel16::ProgramCounter), 0x04);
+            }
+
+            section("Call sets the stack value correctly") {
+                // We push 0x0003 onto the stack
+                // decrements stack and pushed 0x00
+                // decrements again and pushed 0x03
+                let _ = gb.decode_and_run();
+                assert_eq!(gb.memory[0x05], 0x03);
+                assert_eq!(gb.memory[0x06], 0x00);
+
+                assert_eq!(gb.read_16(RegisterLabel16::StackPointer), 0x05);
+            }
+
+            section("Call instruction is 3 bytes and 24 cycles") {
+                let opcode = gb.decode();
+                let cycles = gb.run(&opcode);
+                assert_eq!(cycles, 24);
+                assert_eq!(opcode.size(), 3);
+            }
+        }
     }
 
 }

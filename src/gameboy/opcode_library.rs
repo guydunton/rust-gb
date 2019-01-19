@@ -88,6 +88,13 @@ pub fn decode_instruction(program_counter: u16, program_code: &[u8]) -> Result<O
                 _ => Err(format!("Unknown command 0xCB {:#X}", cb_instruction)),
             }
         }
+        0xCD => Ok(OpCode::new(
+            Catagory::CALL,
+            vec![Argument::Label(u16::from_le_bytes([
+                program_code[(program_counter + 1) as usize],
+                program_code[(program_counter + 2) as usize],
+            ]))],
+        )),
         0xE0 => opcode("LD8 (a8) A"),
         0xE2 => opcode("LD8 (C) A"),
         _ => Err(format!(
@@ -108,7 +115,7 @@ impl OpCode {
         cpu: &mut dyn ReadWriteRegister,
         memory: &mut Vec<u8>,
     ) -> u32 {
-        // Update the program counter if not a jump
+        // Update the program counter
         let program_counter = cpu.read_16_bits(RegisterLabel16::ProgramCounter);
         cpu.write_16_bits(
             RegisterLabel16::ProgramCounter,
@@ -258,6 +265,25 @@ impl OpCode {
                     cycles += 4;
                 }
             }
+            Catagory::CALL => {
+                if let Argument::Label(address) = self.args[0] {
+                    // Store the contents of the program counter on the stack
+                    let pc = cpu.read_16_bits(RegisterLabel16::ProgramCounter);
+                    let return_address = pc.to_be_bytes();
+
+                    let stack = cpu.read_16_bits(RegisterLabel16::StackPointer);
+                    memory[(stack - 1) as usize] = return_address[0];
+                    memory[(stack - 2) as usize] = return_address[1];
+
+                    // Update the stack
+                    cpu.write_16_bits(RegisterLabel16::StackPointer, stack - 2);
+
+                    // Move the program counter to the value of the argument
+                    cpu.write_16_bits(RegisterLabel16::ProgramCounter, address);
+
+                    cycles += 24;
+                }
+            }
             Catagory::INC => {
                 if let Argument::Register8Constant(reg) = self.args[0] {
                     let reg_value = cpu.read_8_bits(reg);
@@ -303,6 +329,7 @@ impl OpCode {
                 Argument::SmallValue(_) => 1,
                 Argument::JumpDistance(_) => 1,
                 Argument::Bit(_) => 1,
+                Argument::Label(_) => 2,
             })
             .sum::<u16>()
             + 1
@@ -326,6 +353,7 @@ impl fmt::Display for OpCode {
                 Argument::JumpDistance(val) => format!("{}", val),
                 Argument::Bit(val) => format!("{}", val),
                 Argument::JumpArgument(val) => format!("{:?}", val),
+                Argument::Label(val) => format!("{:#X}", val),
             }
         }
 
@@ -349,6 +377,7 @@ enum Catagory {
     BIT,
     JR,
     INC,
+    CALL,
 }
 
 #[derive(Copy, Clone, Debug)]
@@ -369,4 +398,5 @@ enum Argument {
     JumpDistance(i8),
     Bit(u8),
     JumpArgument(JumpCondition),
+    Label(u16),
 }
