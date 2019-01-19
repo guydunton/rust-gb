@@ -64,6 +64,9 @@ impl App {
 
     fn update(&mut self, args: UpdateArgs, rng: &mut ThreadRng) {
         if self.is_debug {
+            // Clear the screen
+            print!("{}[2J", 27 as char);
+
             {
                 let opcodes = OpCodeWidget::new(&self.gb);
                 let registers = RegistersWidget::new(&self.gb);
