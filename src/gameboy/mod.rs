@@ -112,15 +112,6 @@ impl Gameboy {
         let _ = opcode.run::<CPU>(&mut self.cpu, &mut self.memory);
     }
 
-    pub fn print_opcode(&self) -> String {
-        use self::register::RegisterLabel16;
-        let counter = self.cpu.read_16_bits(RegisterLabel16::ProgramCounter);
-        let opcode = opcode_library::decode_instruction(counter, &self.memory);
-        opcode
-            .map(|op| format!("{}", op))
-            .unwrap_or("Unknown opcode".to_owned())
-    }
-
     pub fn print_flags(&self) -> Vec<String> {
         use self::flags_register::*;
         let flags = vec![Flags::Z, Flags::N, Flags::H, Flags::C];
@@ -191,7 +182,7 @@ impl Gameboy {
 
         loop {
             let opcode = opcode_library::decode_instruction(counter, &self.memory);
-            
+
             let op_str = opcode
                 .as_ref()
                 .map(|op| format!("{}", op))
@@ -210,5 +201,9 @@ impl Gameboy {
         }
 
         instructions
+    }
+
+    pub fn get_pc(&self) -> u16 {
+        self.cpu.read_16_bits(RegisterLabel16::ProgramCounter)
     }
 }

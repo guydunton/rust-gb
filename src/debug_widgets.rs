@@ -17,14 +17,31 @@ impl<'a> Print for OpCodeWidget<'a> {
 
         let mut output = Vec::new();
 
+        let pc_width = 3;
+
         output.push(format!("-------------------------------------------"));
-        output.push(format!("{:<width$} : {}", "Address", "Opcode", width = 10));
+        output.push(format!(
+            "{:<pc_width$} {:<width$} : {}",
+            "",
+            "Address",
+            "Opcode",
+            pc_width = pc_width,
+            width = 10
+        ));
         output.push(format!("-------------------------------------------"));
         for instruction in instructions {
+            let pc_counter = if instruction.get_address() == self.gb.get_pc() {
+                "->"
+            } else {
+                "  "
+            };
+
             output.push(format!(
-                "{:<#width$X} : {}",
+                "{:<#pc_width$} {:<#width$X} : {}",
+                pc_counter,
                 instruction.get_address(),
                 instruction.get_opcode(),
+                pc_width = pc_width,
                 width = 10
             ));
         }
@@ -52,13 +69,45 @@ impl<'a> Print for RegistersWidget<'a> {
         ];
 
         let mut output = Vec::new();
+
+        output.push(String::from("----------------"));
+        output.push(format!("{:<#width$} : {}", "Register", "Value", width = 8));
+        output.push(String::from("----------------"));
+
         for register in register_order {
             output.push(format!(
-                "{}: {}",
+                "{:<#width$} : {}",
                 register,
-                registers.get_register_val(&register.to_string())
+                registers.get_register_val(&register.to_string()),
+                width = 8
             ));
         }
+        output
+    }
+}
+
+pub struct FlagsWidget<'a> {
+    gb: &'a Gameboy,
+}
+
+impl<'a> FlagsWidget<'a> {
+    pub fn new(gb: &'a Gameboy) -> FlagsWidget {
+        FlagsWidget { gb }
+    }
+}
+
+impl<'a> Print for FlagsWidget<'a> {
+    fn print(&self) -> Vec<String> {
+        let mut output = Vec::new();
+
+        output.push(String::from("----------------"));
+        output.push(format!("{:<#width$} : {}", "Flag", "Set", width = 5));
+        output.push(String::from("----------------"));
+
+        for flag in self.gb.print_flags() {
+            output.push(flag);
+        }
+
         output
     }
 }

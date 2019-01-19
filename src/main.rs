@@ -7,7 +7,7 @@ use std::env;
 mod debug_widgets;
 mod gameboy;
 mod layout;
-use crate::debug_widgets::{OpCodeWidget, RegistersWidget};
+use crate::debug_widgets::{FlagsWidget, OpCodeWidget, RegistersWidget};
 use crate::gameboy::{screen::*, Gameboy};
 use crate::layout::Layout;
 
@@ -47,10 +47,6 @@ pub struct App {
 
 fn print_help() {
     println!("c => continue");
-    println!("r => print registers");
-    println!("o => print current opcode");
-    println!("f => print flags");
-    println!("p => print opcodes");
     println!("h => help");
 }
 
@@ -68,6 +64,17 @@ impl App {
 
     fn update(&mut self, args: UpdateArgs, rng: &mut ThreadRng) {
         if self.is_debug {
+            {
+                let opcodes = OpCodeWidget::new(&self.gb);
+                let registers = RegistersWidget::new(&self.gb);
+                let flags = FlagsWidget::new(&self.gb);
+                let mut layout = Layout::new();
+                layout.add_widget(Box::new(opcodes), 0);
+                layout.add_widget(Box::new(registers), 1);
+                layout.add_widget(Box::new(flags), 1);
+                layout.draw();
+            }
+
             loop {
                 println!("Continue? (h for help)");
                 let mut text = String::new();
@@ -77,22 +84,9 @@ impl App {
                 let trimmed = text.trim();
                 match trimmed.as_ref() {
                     "c" => break,
-                    "r" => self.print_registers(),
-                    "o" => println!("{}", self.gb.print_opcode()),
-                    "f" => println!("{:?}", self.gb.print_flags()),
                     "h" => print_help(),
-                    "p" => self.print_opcodes(),
                     _ => print_help(),
                 }
-            }
-
-            {
-                let opcodes = OpCodeWidget::new(&self.gb);
-                let registers = RegistersWidget::new(&self.gb);
-                let mut layout = Layout::new();
-                layout.add_widget(Box::new(opcodes), 0);
-                layout.add_widget(Box::new(registers), 1);
-                layout.draw();
             }
         }
 
@@ -115,37 +109,6 @@ impl App {
         }
 
         self.screen.push_pixels(&pixels);
-    }
-
-    fn print_registers(&self) {
-        let registers = self.gb.get_registers();
-        let register_order = vec![
-            "A", "F", "AF", "B", "C", "BC", "D", "E", "DE", "H", "L", "HL", "PC", "SP",
-        ];
-        for register in register_order {
-            println!(
-                "{}: {}",
-                register,
-                registers.get_register_val(&register.to_string())
-            );
-        }
-    }
-
-    fn print_opcodes(&self) {
-        let instructions = self.gb.print_instructions();
-
-        println!("-------------------------------------------");
-        println!("{:<width$} : {}", "Address", "Opcode", width = 10);
-        println!("-------------------------------------------");
-        for instruction in instructions {
-            println!(
-                "{:<#width$X} : {}",
-                instruction.get_address(),
-                instruction.get_opcode(),
-                width = 10
-            );
-        }
-        println!("-------------------------------------------");
     }
 }
 
