@@ -11,6 +11,8 @@ fn catagory_from_str(cat: &str) -> Catagory {
         "XOR" => Catagory::XOR,
         "BIT" => Catagory::BIT,
         "JR" => Catagory::JR,
+        "INC" => Catagory::INC,
+        "CALL" => Catagory::CALL,
         _ => Catagory::NOP,
     }
 }
@@ -35,6 +37,10 @@ pub fn decode_instruction(program_counter: u16, program_code: &[u8]) -> Result<O
             "(a8)" => Ok(Argument::HighOffsetConstant(
                 program_code[program_counter as usize + 1],
             )),
+            "a16" => Ok(Argument::Label(u16::from_le_bytes([
+                program_code[(program_counter + 1) as usize],
+                program_code[(program_counter + 2) as usize],
+            ]))),
             "d16" => Ok(Argument::LargeValue(u16::from_le_bytes([
                 program_code[(program_counter + 1) as usize],
                 program_code[(program_counter + 2) as usize],
@@ -68,10 +74,7 @@ pub fn decode_instruction(program_counter: u16, program_code: &[u8]) -> Result<O
     match code {
         0x00 => opcode("NOP"),
         0x06 => opcode("LD8 B d8"),
-        0x0C => Ok(OpCode::new(
-            Catagory::INC,
-            vec![Argument::Register8Constant(RegisterLabel8::C)],
-        )),
+        0x0C => opcode("INC C"),
         0x0E => opcode("LD8 C d8"),
         0x11 => opcode("LD16 DE d16"),
         0x1A => opcode("LD8 A (DE)"),
@@ -91,13 +94,7 @@ pub fn decode_instruction(program_counter: u16, program_code: &[u8]) -> Result<O
                 _ => Err(format!("Unknown command 0xCB {:#X}", cb_instruction)),
             }
         }
-        0xCD => Ok(OpCode::new(
-            Catagory::CALL,
-            vec![Argument::Label(u16::from_le_bytes([
-                program_code[(program_counter + 1) as usize],
-                program_code[(program_counter + 2) as usize],
-            ]))],
-        )),
+        0xCD => opcode("CALL a16"),
         0xE0 => opcode("LD8 (a8) A"),
         0xE2 => opcode("LD8 (C) A"),
         _ => Err(format!(
