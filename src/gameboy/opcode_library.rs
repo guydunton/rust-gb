@@ -1,4 +1,3 @@
-use super::endian::*;
 use super::flags_register::*;
 use super::read_write_register::ReadWriteRegister;
 use super::register::{RegisterLabel16, RegisterLabel8};
@@ -35,11 +34,10 @@ pub fn decode_instruction(program_counter: u16, program_code: &[u8]) -> Result<O
             "(a8)" => Ok(Argument::HighOffsetConstant(
                 program_code[program_counter as usize + 1],
             )),
-            "d16" => Ok(Argument::LargeValue(le_to_u16(get_slice(
-                &program_code,
-                program_counter + 1,
-                2,
-            )))),
+            "d16" => Ok(Argument::LargeValue(u16::from_le_bytes([
+                program_code[(program_counter + 1) as usize],
+                program_code[(program_counter + 2) as usize],
+            ]))),
             "d8" => Ok(Argument::SmallValue(
                 program_code[(program_counter + 1) as usize],
             )),
@@ -340,12 +338,6 @@ impl fmt::Display for OpCode {
 
         write!(f, "{} {}", catagory, args)
     }
-}
-
-fn get_slice(arr: &[u8], index: u16, size: u16) -> &[u8] {
-    let start = index as usize;
-    let end = (index + size) as usize;
-    &arr[start..end]
 }
 
 #[derive(Debug)]

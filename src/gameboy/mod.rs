@@ -1,5 +1,4 @@
 mod cpu;
-mod endian;
 mod flags_register;
 mod read_write_register;
 mod register;

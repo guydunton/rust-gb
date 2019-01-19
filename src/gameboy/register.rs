@@ -1,5 +1,3 @@
-use super::endian::*;
-
 #[derive(PartialEq, Copy, Clone, Debug)]
 pub enum RegisterLabel8 {
     A,
@@ -84,7 +82,7 @@ impl RegisterPair {
 
     pub fn perform_16_bit_read(&self) -> u16 {
         // read all the data into a u16
-        be_to_u16(&self.data_pair)
+        u16::from_be_bytes(self.data_pair.clone())
     }
 
     pub fn perform_8_bit_read(&self, label: RegisterLabel8) -> Option<u8> {
@@ -95,7 +93,7 @@ impl RegisterPair {
     }
 
     pub fn perform_16_bit_write(&mut self, val: u16) {
-        self.data_pair = u16_to_big_endian(val);
+        self.data_pair = val.to_be_bytes();
     }
 
     pub fn perform_8_bit_write(&mut self, label: RegisterLabel8, val: u8) -> Option<()> {
