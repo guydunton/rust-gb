@@ -86,6 +86,10 @@ pub fn decode_instruction(program_counter: u16, program_code: &[u8]) -> Result<O
         0x4F => opcode("LD8 C A"),
         0x77 => opcode("LD8 (HL) A"),
         0xAF => opcode("XOR A"),
+        0xC5 => Ok(OpCode::new(
+            Catagory::PUSH,
+            vec![Argument::Register16Constant(RegisterLabel16::BC)],
+        )),
         0xCB => {
             // 0xCB is prefix and the next byte shows the actual instruction
             let cb_instruction = program_code[program_counter as usize + 1];
@@ -284,6 +288,20 @@ impl OpCode {
                     cycles += 24;
                 }
             }
+            Catagory::PUSH => {
+                if let Argument::Register16Constant(reg) = self.args[0] {
+                    let value = cpu.read_16_bits(reg);
+                    let bytes = value.to_be_bytes();
+
+                    let sp = cpu.read_16_bits(RegisterLabel16::StackPointer);
+                    memory[(sp - 1) as usize] = bytes[0];
+                    memory[(sp - 2) as usize] = bytes[1];
+
+                    cpu.write_16_bits(RegisterLabel16::StackPointer, sp - 2);
+
+                    cycles += 16;
+                }
+            }
             Catagory::INC => {
                 if let Argument::Register8Constant(reg) = self.args[0] {
                     let reg_value = cpu.read_8_bits(reg);
@@ -378,6 +396,7 @@ enum Catagory {
     JR,
     INC,
     CALL,
+    PUSH,
 }
 
 #[derive(Copy, Clone, Debug)]

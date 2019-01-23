@@ -338,6 +338,26 @@ mod opcode_tests {
                 assert_eq!(opcode.size(), 3);
             }
         }
+
+        test_case("Push instruction tests") {
+
+            let mut gb = testgb!([0xC5, 0x00, 0x00]);
+            gb.write_16(RegisterLabel16::BC, 0x1234);
+            gb.write_16(RegisterLabel16::StackPointer, 0x03);
+
+            section("Push moves 2 bytes onto the stack") {
+                let cycles = gb.decode_and_run();
+
+                assert_eq!(gb.memory[1], 0x34);
+                assert_eq!(gb.memory[2], 0x12);
+
+                assert_eq!(gb.read_16(RegisterLabel16::StackPointer), 0x01);
+
+                // The cycles and the size are correct
+                assert_eq!(cycles, 16);
+                assert_eq!(gb.read_16(RegisterLabel16::ProgramCounter), 0x01);
+            }
+        }
     }
 
 }
