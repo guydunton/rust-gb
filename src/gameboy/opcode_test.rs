@@ -358,6 +358,43 @@ mod opcode_tests {
                 assert_eq!(gb.read_16(RegisterLabel16::ProgramCounter), 0x01);
             }
         }
+
+        test_case("Rotate left shifts along with the carry flag") {
+            let mut gb = testgb!([0xCB, 0x11]);
+            // C  C register
+            // 1  0101_0101
+            // After
+            // 0  1010_1011
+            gb.set_flag(Flags::C, true);
+            gb.write_8(RegisterLabel8::C, 0b0101_0101);
+
+            let cycles = gb.decode_and_run();
+
+            assert_eq!(gb.read_8(RegisterLabel8::C), 0b1010_1011);
+            assert_eq!(gb.get_flag(Flags::C), false);
+
+            assert_eq!(gb.get_flag(Flags::N), false);
+            assert_eq!(gb.get_flag(Flags::H), false);
+            assert_eq!(gb.get_flag(Flags::Z), false);
+
+            assert_eq!(cycles, 8);
+            assert_eq!(gb.read_16(RegisterLabel16::ProgramCounter), 0x2);
+
+            // Run again to test the carry flag
+            // Before:
+            // 0  1010_1011
+            // 1  0101_0110
+            gb.write_16(RegisterLabel16::ProgramCounter, 0x0);
+            let _ = gb.decode_and_run();
+            assert_eq!(gb.get_flag(Flags::C), true);
+        }
+
+        test_case("Rotate left sets the zero flag if the result is 0") {
+            let mut gb = testgb!([0xCB, 0x11]);
+
+            let _ = gb.decode_and_run();
+            assert_eq!(gb.get_flag(Flags::Z), true);
+        }
     }
 
 }

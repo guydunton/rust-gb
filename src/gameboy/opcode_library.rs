@@ -94,6 +94,10 @@ pub fn decode_instruction(program_counter: u16, program_code: &[u8]) -> Result<O
             // 0xCB is prefix and the next byte shows the actual instruction
             let cb_instruction = program_code[program_counter as usize + 1];
             match cb_instruction {
+                0x11 => Ok(OpCode::new(
+                    Catagory::RL,
+                    vec![Argument::Register8Constant(RegisterLabel8::C)],
+                )),
                 0x7C => opcode("BIT 7 H"),
                 _ => Err(format!("Unknown command 0xCB {:#X}", cb_instruction)),
             }
@@ -323,6 +327,31 @@ impl OpCode {
                     cycles += 4;
                 }
             }
+            Catagory::RL => {
+                if let Argument::Register8Constant(reg) = self.args[0] {
+                    let mask = 0b1000_0000;
+                    let reg_contents = cpu.read_8_bits(reg);
+                    let eighth_bit = (reg_contents & mask) >> 7;
+
+                    let carry_flag = read_flag::<T>(cpu, Flags::C);
+
+                    // Create the new register value
+                    let new_register = (reg_contents << 1) | (carry_flag as u8);
+
+                    // Set the carry flag
+                    write_flag::<T>(cpu, Flags::C, eighth_bit == 1);
+
+                    // Write away the flag
+                    cpu.write_8_bits(reg, new_register);
+
+                    // Check the result in the C register for 0 to set the zero flag
+                    if new_register == 0 {
+                        write_flag::<T>(cpu, Flags::Z, true);
+                    }
+
+                    cycles += 8;
+                }
+            }
         };
 
         cycles
@@ -333,6 +362,11 @@ impl OpCode {
     }
 
     pub fn size(&self) -> u16 {
+        let cb_size = match self.catagory {
+            Catagory::BIT => 1,
+            Catagory::RL => 1,
+            _ => 0,
+        };
         self.args
             .iter()
             .map(|arg| match arg {
@@ -346,11 +380,12 @@ impl OpCode {
                 Argument::LargeValue(_) => 2,
                 Argument::SmallValue(_) => 1,
                 Argument::JumpDistance(_) => 1,
-                Argument::Bit(_) => 1,
+                Argument::Bit(_) => 0,
                 Argument::Label(_) => 2,
             })
             .sum::<u16>()
             + 1
+            + cb_size
     }
 }
 
@@ -397,6 +432,7 @@ enum Catagory {
     INC,
     CALL,
     PUSH,
+    RL,
 }
 
 #[derive(Copy, Clone, Debug)]
