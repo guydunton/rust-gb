@@ -3,7 +3,7 @@ mod opcode_tests {
 
     use crate::gameboy::cpu::CPU;
     use crate::gameboy::flags_register::*;
-    use crate::gameboy::opcode_library::{decode_instruction, OpCode};
+    use crate::gameboy::opcodes::{decode_instruction, OpCode};
     use crate::gameboy::read_write_register::ReadWriteRegister;
     use crate::gameboy::register::{RegisterLabel16, RegisterLabel8};
     use rust_catch::test_suite;

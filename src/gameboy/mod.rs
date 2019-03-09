@@ -3,7 +3,7 @@ mod flags_register;
 mod read_write_register;
 mod register;
 
-pub mod opcode_library;
+pub mod opcodes;
 pub mod screen;
 
 mod opcode_test;
@@ -92,7 +92,7 @@ impl Gameboy {
 
         loop {
             let counter = self.cpu.read_16_bits(RegisterLabel16::ProgramCounter);
-            let opcode = opcode_library::decode_instruction(counter, &self.memory).unwrap();
+            let opcode = opcodes::decode_instruction(counter, &self.memory).unwrap();
 
             let cycles_used = opcode.run::<CPU>(&mut self.cpu, &mut self.memory);
 
@@ -106,7 +106,7 @@ impl Gameboy {
     pub fn step_once(&mut self) {
         use self::register::RegisterLabel16;
         let counter = self.cpu.read_16_bits(RegisterLabel16::ProgramCounter);
-        let opcode = opcode_library::decode_instruction(counter, &self.memory).unwrap();
+        let opcode = opcodes::decode_instruction(counter, &self.memory).unwrap();
 
         let _ = opcode.run::<CPU>(&mut self.cpu, &mut self.memory);
     }
@@ -180,7 +180,7 @@ impl Gameboy {
         let mut instructions = Vec::new();
 
         loop {
-            let opcode = opcode_library::decode_instruction(counter, &self.memory);
+            let opcode = opcodes::decode_instruction(counter, &self.memory);
 
             let op_str = opcode
                 .as_ref()
