@@ -1,3 +1,4 @@
+mod argument;
 mod bit;
 mod call;
 mod inc;
@@ -8,6 +9,7 @@ mod push;
 mod rotate_left;
 mod xor;
 
+use self::argument::{Argument, JumpCondition};
 use super::flags_register::*;
 use super::read_write_register::ReadWriteRegister;
 use super::register::{RegisterLabel16, RegisterLabel8};
@@ -18,39 +20,34 @@ pub fn decode_instruction(program_counter: u16, program_code: &[u8]) -> Result<O
 
     // Needs to be closure to capture values from memory
     let arg_from_str = |arg: &str| -> Result<Argument, String> {
-        match arg {
-            "DE" => Ok(Argument::Register16Constant(RegisterLabel16::DE)),
-            "HL" => Ok(Argument::Register16Constant(RegisterLabel16::HL)),
-            "SP" => Ok(Argument::Register16Constant(RegisterLabel16::StackPointer)),
-            "(HL-)" => Ok(Argument::RegisterIndirectDec(RegisterLabel16::HL)),
-            "A" => Ok(Argument::Register8Constant(RegisterLabel8::A)),
-            "B" => Ok(Argument::Register8Constant(RegisterLabel8::B)),
-            "C" => Ok(Argument::Register8Constant(RegisterLabel8::C)),
-            "H" => Ok(Argument::Register8Constant(RegisterLabel8::H)),
-            "(C)" => Ok(Argument::HighOffsetRegister(RegisterLabel8::C)),
-            "(DE)" => Ok(Argument::RegisterIndirect(RegisterLabel16::DE)),
-            "(HL)" => Ok(Argument::RegisterIndirect(RegisterLabel16::HL)),
-            "(a8)" => Ok(Argument::HighOffsetConstant(
-                program_code[program_counter as usize + 1],
-            )),
-            "a16" => Ok(Argument::Label(u16::from_le_bytes([
+        let result = match arg {
+            "DE" => Argument::Register16Constant(RegisterLabel16::DE),
+            "HL" => Argument::Register16Constant(RegisterLabel16::HL),
+            "SP" => Argument::Register16Constant(RegisterLabel16::StackPointer),
+            "(HL-)" => Argument::RegisterIndirectDec(RegisterLabel16::HL),
+            "A" => Argument::Register8Constant(RegisterLabel8::A),
+            "B" => Argument::Register8Constant(RegisterLabel8::B),
+            "C" => Argument::Register8Constant(RegisterLabel8::C),
+            "H" => Argument::Register8Constant(RegisterLabel8::H),
+            "(C)" => Argument::HighOffsetRegister(RegisterLabel8::C),
+            "(DE)" => Argument::RegisterIndirect(RegisterLabel16::DE),
+            "(HL)" => Argument::RegisterIndirect(RegisterLabel16::HL),
+            "(a8)" => Argument::HighOffsetConstant(program_code[program_counter as usize + 1]),
+            "a16" => Argument::Label(u16::from_le_bytes([
                 program_code[(program_counter + 1) as usize],
                 program_code[(program_counter + 2) as usize],
-            ]))),
-            "d16" => Ok(Argument::LargeValue(u16::from_le_bytes([
+            ])),
+            "d16" => Argument::LargeValue(u16::from_le_bytes([
                 program_code[(program_counter + 1) as usize],
                 program_code[(program_counter + 2) as usize],
-            ]))),
-            "d8" => Ok(Argument::SmallValue(
-                program_code[(program_counter + 1) as usize],
-            )),
-            "NZ" => Ok(Argument::JumpArgument(JumpCondition::NotZero)),
-            "r8" => Ok(Argument::JumpDistance(
-                program_code[(program_counter + 1) as usize] as i8,
-            )),
-            "7" => Ok(Argument::Bit(7)),
-            _ => Err(format!("Unknown argument: {}", arg)),
-        }
+            ])),
+            "d8" => Argument::SmallValue(program_code[(program_counter + 1) as usize]),
+            "NZ" => Argument::JumpArgument(JumpCondition::NotZero),
+            "r8" => Argument::JumpDistance(program_code[(program_counter + 1) as usize] as i8),
+            "7" => Argument::Bit(7),
+            _ => return Err(format!("Unknown argument: {}", arg)),
+        };
+        Ok(result)
     };
 
     let opcode = |text: &str| -> Result<OpCode, String> {
@@ -215,27 +212,10 @@ impl fmt::Display for OpCode {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let catagory = format!("{:?}", self.catagory);
 
-        fn unwrap_arg(arg: &Argument) -> String {
-            match arg {
-                Argument::Register8Constant(reg) => format!("{:?}", reg),
-                Argument::Register16Constant(reg) => format!("{:?}", reg),
-                Argument::RegisterIndirectDec(reg) => format!("{:?}", reg),
-                Argument::RegisterIndirect(reg) => format!("{:?}", reg),
-                Argument::HighOffsetRegister(reg) => format!("{:?}", reg),
-                Argument::HighOffsetConstant(val) => format!("0xFF{}", val),
-                Argument::LargeValue(val) => format!("{:#X}", val),
-                Argument::SmallValue(val) => format!("{:#X}", val),
-                Argument::JumpDistance(val) => format!("{}", val),
-                Argument::Bit(val) => format!("{}", val),
-                Argument::JumpArgument(val) => format!("{:?}", val),
-                Argument::Label(val) => format!("{:#X}", val),
-            }
-        }
-
         let args = self
             .args
             .iter()
-            .map(|arg| format!("{}", unwrap_arg(arg)))
+            .map(|arg| format!("{}", arg))
             .collect::<Vec<String>>()
             .join(" ");
 
@@ -255,25 +235,4 @@ enum Catagory {
     CALL,
     PUSH,
     RL,
-}
-
-#[derive(Copy, Clone, Debug)]
-enum JumpCondition {
-    NotZero,
-}
-
-#[derive(Copy, Clone, Debug)]
-enum Argument {
-    Register8Constant(RegisterLabel8),
-    Register16Constant(RegisterLabel16),
-    RegisterIndirectDec(RegisterLabel16),
-    RegisterIndirect(RegisterLabel16),
-    HighOffsetRegister(RegisterLabel8),
-    HighOffsetConstant(u8),
-    LargeValue(u16),
-    SmallValue(u8),
-    JumpDistance(i8),
-    Bit(u8),
-    JumpArgument(JumpCondition),
-    Label(u16),
 }
