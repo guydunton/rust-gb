@@ -130,7 +130,7 @@ fn main() {
     let mut app = App {
         gl: GlGraphics::new(opengl),
         screen: Screen::new(),
-        gb: Gameboy::new(),
+        gb: Gameboy::new_with_bootloader(),
         is_debug: args.contains(&String::from("-d")),
     };
 

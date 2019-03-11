@@ -224,8 +224,7 @@ mod opcode_tests {
             gb.write_16(RegisterLabel16::ProgramCounter, 0x0003);
             gb.set_flag(Flags::Z, false);
 
-            let opcode = gb.decode();
-            let cycles = gb.run(&opcode);
+            let cycles = gb.decode_and_run();
 
             assert_eq!(gb.read_16(RegisterLabel16::ProgramCounter), 0x0000);
             assert_eq!(cycles, 12); // cycles different for action vs no action
@@ -235,8 +234,7 @@ mod opcode_tests {
             gb.write_16(RegisterLabel16::ProgramCounter, 0x0003);
             gb.set_flag(Flags::Z, true);
 
-            let opcode = gb.decode();
-            let cycles = gb.run(&opcode);
+            let cycles = gb.decode_and_run();
 
             assert_eq!(gb.read_16(RegisterLabel16::ProgramCounter), 0x0005);
             assert_eq!(cycles, 8);
@@ -331,11 +329,9 @@ mod opcode_tests {
                 assert_eq!(gb.read_16(RegisterLabel16::StackPointer), 0x05);
             }
 
-            section("Call instruction is 3 bytes and 24 cycles") {
-                let opcode = gb.decode();
-                let cycles = gb.run(&opcode);
+            section("Call instruction takes 24 cycles") {
+                let cycles = gb.decode_and_run();
                 assert_eq!(cycles, 24);
-                assert_eq!(opcode.size(), 3);
             }
         }
 

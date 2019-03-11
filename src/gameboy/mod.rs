@@ -1,8 +1,10 @@
 mod cpu;
+mod debug;
 mod flags_register;
 mod read_write_register;
 mod register;
 
+pub mod instrumentation;
 pub mod opcodes;
 pub mod screen;
 
@@ -10,37 +12,6 @@ mod opcode_test;
 
 use self::cpu::CPU;
 use self::read_write_register::ReadWriteRegister;
-use self::register::{RegisterLabel16, RegisterLabel8};
-use std::collections::HashMap;
-use std::u16;
-
-pub struct Registers {
-    registers: HashMap<String, String>,
-}
-
-impl Registers {
-    pub fn get_register_val(&self, register: &String) -> String {
-        self.registers
-            .get(register)
-            .map(|x| x.clone())
-            .unwrap_or("Invalid register".to_string())
-    }
-}
-
-pub struct Instruction {
-    address: u16,
-    opcode: String,
-}
-
-impl Instruction {
-    pub fn get_address(&self) -> u16 {
-        self.address
-    }
-
-    pub fn get_opcode(&self) -> String {
-        self.opcode.clone()
-    }
-}
 
 pub struct Gameboy {
     cpu: CPU,
@@ -48,8 +19,8 @@ pub struct Gameboy {
 }
 
 impl Gameboy {
-    pub fn new() -> Gameboy {
-        let bootloader = [
+    pub fn new_with_bootloader() -> Gameboy {
+        let bootloader = vec![
             0x31, 0xFE, 0xFF, 0xAF, 0x21, 0xFF, 0x9F, 0x32, 0xCB, 0x7C, 0x20, 0xFB, 0x21, 0x26,
             0xFF, 0x0E, // 0x0010
             0x11, 0x3E, 0x80, 0x32, 0xE2, 0x0C, 0x3E, 0xF3, 0xE2, 0x32, 0x3E, 0x77, 0x77, 0x3E,
@@ -74,9 +45,12 @@ impl Gameboy {
             0x05, 0x20, 0xFB, 0x86, 0x20, 0xFE, 0x3E, 0x01, 0xE0, 0x50,
         ];
 
-        let mut memory = vec![0u8; u16::MAX as usize];
+        Gameboy::new(bootloader)
+    }
 
-        memory[..bootloader.len()].clone_from_slice(&bootloader[..]);
+    pub fn new(data: Vec<u8>) -> Gameboy {
+        let mut memory = vec![0; 0xFFFF];
+        memory[..data.len()].clone_from_slice(&data[..]);
 
         Gameboy {
             cpu: CPU::new(),
@@ -109,100 +83,5 @@ impl Gameboy {
         let opcode = opcodes::decode_instruction(counter, &self.memory).unwrap();
 
         let _ = opcode.run::<CPU>(&mut self.cpu, &mut self.memory);
-    }
-
-    pub fn print_flags(&self) -> Vec<String> {
-        use self::flags_register::*;
-        let flags = vec![Flags::Z, Flags::N, Flags::H, Flags::C];
-
-        let flag_data = flags
-            .iter()
-            .map(|f| (format!("{:?}", f), f))
-            .map(|(label, flag)| {
-                (
-                    label,
-                    match read_flag::<CPU>(&self.cpu, *flag) {
-                        true => "1".to_string(),
-                        false => "0".to_string(),
-                    },
-                )
-            })
-            .map(|(label, text)| format!("{}: {}", label, text))
-            .collect::<Vec<String>>();
-
-        flag_data
-    }
-
-    pub fn get_registers(&self) -> Registers {
-        let mut registers = HashMap::new();
-        registers.insert(
-            "A".to_string(),
-            format!("{:#X}", self.cpu.read_8_bits(RegisterLabel8::A)),
-        );
-        let registers8 = vec![
-            ("A", RegisterLabel8::A),
-            ("F", RegisterLabel8::F),
-            ("B", RegisterLabel8::B),
-            ("C", RegisterLabel8::C),
-            ("D", RegisterLabel8::D),
-            ("E", RegisterLabel8::E),
-            ("H", RegisterLabel8::H),
-            ("L", RegisterLabel8::L),
-        ];
-        let registers16 = vec![
-            ("AF", RegisterLabel16::AF),
-            ("BC", RegisterLabel16::BC),
-            ("DE", RegisterLabel16::DE),
-            ("HL", RegisterLabel16::HL),
-            ("SP", RegisterLabel16::StackPointer),
-            ("PC", RegisterLabel16::ProgramCounter),
-        ];
-
-        registers8.iter().for_each(|(label, register)| {
-            registers.insert(
-                label.to_string(),
-                format!("{:#X}", self.cpu.read_8_bits(*register)),
-            );
-        });
-        registers16.iter().for_each(|(label, register)| {
-            registers.insert(
-                label.to_string(),
-                format!("{:#X}", self.cpu.read_16_bits(*register)),
-            );
-        });
-        Registers { registers }
-    }
-
-    /// Print the first x instructions until can't decode
-    pub fn print_instructions(&self) -> Vec<Instruction> {
-        let mut counter = 0u16;
-
-        let mut instructions = Vec::new();
-
-        loop {
-            let opcode = opcodes::decode_instruction(counter, &self.memory);
-
-            let op_str = opcode
-                .as_ref()
-                .map(|op| format!("{}", op))
-                .unwrap_or(String::from("unknown instruction"));
-
-            instructions.push(Instruction {
-                address: counter,
-                opcode: op_str,
-            });
-
-            if opcode.is_err() {
-                break;
-            } else {
-                counter += opcode.unwrap().size();
-            }
-        }
-
-        instructions
-    }
-
-    pub fn get_pc(&self) -> u16 {
-        self.cpu.read_16_bits(RegisterLabel16::ProgramCounter)
     }
 }
