@@ -17,6 +17,23 @@ pub enum Argument {
     Label(u16),
 }
 
+pub fn size_in_bytes(argument: Argument) -> u16 {
+    match argument {
+        Argument::Register8Constant(_) => 0,
+        Argument::Register16Constant(_) => 0,
+        Argument::RegisterIndirect(_) => 0,
+        Argument::RegisterIndirectDec(_) => 0,
+        Argument::HighOffsetRegister(_) => 0,
+        Argument::HighOffsetConstant(_) => 1,
+        Argument::JumpArgument(_) => 0,
+        Argument::LargeValue(_) => 2,
+        Argument::SmallValue(_) => 1,
+        Argument::JumpDistance(_) => 1,
+        Argument::Bit(_) => 0,
+        Argument::Label(_) => 2,
+    }
+}
+
 #[derive(Copy, Clone, Debug)]
 pub enum JumpCondition {
     NotZero,
