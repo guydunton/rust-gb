@@ -36,7 +36,7 @@ mod opcode_tests {
             opcode.run::<CPU>(&mut self.cpu, &mut self.memory)
         }
 
-        fn decode_and_run(&mut self) -> u32 {
+        fn step_once(&mut self) -> u32 {
             let opcode = self.decode();
             self.run(&opcode)
         }
@@ -76,7 +76,7 @@ mod opcode_tests {
     fn load16_instructions() {
         let ld_16_test = |byte_code, register| {
             let mut gb = testgb!([byte_code, 0xFE, 0xFF]);
-            let cycles = gb.decode_and_run();
+            let cycles = gb.step_once();
 
             assert_eq!(gb.read_16(register), 0xFFFE);
             assert_eq!(gb.read_16(RegisterLabel16::ProgramCounter), 0x0003);
@@ -100,7 +100,7 @@ mod opcode_tests {
             let mut gb = testgb!([0x32, 0x00]);
             gb.write_16(RegisterLabel16::HL, 0x0001);
             gb.write_8(RegisterLabel8::A, 0x01);
-            let cycles = gb.decode_and_run();
+            let cycles = gb.step_once();
 
             assert_eq!(gb.read_16(RegisterLabel16::HL), 0x0000);
             assert_eq!(gb.memory[1], 0x01);
@@ -110,7 +110,7 @@ mod opcode_tests {
 
         let ld8_test = |byte_code, register| {
             let mut gb = testgb!([byte_code, 0x01]);
-            let _ = gb.decode_and_run();
+            let _ = gb.step_once();
             assert_eq!(gb.read_8(register), 0x01);
             assert_eq!(gb.read_16(RegisterLabel16::ProgramCounter), 0x02);
         };
@@ -127,7 +127,7 @@ mod opcode_tests {
             gb.write_8(RegisterLabel8::C, 0x01);
             gb.write_8(RegisterLabel8::A, 0x02);
 
-            let cycles = gb.decode_and_run();
+            let cycles = gb.step_once();
 
             assert_eq!(gb.memory[0xFF01], 0x02);
             assert_eq!(gb.read_16(RegisterLabel16::ProgramCounter), 0x01);
@@ -139,7 +139,7 @@ mod opcode_tests {
             let mut gb = testgb!([0x77]);
             gb.write_16(RegisterLabel16::HL, 0x0005);
             gb.write_8(RegisterLabel8::A, 0x01);
-            let cycles = gb.decode_and_run();
+            let cycles = gb.step_once();
 
             assert_eq!(gb.memory[0x0005], 0x01);
             assert_eq!(gb.read_16(RegisterLabel16::ProgramCounter), 0x01);
@@ -151,7 +151,7 @@ mod opcode_tests {
             let mut gb = testgb!([0xE0, 0x01]);
             gb.write_8(RegisterLabel8::A, 0x02);
 
-            let cycles = gb.decode_and_run();
+            let cycles = gb.step_once();
             assert_eq!(gb.memory[0xFF01 as usize], 0x02);
             assert_eq!(cycles, 12);
             assert_eq!(gb.read_16(RegisterLabel16::ProgramCounter), 0x02);
@@ -162,7 +162,7 @@ mod opcode_tests {
             let mut gb = testgb!([0x1A, 0x01]);
             gb.write_16(RegisterLabel16::DE, 0x01);
 
-            let cycles = gb.decode_and_run();
+            let cycles = gb.step_once();
             assert_eq!(cycles, 8);
             assert_eq!(gb.read_8(RegisterLabel8::A), 0x01);
             assert_eq!(gb.read_16(RegisterLabel16::ProgramCounter), 0x01);
@@ -176,7 +176,7 @@ mod opcode_tests {
         gb.write_8(RegisterLabel8::A, 0x01);
         gb.write_8(RegisterLabel8::F, 0b1111_0000);
 
-        let cycles = gb.decode_and_run();
+        let cycles = gb.step_once();
 
         assert_eq!(gb.read_8(RegisterLabel8::A), 0x00);
         assert_eq!(gb.read_16(RegisterLabel16::ProgramCounter), 0x01);
@@ -193,7 +193,7 @@ mod opcode_tests {
             let mut gb = testgb!([0xCB, 0x7C]);
             gb.write_8(RegisterLabel8::H, 0b1000_0000);
             let carry_flag = gb.get_flag(Flags::C);
-            let cycles = gb.decode_and_run();
+            let cycles = gb.step_once();
 
             assert_eq!(gb.get_flag(Flags::Z), false);
             assert_eq!(gb.get_flag(Flags::N), false);
@@ -207,7 +207,7 @@ mod opcode_tests {
             // Check the bit flag when the bit is 0
             let mut gb = testgb!([0xCB, 0x7C]);
             gb.write_8(RegisterLabel8::H, 0x0);
-            let cycles = gb.decode_and_run();
+            let cycles = gb.step_once();
 
             assert_eq!(gb.get_flag(Flags::Z), true);
             assert_eq!(cycles, 12);
@@ -224,7 +224,7 @@ mod opcode_tests {
             gb.write_16(RegisterLabel16::ProgramCounter, 0x0003);
             gb.set_flag(Flags::Z, false);
 
-            let cycles = gb.decode_and_run();
+            let cycles = gb.step_once();
 
             assert_eq!(gb.read_16(RegisterLabel16::ProgramCounter), 0x0000);
             assert_eq!(cycles, 12); // cycles different for action vs no action
@@ -234,7 +234,7 @@ mod opcode_tests {
             gb.write_16(RegisterLabel16::ProgramCounter, 0x0003);
             gb.set_flag(Flags::Z, true);
 
-            let cycles = gb.decode_and_run();
+            let cycles = gb.step_once();
 
             assert_eq!(gb.read_16(RegisterLabel16::ProgramCounter), 0x0005);
             assert_eq!(cycles, 8);
@@ -244,7 +244,7 @@ mod opcode_tests {
     #[test]
     fn nop_instruction() {
         let mut gb = testgb!([0x00]);
-        let cycles = gb.decode_and_run();
+        let cycles = gb.step_once();
 
         assert_eq!(gb.read_16(RegisterLabel16::ProgramCounter), 0x1);
         assert_eq!(cycles, 4);
@@ -255,7 +255,7 @@ mod opcode_tests {
             let mut gb = testgb!([0x0C]); // INC C
 
             section("increment increases the value in the registry") {
-                let cycles = gb.decode_and_run();
+                let cycles = gb.step_once();
 
                 assert_eq!(gb.read_8(RegisterLabel8::C), 0x01);
                 assert_eq!(gb.read_16(RegisterLabel16::ProgramCounter), 0x01);
@@ -265,14 +265,14 @@ mod opcode_tests {
 
             section("increment can cause a half overflow") {
                 gb.write_8(RegisterLabel8::C, 0b1111);
-                gb.decode_and_run();
+                gb.step_once();
 
                 assert_eq!(gb.get_flag(Flags::H), true);
             }
 
             section("increment from max causes overflow") {
                 gb.write_8(RegisterLabel8::C, 0xFF);
-                gb.decode_and_run();
+                gb.step_once();
 
                 assert_eq!(gb.read_8(RegisterLabel8::C), 0x0);
                 assert_eq!(gb.get_flag(Flags::Z), true);
@@ -284,7 +284,7 @@ mod opcode_tests {
                 gb.set_flag(Flags::H, true);
                 gb.write_8(RegisterLabel8::C, 0x01);
 
-                gb.decode_and_run();
+                gb.step_once();
 
                 assert_eq!(gb.get_flag(Flags::Z), true);
                 assert_eq!(gb.get_flag(Flags::H), true);
@@ -292,7 +292,7 @@ mod opcode_tests {
 
             section("N flag is set to 0") {
                 gb.set_flag(Flags::N, true);
-                gb.decode_and_run();
+                gb.step_once();
 
                 assert_eq!(gb.get_flag(Flags::N), false);
             }
@@ -314,7 +314,7 @@ mod opcode_tests {
             */
 
             section("Call moves the program counter to the call location") {
-                let _ = gb.decode_and_run();
+                let _ = gb.step_once();
                 assert_eq!(gb.read_16(RegisterLabel16::ProgramCounter), 0x04);
             }
 
@@ -322,7 +322,7 @@ mod opcode_tests {
                 // We push 0x0003 onto the stack
                 // decrements stack and pushed 0x00
                 // decrements again and pushed 0x03
-                let _ = gb.decode_and_run();
+                let _ = gb.step_once();
                 assert_eq!(gb.memory[0x05], 0x03);
                 assert_eq!(gb.memory[0x06], 0x00);
 
@@ -330,7 +330,7 @@ mod opcode_tests {
             }
 
             section("Call instruction takes 24 cycles") {
-                let cycles = gb.decode_and_run();
+                let cycles = gb.step_once();
                 assert_eq!(cycles, 24);
             }
         }
@@ -342,7 +342,7 @@ mod opcode_tests {
             gb.write_16(RegisterLabel16::StackPointer, 0x03);
 
             section("Push moves 2 bytes onto the stack") {
-                let cycles = gb.decode_and_run();
+                let cycles = gb.step_once();
 
                 assert_eq!(gb.memory[1], 0x34);
                 assert_eq!(gb.memory[2], 0x12);
@@ -364,7 +364,7 @@ mod opcode_tests {
             gb.set_flag(Flags::C, true);
             gb.write_8(RegisterLabel8::C, 0b0101_0101);
 
-            let cycles = gb.decode_and_run();
+            let cycles = gb.step_once();
 
             assert_eq!(gb.read_8(RegisterLabel8::C), 0b1010_1011);
             assert_eq!(gb.get_flag(Flags::C), false);
@@ -381,15 +381,46 @@ mod opcode_tests {
             // 0  1010_1011
             // 1  0101_0110
             gb.write_16(RegisterLabel16::ProgramCounter, 0x0);
-            let _ = gb.decode_and_run();
+            let _ = gb.step_once();
             assert_eq!(gb.get_flag(Flags::C), true);
         }
 
         test_case("Rotate left sets the zero flag if the result is 0") {
             let mut gb = testgb!([0xCB, 0x11]);
 
-            let _ = gb.decode_and_run();
+            let _ = gb.step_once();
             assert_eq!(gb.get_flag(Flags::Z), true);
+        }
+
+        test_case("RLA instruction rotate left through carry") {
+            let mut gb = testgb!([0x17]);
+
+            // Before run:
+            // C A
+            // 1 0101_0101
+            // After run:
+            // 0 1010_1011
+            gb.write_8(RegisterLabel8::A, 0b0101_0101);
+            gb.set_flag(Flags::C, true);
+
+            section("RLA cycles the A register left through carry") {
+                let cycles = gb.step_once();
+                assert_eq!(cycles, 4);
+                assert_eq!(gb.read_8(RegisterLabel8::A), 0b1010_1011);
+                assert_eq!(gb.get_flag(Flags::C), false);
+            }
+
+            section("sets all flags to false even if they are set") {
+                gb.set_flag(Flags::Z, true);
+                gb.set_flag(Flags::N, true);
+                gb.set_flag(Flags::H, true);
+
+                let _ = gb.step_once();
+            }
+
+            assert_eq!(gb.get_flag(Flags::Z), false);
+            assert_eq!(gb.get_flag(Flags::N), false);
+            assert_eq!(gb.get_flag(Flags::H), false);
         }
     }
 

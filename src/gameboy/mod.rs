@@ -1,17 +1,19 @@
 mod cpu;
 mod debug;
-mod flags_register;
+pub mod flags_register;
 mod read_write_register;
-mod register;
+pub mod register;
 
 pub mod instrumentation;
 pub mod opcodes;
 pub mod screen;
 
-mod opcode_test;
+mod tests;
 
 use self::cpu::CPU;
+use self::flags_register::{read_flag, write_flag, Flags};
 use self::read_write_register::ReadWriteRegister;
+use self::register::{RegisterLabel16, RegisterLabel8};
 
 pub struct Gameboy {
     cpu: CPU,
@@ -77,11 +79,44 @@ impl Gameboy {
         }
     }
 
-    pub fn step_once(&mut self) {
+    pub fn step_once(&mut self) -> u32 {
         use self::register::RegisterLabel16;
         let counter = self.cpu.read_16_bits(RegisterLabel16::ProgramCounter);
         let opcode = opcodes::decode_instruction(counter, &self.memory).unwrap();
 
-        let _ = opcode.run::<CPU>(&mut self.cpu, &mut self.memory);
+        let cycles = opcode.run::<CPU>(&mut self.cpu, &mut self.memory);
+        cycles
+    }
+
+    pub fn get_register_16(&self, register: RegisterLabel16) -> u16 {
+        self.cpu.read_16_bits(register)
+    }
+
+    pub fn get_register_8(&self, register: RegisterLabel8) -> u8 {
+        self.cpu.read_8_bits(register)
+    }
+
+    pub fn set_register_16(&mut self, register: RegisterLabel16, value: u16) {
+        self.cpu.write_16_bits(register, value);
+    }
+
+    pub fn set_register_8(&mut self, register: RegisterLabel8, value: u8) {
+        self.cpu.write_8_bits(register, value);
+    }
+
+    pub fn set_flag(&mut self, flag: Flags, set: bool) {
+        write_flag::<CPU>(&mut self.cpu, flag, set);
+    }
+
+    pub fn get_flag(&self, flag: Flags) -> bool {
+        read_flag::<CPU>(&self.cpu, flag)
+    }
+
+    pub fn set_memory_at(&mut self, address: u16, value: u8) {
+        self.memory[address as usize] = value;
+    }
+
+    pub fn get_memory_at(&self, address: u16) -> u8 {
+        self.memory[address as usize]
     }
 }
