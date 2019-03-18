@@ -381,8 +381,15 @@ mod opcode_tests {
             // 0  1010_1011
             // 1  0101_0110
             gb.write_16(RegisterLabel16::ProgramCounter, 0x0);
+
+            gb.set_flag(Flags::H, true);
+            gb.set_flag(Flags::N, true);
+
             let _ = gb.step_once();
             assert_eq!(gb.get_flag(Flags::C), true);
+
+            assert_eq!(gb.get_flag(Flags::H), false);
+            assert_eq!(gb.get_flag(Flags::N), false);
         }
 
         test_case("Rotate left sets the zero flag if the result is 0") {

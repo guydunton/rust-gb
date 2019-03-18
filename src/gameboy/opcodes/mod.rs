@@ -7,6 +7,7 @@ mod ld16;
 mod ld8;
 mod push;
 mod rotate_left;
+mod rotate_left_a;
 mod xor;
 
 use self::argument::{size_in_bytes, Argument, JumpCondition};
@@ -88,6 +89,7 @@ pub fn decode_instruction(program_counter: u16, program_code: &[u8]) -> Result<O
         0x0C => opcode("INC C"),
         0x0E => opcode("LD8 C d8"),
         0x11 => opcode("LD16 DE d16"),
+        0x17 => Ok(OpCode::new(Catagory::RLA, vec![])),
         0x1A => opcode("LD8 A (DE)"),
         0x20 => opcode("JR NZ r8"),
         0x21 => opcode("LD16 HL d16"),
@@ -169,6 +171,9 @@ impl OpCode {
             Catagory::RL => {
                 cycles += self.run_rl::<T>(cpu, memory);
             }
+            Catagory::RLA => {
+                cycles += self.run_rla::<T>(cpu, memory);
+            }
         };
 
         cycles
@@ -211,6 +216,7 @@ enum Catagory {
     CALL,
     PUSH,
     RL,
+    RLA,
 }
 
 fn is_cb_catagory(catagory: Catagory) -> bool {

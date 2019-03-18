@@ -20,6 +20,10 @@ impl OpCode {
             // Set the carry flag
             write_flag::<T>(cpu, Flags::C, eighth_bit == 1);
 
+            // Unset the H & N flags
+            write_flag::<T>(cpu, Flags::H, false);
+            write_flag::<T>(cpu, Flags::N, false);
+
             // Write away the flag
             cpu.write_8_bits(reg, new_register);
 
