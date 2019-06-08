@@ -1,3 +1,5 @@
+pub mod instrumentation;
+
 use std::collections::HashMap;
 
 pub struct Registers {

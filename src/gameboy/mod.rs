@@ -1,10 +1,8 @@
 mod cpu;
-mod debug;
 pub mod flags_register;
 mod read_write_register;
 pub mod register;
 
-pub mod instrumentation;
 pub mod opcodes;
 pub mod screen;
 

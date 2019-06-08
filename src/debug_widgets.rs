@@ -1,3 +1,4 @@
+use crate::debug::instrumentation::{get_pc, get_registers, print_flags, print_instructions};
 use crate::gameboy::Gameboy;
 use crate::layout::Print;
 
@@ -13,7 +14,7 @@ impl<'a> OpCodeWidget<'a> {
 
 impl<'a> Print for OpCodeWidget<'a> {
     fn print(&self) -> Vec<String> {
-        let instructions = self.gb.print_instructions();
+        let instructions = print_instructions(&self.gb);
 
         let mut output = Vec::new();
 
@@ -30,7 +31,7 @@ impl<'a> Print for OpCodeWidget<'a> {
         ));
         output.push(format!("-------------------------------------------"));
         for instruction in instructions {
-            let pc_counter = if instruction.get_address() == self.gb.get_pc() {
+            let pc_counter = if instruction.get_address() == get_pc(&self.gb) {
                 "->"
             } else {
                 "  "
@@ -63,7 +64,7 @@ impl<'a> RegistersWidget<'a> {
 
 impl<'a> Print for RegistersWidget<'a> {
     fn print(&self) -> Vec<String> {
-        let registers = self.gb.get_registers();
+        let registers = get_registers(&self.gb);
         let register_order = vec![
             "A", "F", "AF", "B", "C", "BC", "D", "E", "DE", "H", "L", "HL", "PC", "SP",
         ];
@@ -104,7 +105,7 @@ impl<'a> Print for FlagsWidget<'a> {
         output.push(format!("{:<#width$} : {}", "Flag", "Set", width = 5));
         output.push(String::from("----------------"));
 
-        for flag in self.gb.print_flags() {
+        for flag in print_flags(self.gb) {
             output.push(flag);
         }
 
