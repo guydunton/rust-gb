@@ -8,6 +8,7 @@ mod ld8;
 mod push;
 mod rotate_left;
 mod rotate_left_a;
+mod rotate_method;
 mod xor;
 
 use self::argument::{size_in_bytes, Argument, JumpCondition};
