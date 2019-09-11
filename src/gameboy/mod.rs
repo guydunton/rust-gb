@@ -10,6 +10,7 @@ mod tests;
 
 use self::cpu::CPU;
 use self::flags_register::{read_flag, write_flag, Flags};
+use self::opcodes::OpCode;
 use self::read_write_register::ReadWriteRegister;
 use self::register::{RegisterLabel16, RegisterLabel8};
 
@@ -48,6 +49,7 @@ impl Gameboy {
         Gameboy::new(bootloader)
     }
 
+    #[allow(dead_code)]
     pub fn new(data: Vec<u8>) -> Gameboy {
         let mut memory = vec![0; 0xFFFF];
         memory[..data.len()].clone_from_slice(&data[..]);
@@ -58,15 +60,13 @@ impl Gameboy {
         }
     }
 
+    #[allow(dead_code)]
     pub fn tick(&mut self, dt: f64) {
-        use self::register::RegisterLabel16;
-
         let cycles_to_use = (dt * 1000000f64) as u32;
         let mut total_cycles_used = 0;
 
         loop {
-            let counter = self.cpu.read_16_bits(RegisterLabel16::ProgramCounter);
-            let opcode = opcodes::decode_instruction(counter, &self.memory).unwrap();
+            let opcode = self.current_opcode();
 
             let cycles_used = opcode.run::<CPU>(&mut self.cpu, &mut self.memory);
 
@@ -77,44 +77,77 @@ impl Gameboy {
         }
     }
 
+    #[allow(dead_code)]
     pub fn step_once(&mut self) -> u32 {
-        use self::register::RegisterLabel16;
-        let counter = self.cpu.read_16_bits(RegisterLabel16::ProgramCounter);
-        let opcode = opcodes::decode_instruction(counter, &self.memory).unwrap();
-
+        let opcode = self.current_opcode();
         let cycles = opcode.run::<CPU>(&mut self.cpu, &mut self.memory);
         cycles
     }
 
+    #[allow(dead_code)]
     pub fn get_register_16(&self, register: RegisterLabel16) -> u16 {
         self.cpu.read_16_bits(register)
     }
 
+    #[allow(dead_code)]
     pub fn get_register_8(&self, register: RegisterLabel8) -> u8 {
         self.cpu.read_8_bits(register)
     }
 
+    #[allow(dead_code)]
     pub fn set_register_16(&mut self, register: RegisterLabel16, value: u16) {
         self.cpu.write_16_bits(register, value);
     }
 
+    #[allow(dead_code)]
     pub fn set_register_8(&mut self, register: RegisterLabel8, value: u8) {
         self.cpu.write_8_bits(register, value);
     }
 
+    #[allow(dead_code)]
     pub fn set_flag(&mut self, flag: Flags, set: bool) {
         write_flag::<CPU>(&mut self.cpu, flag, set);
     }
 
+    #[allow(dead_code)]
     pub fn get_flag(&self, flag: Flags) -> bool {
         read_flag::<CPU>(&self.cpu, flag)
     }
 
+    #[allow(dead_code)]
     pub fn set_memory_at(&mut self, address: u16, value: u8) {
         self.memory[address as usize] = value;
     }
 
+    #[allow(dead_code)]
     pub fn get_memory_at(&self, address: u16) -> u8 {
         self.memory[address as usize]
+    }
+
+    #[allow(dead_code)]
+    pub fn get_current_instruction(&self) -> String {
+        let opcode = self.current_opcode();
+        opcode.to_string().trim().to_owned()
+    }
+
+    #[allow(dead_code)]
+    pub fn get_instruction_offset(&self, offset: u16) -> Result<String, ()> {
+        let current_counter = self.cpu.read_16_bits(RegisterLabel16::ProgramCounter);
+        let desired_counter = current_counter + offset;
+        if desired_counter >= self.memory.len() as u16 {
+            return Err({});
+        } else {
+            return Ok(opcodes::decode_instruction(desired_counter, &self.memory)
+                .unwrap()
+                .to_string()
+                .trim()
+                .to_owned());
+        }
+    }
+
+    fn current_opcode(&self) -> OpCode {
+        let counter = self.cpu.read_16_bits(RegisterLabel16::ProgramCounter);
+        let opcode = opcodes::decode_instruction(counter, &self.memory).unwrap();
+        opcode
     }
 }

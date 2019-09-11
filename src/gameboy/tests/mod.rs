@@ -1,3 +1,5 @@
+mod opcode_printer_test;
+
 #[cfg(test)]
 mod opcode_tests {
     use crate::gameboy::flags_register::*;
