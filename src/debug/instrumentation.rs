@@ -1,5 +1,4 @@
 use super::{Instruction, Registers};
-use crate::gameboy::opcodes;
 use crate::gameboy::register::{RegisterLabel16, RegisterLabel8};
 use crate::gameboy::Gameboy;
 use std::collections::HashMap;
@@ -68,10 +67,15 @@ pub fn get_registers(gb: &Gameboy) -> Registers {
 }
 
 /// Print the first x instructions until can't decode
-pub fn print_instructions(_gb: &Gameboy) -> Vec<Instruction> {
-    // let mut counter = 0u16;
+pub fn print_instructions(gb: &Gameboy) -> Vec<Instruction> {
+    //let mut counter = 0u16;
 
-    // let mut instructions = Vec::new();
+    let mut instructions = Vec::new();
+    instructions.push(Instruction {
+        address: gb.get_register_16(RegisterLabel16::ProgramCounter),
+        opcode: gb.get_current_instruction(),
+    });
+    instructions
 
     // loop {
     //     let opcode = opcodes::decode_instruction(counter, &self.memory);
@@ -94,7 +98,6 @@ pub fn print_instructions(_gb: &Gameboy) -> Vec<Instruction> {
     // }
 
     // instructions
-    panic!("inimplemented function called");
 }
 
 pub fn get_pc(gb: &Gameboy) -> u16 {

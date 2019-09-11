@@ -8,8 +8,8 @@ mod debug;
 mod debug_widgets;
 mod gameboy;
 mod layout;
-use crate::debug_widgets::{FlagsWidget, RegistersWidget};
-use crate::gameboy::{screen::*, Gameboy};
+use crate::debug_widgets::{FlagsWidget, OpCodeWidget, RegistersWidget};
+use crate::gameboy::{Gameboy, screen::*};
 use crate::layout::Layout;
 
 use std::io;
@@ -69,11 +69,11 @@ impl App {
             print!("{}[2J", 27 as char);
 
             {
-                //let opcodes = OpCodeWidget::new(&self.gb);
+                let opcodes = OpCodeWidget::new(&self.gb);
                 let registers = RegistersWidget::new(&self.gb);
                 let flags = FlagsWidget::new(&self.gb);
                 let mut layout = Layout::new();
-                //layout.add_widget(Box::new(opcodes), 0);
+                layout.add_widget(Box::new(opcodes), 0);
                 layout.add_widget(Box::new(registers), 1);
                 layout.add_widget(Box::new(flags), 1);
                 layout.draw();
