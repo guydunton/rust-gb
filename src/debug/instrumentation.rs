@@ -70,12 +70,18 @@ pub fn get_registers(gb: &Gameboy) -> Registers {
 pub fn print_instructions(gb: &Gameboy) -> Vec<Instruction> {
     let mut instructions = Vec::new();
 
-    for i in -15..15 {
-        let opcode = gb.get_instruction_offset(i);
+    let mut count = 0;
+    loop {
+        let opcode = gb.get_instruction_offset(count);
         instructions.push(Instruction {
-            address: (gb.get_register_16(RegisterLabel16::ProgramCounter) as i32 + i) as u16,
+            address: gb.get_register_16(RegisterLabel16::ProgramCounter) + count,
             opcode: opcode.unwrap_or_else(|()| String::from("unknown instruction")),
         });
+        count += 1;
+
+        if count > 15 {
+            break;
+        }
     }
 
     instructions

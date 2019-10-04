@@ -131,27 +131,49 @@ impl Gameboy {
     }
 
     #[allow(dead_code)]
-    pub fn get_instruction_offset(&self, offset: i32) -> Result<String, ()> {
+    pub fn get_instruction_offset(&self, offset: u16) -> Result<String, ()> {
         let current_counter = self.cpu.read_16_bits(RegisterLabel16::ProgramCounter);
-        let desired_counter = current_counter as i32 + offset;
-        if desired_counter as usize >= self.memory.len() {
-            return Err({});
-        } else if desired_counter < 0 {
-            return Err({});
-        } else {
-            return Ok(
-                opcodes::decode_instruction(desired_counter as u16, &self.memory)
-                    .unwrap()
-                    .to_string()
-                    .trim()
-                    .to_owned(),
-            );
+        let mut opcode_size_offset: u16 = 0;
+        // Loop through instructions to get the correct instructions
+        for _ in 0..offset {
+            // decode the instruction at current_counter + opcode_size_offset
+            let added_counter = current_counter.checked_add(opcode_size_offset);
+
+            match added_counter {
+                Some(value) => {
+                    if value == u16::max_value() {
+                        return Err({});
+                    }
+                    opcode_size_offset += self.get_opcode(value).size();
+                }
+                None => {
+                    return Err({});
+                }
+            }
+        }
+
+        let desired_counter = current_counter.checked_add(opcode_size_offset);
+
+        match desired_counter {
+            Some(value) => {
+                if value == u16::max_value() {
+                    return Err({});
+                }
+                let opcodes = self.get_opcode(value);
+                return Ok(opcodes.to_string().trim().to_owned());
+            }
+            None => {
+                return Err({});
+            }
         }
     }
 
     fn current_opcode(&self) -> OpCode {
         let counter = self.cpu.read_16_bits(RegisterLabel16::ProgramCounter);
-        let opcode = opcodes::decode_instruction(counter, &self.memory).unwrap();
-        opcode
+        self.get_opcode(counter)
+    }
+
+    fn get_opcode(&self, address: u16) -> OpCode {
+        opcodes::decode_instruction(address, &self.memory).unwrap()
     }
 }
