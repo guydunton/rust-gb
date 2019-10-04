@@ -131,17 +131,21 @@ impl Gameboy {
     }
 
     #[allow(dead_code)]
-    pub fn get_instruction_offset(&self, offset: u16) -> Result<String, ()> {
+    pub fn get_instruction_offset(&self, offset: i32) -> Result<String, ()> {
         let current_counter = self.cpu.read_16_bits(RegisterLabel16::ProgramCounter);
-        let desired_counter = current_counter + offset;
-        if desired_counter >= self.memory.len() as u16 {
+        let desired_counter = current_counter as i32 + offset;
+        if desired_counter as usize >= self.memory.len() {
+            return Err({});
+        } else if desired_counter < 0 {
             return Err({});
         } else {
-            return Ok(opcodes::decode_instruction(desired_counter, &self.memory)
-                .unwrap()
-                .to_string()
-                .trim()
-                .to_owned());
+            return Ok(
+                opcodes::decode_instruction(desired_counter as u16, &self.memory)
+                    .unwrap()
+                    .to_string()
+                    .trim()
+                    .to_owned(),
+            );
         }
     }
 

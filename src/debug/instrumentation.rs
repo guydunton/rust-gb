@@ -68,36 +68,17 @@ pub fn get_registers(gb: &Gameboy) -> Registers {
 
 /// Print the first x instructions until can't decode
 pub fn print_instructions(gb: &Gameboy) -> Vec<Instruction> {
-    //let mut counter = 0u16;
-
     let mut instructions = Vec::new();
-    instructions.push(Instruction {
-        address: gb.get_register_16(RegisterLabel16::ProgramCounter),
-        opcode: gb.get_current_instruction(),
-    });
+
+    for i in -15..15 {
+        let opcode = gb.get_instruction_offset(i);
+        instructions.push(Instruction {
+            address: (gb.get_register_16(RegisterLabel16::ProgramCounter) as i32 + i) as u16,
+            opcode: opcode.unwrap_or_else(|()| String::from("unknown instruction")),
+        });
+    }
+
     instructions
-
-    // loop {
-    //     let opcode = opcodes::decode_instruction(counter, &self.memory);
-
-    //     let op_str = opcode
-    //         .as_ref()
-    //         .map(|op| format!("{}", op))
-    //         .unwrap_or(String::from("unknown instruction"));
-
-    //     instructions.push(Instruction {
-    //         address: counter,
-    //         opcode: op_str,
-    //     });
-
-    //     if opcode.is_err() {
-    //         break;
-    //     } else {
-    //         counter += opcode.unwrap().size();
-    //     }
-    // }
-
-    // instructions
 }
 
 pub fn get_pc(gb: &Gameboy) -> u16 {

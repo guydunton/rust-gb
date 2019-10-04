@@ -811,8 +811,8 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
 name = "rust-catch"
-version = "0.2.4"
-source = "git+https://github.com/gdunton/rust-catch?rev=HEAD#02faec0dfcff25155fefb648fe51bd01aff7852f"
+version = "0.3.0"
+source = "git+https://github.com/gdunton/rust-catch?rev=HEAD#8052a8f769898c428622b22216a5b35854b9b0b3"
 dependencies = [
  "proc-macro2 0.4.27 (registry+https://github.com/rust-lang/crates.io-index)",
  "quote 0.6.12 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -828,7 +828,7 @@ dependencies = [
  "piston2d-opengl_graphics 0.57.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "pistoncore-glutin_window 0.51.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "rand 0.6.5 (registry+https://github.com/rust-lang/crates.io-index)",
- "rust-catch 0.2.4 (git+https://github.com/gdunton/rust-catch?rev=HEAD)",
+ "rust-catch 0.3.0 (git+https://github.com/gdunton/rust-catch?rev=HEAD)",
 ]
 
 [[package]]
@@ -1219,7 +1219,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 "checksum rayon-core 1.4.1 (registry+https://github.com/rust-lang/crates.io-index)" = "b055d1e92aba6877574d8fe604a63c8b5df60f60e5982bf7ccbb1338ea527356"
 "checksum rdrand 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)" = "678054eb77286b51581ba43620cc911abf02758c91f93f479767aed0f90458b2"
 "checksum read_color 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)" = "9f4c8858baa4ad3c8bcc156ae91a0ffe22b76a3975c40c49b4f04c15c6bce0da"
-"checksum rust-catch 0.2.4 (git+https://github.com/gdunton/rust-catch?rev=HEAD)" = "<none>"
+"checksum rust-catch 0.3.0 (git+https://github.com/gdunton/rust-catch?rev=HEAD)" = "<none>"
 "checksum rustc-demangle 0.1.13 (registry+https://github.com/rust-lang/crates.io-index)" = "adacaae16d02b6ec37fdc7acfcddf365978de76d1983d3ee22afc260e1ca9619"
 "checksum rustc_version 0.2.3 (registry+https://github.com/rust-lang/crates.io-index)" = "138e3e0acb6c9fb258b19b67cb8abd63c00679d2851805ea151465464fe9030a"
 "checksum rusttype 0.7.5 (registry+https://github.com/rust-lang/crates.io-index)" = "ce3926a2057b315b3e8bca6d1cec1e97f19436a8f9127621cd538cda9c96a38b"
