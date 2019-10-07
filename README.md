@@ -2,6 +2,10 @@
 
 RustGB is yet another gameboy emulator written in Rust. The goal of the project is to learn as much as possible about Gameboy emulation while also learning Rust.
 
+## Current State
+
+The project connect yet run any games. I am currently working through the opcode that form the bootloader while I experiment with Rust and emulator design.
+
 ## Run with debug
 
 To run with debugging tools:
