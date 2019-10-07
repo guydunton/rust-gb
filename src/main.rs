@@ -5,11 +5,10 @@ use rand::prelude::*;
 use std::env;
 
 mod debug;
-mod debug_widgets;
 mod gameboy;
 mod layout;
-use crate::debug_widgets::{FlagsWidget, OpCodeWidget, RegistersWidget};
-use crate::gameboy::{Gameboy, screen::*};
+use crate::debug::{FlagsWidget, OpCodeWidget, RegistersWidget};
+use crate::gameboy::{screen::*, Gameboy};
 use crate::layout::Layout;
 
 use std::io;
