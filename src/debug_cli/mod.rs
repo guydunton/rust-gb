@@ -1,12 +1,12 @@
-pub mod instrumentation;
-pub mod opcode_widget;
-pub mod registers_widget;
-pub mod flags_widget;
+mod flags_widget;
+mod instrumentation;
+mod opcode_widget;
+mod registers_widget;
 
-use std::collections::HashMap;
 pub use flags_widget::FlagsWidget;
-pub use registers_widget::RegistersWidget;
 pub use opcode_widget::OpCodeWidget;
+pub use registers_widget::RegistersWidget;
+use std::collections::HashMap;
 
 pub struct Registers {
     pub registers: HashMap<String, String>,
