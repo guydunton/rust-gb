@@ -1,37 +1,49 @@
 mod flags_widget;
+mod instruction;
 mod instrumentation;
+mod layout;
 mod opcode_widget;
+mod registers;
 mod registers_widget;
 
-pub use flags_widget::FlagsWidget;
-pub use opcode_widget::OpCodeWidget;
-pub use registers_widget::RegistersWidget;
-use std::collections::HashMap;
+use crate::Gameboy;
+use flags_widget::FlagsWidget;
+use layout::Layout;
+use opcode_widget::OpCodeWidget;
+use registers_widget::RegistersWidget;
+use std::io;
 
-pub struct Registers {
-    pub registers: HashMap<String, String>,
+fn print_help() {
+    println!("c => continue");
+    println!("h => help");
 }
 
-impl Registers {
-    pub fn get_register_val(&self, register: &String) -> String {
-        self.registers
-            .get(register)
-            .map(|x| x.clone())
-            .unwrap_or("Invalid register".to_string())
+pub fn update(gb: &Gameboy) {
+    // Clear the screen
+    print!("{}[2J", 27 as char);
+
+    {
+        let opcodes = OpCodeWidget::new(&gb);
+        let registers = RegistersWidget::new(&gb);
+        let flags = FlagsWidget::new(&gb);
+        let mut layout = Layout::new();
+        layout.add_widget(Box::new(opcodes), 0);
+        layout.add_widget(Box::new(registers), 1);
+        layout.add_widget(Box::new(flags), 1);
+        layout.draw();
     }
-}
 
-pub struct Instruction {
-    pub address: u16,
-    pub opcode: String,
-}
-
-impl Instruction {
-    pub fn get_address(&self) -> u16 {
-        self.address
-    }
-
-    pub fn get_opcode(&self) -> String {
-        self.opcode.clone()
+    loop {
+        println!("Continue? (h for help)");
+        let mut text = String::new();
+        io::stdin()
+            .read_line(&mut text)
+            .expect("Input failed unexpectadly");
+        let trimmed = text.trim();
+        match trimmed.as_ref() {
+            "c" => break,
+            "h" => print_help(),
+            _ => print_help(),
+        }
     }
 }

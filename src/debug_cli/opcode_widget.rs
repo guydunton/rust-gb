@@ -1,6 +1,6 @@
 use super::instrumentation::{get_pc, print_instructions};
+use super::layout::Print;
 use crate::gameboy::Gameboy;
-use crate::layout::Print;
 
 pub struct OpCodeWidget<'a> {
     gb: &'a Gameboy,

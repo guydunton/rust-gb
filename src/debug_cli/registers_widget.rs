@@ -1,6 +1,6 @@
 use super::instrumentation::get_registers;
+use super::layout::Print;
 use crate::gameboy::Gameboy;
-use crate::layout::Print;
 
 pub struct RegistersWidget<'a> {
     gb: &'a Gameboy,

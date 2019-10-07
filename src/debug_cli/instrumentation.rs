@@ -1,4 +1,5 @@
-use super::{Instruction, Registers};
+use super::instruction::Instruction;
+use super::registers::Registers;
 use crate::gameboy::register::{RegisterLabel16, RegisterLabel8};
 use crate::gameboy::Gameboy;
 use std::collections::HashMap;

@@ -6,12 +6,8 @@ use std::env;
 
 mod debug_cli;
 mod gameboy;
-mod layout;
-use crate::debug_cli::{FlagsWidget, OpCodeWidget, RegistersWidget};
+use crate::debug_cli::update;
 use crate::gameboy::{screen::*, Gameboy};
-use crate::layout::Layout;
-
-use std::io;
 
 fn screen_color_to_color(c: ScreenColor) -> [f32; 4] {
     match c {
@@ -45,11 +41,6 @@ pub struct App {
     is_debug: bool,
 }
 
-fn print_help() {
-    println!("c => continue");
-    println!("h => help");
-}
-
 impl App {
     fn render(&mut self, args: &RenderArgs) {
         const WHITE: [f32; 4] = [1.0, 1.0, 1.0, 1.0];
@@ -64,33 +55,7 @@ impl App {
 
     fn update(&mut self, args: UpdateArgs, rng: &mut ThreadRng) {
         if self.is_debug {
-            // Clear the screen
-            print!("{}[2J", 27 as char);
-
-            {
-                let opcodes = OpCodeWidget::new(&self.gb);
-                let registers = RegistersWidget::new(&self.gb);
-                let flags = FlagsWidget::new(&self.gb);
-                let mut layout = Layout::new();
-                layout.add_widget(Box::new(opcodes), 0);
-                layout.add_widget(Box::new(registers), 1);
-                layout.add_widget(Box::new(flags), 1);
-                layout.draw();
-            }
-
-            loop {
-                println!("Continue? (h for help)");
-                let mut text = String::new();
-                io::stdin()
-                    .read_line(&mut text)
-                    .expect("Input failed unexpectadly");
-                let trimmed = text.trim();
-                match trimmed.as_ref() {
-                    "c" => break,
-                    "h" => print_help(),
-                    _ => print_help(),
-                }
-            }
+            update(&self.gb);
         }
 
         if self.is_debug {

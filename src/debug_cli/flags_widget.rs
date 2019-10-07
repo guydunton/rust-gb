@@ -1,6 +1,6 @@
-use super::instrumentation::{print_flags};
+use super::instrumentation::print_flags;
+use super::layout::Print;
 use crate::gameboy::Gameboy;
-use crate::layout::Print;
 
 pub struct FlagsWidget<'a> {
     gb: &'a Gameboy,
