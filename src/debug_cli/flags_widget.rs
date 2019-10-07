@@ -1,4 +1,4 @@
-use crate::debug::instrumentation::{print_flags};
+use super::instrumentation::{print_flags};
 use crate::gameboy::Gameboy;
 use crate::layout::Print;
 

@@ -4,10 +4,10 @@ use piston::{event_loop::*, input::*, window::WindowSettings};
 use rand::prelude::*;
 use std::env;
 
-mod debug;
+mod debug_cli;
 mod gameboy;
 mod layout;
-use crate::debug::{FlagsWidget, OpCodeWidget, RegistersWidget};
+use crate::debug_cli::{FlagsWidget, OpCodeWidget, RegistersWidget};
 use crate::gameboy::{screen::*, Gameboy};
 use crate::layout::Layout;
 

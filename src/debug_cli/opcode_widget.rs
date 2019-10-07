@@ -1,4 +1,4 @@
-use crate::debug::instrumentation::{get_pc, print_instructions};
+use super::instrumentation::{get_pc, print_instructions};
 use crate::gameboy::Gameboy;
 use crate::layout::Print;
 

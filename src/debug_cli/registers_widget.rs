@@ -1,4 +1,4 @@
-use crate::debug::instrumentation::get_registers;
+use super::instrumentation::get_registers;
 use crate::gameboy::Gameboy;
 use crate::layout::Print;
 
