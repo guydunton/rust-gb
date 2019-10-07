@@ -10,7 +10,7 @@ mod opcode_printer_tests {
             let gb = Gameboy::new(vec![0x00]);
             let current_instruction = gb.get_current_instruction();
 
-            assert_eq!(current_instruction, "NOP".to_owned());
+            assert_eq!(current_instruction.unwrap(), "NOP".to_owned());
         }
 
         test("Can get instruction plus offset") {

@@ -79,7 +79,7 @@ pub fn print_instructions(gb: &Gameboy) -> Vec<Instruction> {
         });
         count += 1;
 
-        if count > 15 {
+        if count > 20 {
             break;
         }
     }
