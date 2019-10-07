@@ -109,6 +109,8 @@ impl<'a> Print for FlagsWidget<'a> {
             output.push(flag);
         }
 
+        output.push(String::from("----------------"));
+
         output
     }
 }

@@ -67,12 +67,18 @@ impl Gameboy {
 
         loop {
             let opcode = self.current_opcode();
+            match opcode {
+                Ok(op) => {
+                    let cycles_used = op.run::<CPU>(&mut self.cpu, &mut self.memory);
 
-            let cycles_used = opcode.run::<CPU>(&mut self.cpu, &mut self.memory);
-
-            total_cycles_used += cycles_used;
-            if total_cycles_used > cycles_to_use {
-                break;
+                    total_cycles_used += cycles_used;
+                    if total_cycles_used > cycles_to_use {
+                        break;
+                    }
+                }
+                Err(err) => {
+                    panic!("{}", err);
+                }
             }
         }
     }
@@ -80,8 +86,15 @@ impl Gameboy {
     #[allow(dead_code)]
     pub fn step_once(&mut self) -> u32 {
         let opcode = self.current_opcode();
-        let cycles = opcode.run::<CPU>(&mut self.cpu, &mut self.memory);
-        cycles
+        match opcode {
+            Ok(op) => {
+                let cycles = op.run::<CPU>(&mut self.cpu, &mut self.memory);
+                return cycles;
+            }
+            Err(err) => {
+                panic!("{}", err);
+            }
+        }
     }
 
     #[allow(dead_code)]
@@ -125,29 +138,61 @@ impl Gameboy {
     }
 
     #[allow(dead_code)]
-    pub fn get_current_instruction(&self) -> String {
+    pub fn get_current_instruction(&self) -> Option<String> {
         let opcode = self.current_opcode();
-        opcode.to_string().trim().to_owned()
+        opcode.map(|op| op.to_string().trim().to_owned()).ok()
     }
 
     #[allow(dead_code)]
     pub fn get_instruction_offset(&self, offset: u16) -> Result<String, ()> {
         let current_counter = self.cpu.read_16_bits(RegisterLabel16::ProgramCounter);
-        let desired_counter = current_counter + offset;
-        if desired_counter >= self.memory.len() as u16 {
-            return Err({});
-        } else {
-            return Ok(opcodes::decode_instruction(desired_counter, &self.memory)
-                .unwrap()
-                .to_string()
-                .trim()
-                .to_owned());
+        let mut opcode_size_offset: u16 = 0;
+        // Loop through instructions to get the correct instructions
+        for _ in 0..offset {
+            // decode the instruction at current_counter + opcode_size_offset
+            let added_counter = current_counter.checked_add(opcode_size_offset);
+
+            match added_counter {
+                Some(value) => {
+                    if value == u16::max_value() {
+                        return Err({});
+                    }
+                    let opcode = self.get_opcode(value);
+                    match opcode {
+                        Ok(op) => opcode_size_offset += op.size(),
+                        Err(_err) => return Err({}),
+                    }
+                }
+                None => {
+                    return Err({});
+                }
+            }
+        }
+
+        let desired_counter = current_counter.checked_add(opcode_size_offset);
+
+        match desired_counter {
+            Some(value) => {
+                if value == u16::max_value() {
+                    return Err({});
+                }
+                let opcode = self.get_opcode(value);
+                return opcode
+                    .map(|op| op.to_string().trim().to_owned())
+                    .map_err(|_| ({}));
+            }
+            None => {
+                return Err({});
+            }
         }
     }
 
-    fn current_opcode(&self) -> OpCode {
+    fn current_opcode(&self) -> Result<OpCode, String> {
         let counter = self.cpu.read_16_bits(RegisterLabel16::ProgramCounter);
-        let opcode = opcodes::decode_instruction(counter, &self.memory).unwrap();
-        opcode
+        self.get_opcode(counter)
+    }
+
+    fn get_opcode(&self, address: u16) -> Result<OpCode, String> {
+        opcodes::decode_instruction(address, &self.memory)
     }
 }
