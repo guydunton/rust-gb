@@ -1,5 +1,5 @@
 use super::super::registers::Registers;
-use crate::gameboy::register::{RegisterLabel16, RegisterLabel8};
+use crate::gameboy::{RegisterLabel16, RegisterLabel8};
 use std::collections::HashMap;
 use super::super::layout::Print;
 use crate::gameboy::Gameboy;

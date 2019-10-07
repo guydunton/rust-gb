@@ -1,6 +1,6 @@
 use super::super::instruction::Instruction;
 use super::super::layout::Print;
-use crate::gameboy::register::RegisterLabel16;
+use crate::gameboy::RegisterLabel16;
 use crate::gameboy::Gameboy;
 
 pub struct OpCodeWidget<'a> {

@@ -1,18 +1,22 @@
 mod cpu;
-pub mod flags_register;
+mod flags_register;
+mod opcodes;
 mod read_write_register;
-pub mod register;
+mod register;
 
-pub mod opcodes;
+// Expose screen because it's not finished yet
 pub mod screen;
 
+// Include the gameboy test suite
 mod tests;
 
+// Expose flags, opcodes and registers
+pub use self::flags_register::{read_flag, write_flag, Flags};
+pub use self::opcodes::{decode_instruction, OpCode};
+pub use self::register::{RegisterLabel16, RegisterLabel8};
+
 use self::cpu::CPU;
-use self::flags_register::{read_flag, write_flag, Flags};
-use self::opcodes::OpCode;
 use self::read_write_register::ReadWriteRegister;
-use self::register::{RegisterLabel16, RegisterLabel8};
 
 pub struct Gameboy {
     cpu: CPU,

@@ -11,7 +11,7 @@ impl<'a> FlagsWidget<'a> {
     }
 
     pub fn print_flags(&self) -> Vec<String> {
-        use crate::gameboy::flags_register::*;
+        use crate::gameboy::Flags;
         let flags = vec![Flags::Z, Flags::N, Flags::H, Flags::C];
 
         let flag_data = flags
