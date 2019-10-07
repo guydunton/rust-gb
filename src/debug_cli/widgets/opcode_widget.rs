@@ -1,5 +1,6 @@
-use super::instrumentation::{get_pc, print_instructions};
-use super::layout::Print;
+use super::super::instruction::Instruction;
+use super::super::layout::Print;
+use crate::gameboy::register::RegisterLabel16;
 use crate::gameboy::Gameboy;
 
 pub struct OpCodeWidget<'a> {
@@ -10,11 +11,36 @@ impl<'a> OpCodeWidget<'a> {
     pub fn new(gb: &'a Gameboy) -> OpCodeWidget {
         OpCodeWidget { gb }
     }
+
+    /// Print the first x instructions until can't decode
+    pub fn print_instructions(&self) -> Vec<Instruction> {
+        let mut instructions = Vec::new();
+
+        let mut count = 0;
+        loop {
+            let opcode = self.gb.get_instruction_offset(count);
+            instructions.push(Instruction {
+                address: self.gb.get_register_16(RegisterLabel16::ProgramCounter) + count,
+                opcode: opcode.unwrap_or_else(|()| String::from("unknown instruction")),
+            });
+            count += 1;
+
+            if count > 20 {
+                break;
+            }
+        }
+
+        instructions
+    }
+
+    pub fn get_pc(&self) -> u16 {
+        self.gb.get_register_16(RegisterLabel16::ProgramCounter)
+    }
 }
 
 impl<'a> Print for OpCodeWidget<'a> {
     fn print(&self) -> Vec<String> {
-        let instructions = print_instructions(&self.gb);
+        let instructions = self.print_instructions();
 
         let mut output = Vec::new();
 
@@ -31,7 +57,7 @@ impl<'a> Print for OpCodeWidget<'a> {
         ));
         output.push(format!("-------------------------------------------"));
         for instruction in instructions {
-            let pc_counter = if instruction.get_address() == get_pc(&self.gb) {
+            let pc_counter = if instruction.get_address() == self.get_pc() {
                 "->"
             } else {
                 "  "

@@ -1,22 +1,12 @@
-mod flags_widget;
 mod instruction;
-mod instrumentation;
 mod layout;
-mod opcode_widget;
 mod registers;
-mod registers_widget;
+mod widgets;
 
 use crate::Gameboy;
-use flags_widget::FlagsWidget;
 use layout::Layout;
-use opcode_widget::OpCodeWidget;
-use registers_widget::RegistersWidget;
 use std::io;
-
-fn print_help() {
-    println!("c => continue");
-    println!("h => help");
-}
+use widgets::{FlagsWidget, OpCodeWidget, RegistersWidget};
 
 pub fn update(gb: &Gameboy) {
     // Clear the screen
@@ -46,4 +36,9 @@ pub fn update(gb: &Gameboy) {
             _ => print_help(),
         }
     }
+}
+
+fn print_help() {
+    println!("c => continue");
+    println!("h => help");
 }
