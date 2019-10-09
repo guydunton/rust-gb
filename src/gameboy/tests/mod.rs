@@ -44,7 +44,7 @@ mod opcode_tests {
             let cycles = gb.step_once();
 
             assert_eq!(gb.get_register_16(RegisterLabel16::HL), 0x0000);
-            assert_eq!(gb.memory[1], 0x01);
+            assert_eq!(gb.get_memory_at(1), 0x01);
             assert_eq!(gb.get_register_16(RegisterLabel16::ProgramCounter), 0x0001);
             assert_eq!(cycles, 8);
         }
@@ -70,7 +70,7 @@ mod opcode_tests {
 
             let cycles = gb.step_once();
 
-            assert_eq!(gb.memory[0xFF01], 0x02);
+            assert_eq!(gb.get_memory_at(0xFF01), 0x02);
             assert_eq!(gb.get_register_16(RegisterLabel16::ProgramCounter), 0x01);
             assert_eq!(cycles, 8);
         }
@@ -82,7 +82,7 @@ mod opcode_tests {
             gb.set_register_8(RegisterLabel8::A, 0x01);
             let cycles = gb.step_once();
 
-            assert_eq!(gb.memory[0x0005], 0x01);
+            assert_eq!(gb.get_memory_at(0x0005), 0x01);
             assert_eq!(gb.get_register_16(RegisterLabel16::ProgramCounter), 0x01);
             assert_eq!(cycles, 8);
         }
@@ -93,7 +93,7 @@ mod opcode_tests {
             gb.set_register_8(RegisterLabel8::A, 0x02);
 
             let cycles = gb.step_once();
-            assert_eq!(gb.memory[0xFF01 as usize], 0x02);
+            assert_eq!(gb.get_memory_at(0xFF01) as usize, 0x02);
             assert_eq!(cycles, 12);
             assert_eq!(gb.get_register_16(RegisterLabel16::ProgramCounter), 0x02);
         }
@@ -264,8 +264,8 @@ mod opcode_tests {
                 // decrements stack and pushed 0x00
                 // decrements again and pushed 0x03
                 let _ = gb.step_once();
-                assert_eq!(gb.memory[0x05], 0x03);
-                assert_eq!(gb.memory[0x06], 0x00);
+                assert_eq!(gb.get_memory_at(0x05), 0x03);
+                assert_eq!(gb.get_memory_at(0x06), 0x00);
 
                 assert_eq!(gb.get_register_16(RegisterLabel16::StackPointer), 0x05);
             }
@@ -285,8 +285,8 @@ mod opcode_tests {
             section("Push moves 2 bytes onto the stack") {
                 let cycles = gb.step_once();
 
-                assert_eq!(gb.memory[1], 0x34);
-                assert_eq!(gb.memory[2], 0x12);
+                assert_eq!(gb.get_memory_at(1), 0x34);
+                assert_eq!(gb.get_memory_at(2), 0x12);
 
                 assert_eq!(gb.get_register_16(RegisterLabel16::StackPointer), 0x01);
 
