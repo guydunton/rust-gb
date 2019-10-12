@@ -1,6 +1,6 @@
-use super::{
-    read_flag, Argument, Flags, JumpCondition, OpCode, ReadWriteRegister, RegisterLabel16,
-};
+use super::super::{read_flag, Flags};
+use super::argument::JumpCondition;
+use super::{Argument, OpCode, ReadWriteRegister, RegisterLabel16};
 
 impl OpCode {
     pub fn run_jmp<T: ReadWriteRegister>(

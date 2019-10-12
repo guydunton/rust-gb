@@ -1,5 +1,6 @@
+use super::super::{read_flag, write_flag, Flags, RegisterLabel8};
 use super::rotate_method::shift_reg_and_flag;
-use super::{read_flag, write_flag, Flags, OpCode, ReadWriteRegister, RegisterLabel8};
+use super::{OpCode, ReadWriteRegister};
 
 impl OpCode {
     pub fn run_rla<T: ReadWriteRegister>(

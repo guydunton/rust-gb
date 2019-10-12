@@ -1,4 +1,7 @@
-use super::{Argument, OpCode, ReadWriteRegister, RegisterLabel16};
+use super::argument::Argument;
+use super::OpCode;
+use super::ReadWriteRegister;
+use crate::gameboy::RegisterLabel16;
 
 impl OpCode {
     pub fn run_call<T: ReadWriteRegister>(

@@ -1,9 +1,9 @@
 mod cpu;
 mod flags_register;
+mod gameboy;
 mod opcodes;
 mod read_write_register;
 mod register;
-mod gameboy;
 
 // Expose screen because it's not finished yet
 pub mod screen;
@@ -12,10 +12,7 @@ pub mod screen;
 mod tests;
 
 // Expose Gameboy, flags, opcodes and registers
-pub use self::gameboy::Gameboy;
 pub use self::flags_register::{read_flag, write_flag, Flags};
-pub use self::opcodes::{OpCode};
+pub use self::gameboy::Gameboy;
+pub use self::opcodes::OpCode;
 pub use self::register::{RegisterLabel16, RegisterLabel8};
-
-
-

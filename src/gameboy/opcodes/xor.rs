@@ -1,5 +1,6 @@
+use super::super::RegisterLabel8;
 use super::ReadWriteRegister;
-use super::{Argument, OpCode, RegisterLabel8};
+use super::{Argument, OpCode};
 
 impl OpCode {
     pub fn run_xor<T: ReadWriteRegister>(

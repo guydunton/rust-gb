@@ -1,5 +1,6 @@
+use super::super::{read_flag, write_flag, Flags, OpCode};
 use super::rotate_method::shift_reg_and_flag;
-use super::{read_flag, write_flag, Argument, Flags, OpCode, ReadWriteRegister};
+use super::{Argument, ReadWriteRegister};
 
 impl OpCode {
     pub fn run_rl<T: ReadWriteRegister>(

@@ -1,5 +1,7 @@
+use super::super::flags_register::{write_flag, Flags};
+use super::argument::Argument;
+use super::OpCode;
 use super::ReadWriteRegister;
-use super::{write_flag, Argument, Flags, OpCode};
 
 impl OpCode {
     pub fn run_bit<T: ReadWriteRegister>(

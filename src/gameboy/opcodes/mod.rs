@@ -1,6 +1,7 @@
 mod argument;
 mod bit;
 mod call;
+mod catagory;
 mod inc;
 mod jmp;
 mod ld16;
@@ -11,59 +12,11 @@ mod rotate_left_a;
 mod rotate_method;
 mod xor;
 
-use self::argument::{size_in_bytes, Argument, JumpCondition};
-use super::flags_register::*;
 use super::read_write_register::ReadWriteRegister;
-use super::register::{RegisterLabel16, RegisterLabel8};
+use super::RegisterLabel16;
+use argument::{arg_from_str, size_in_bytes, Argument};
+use catagory::{catagory_from_str, catagory_size, Catagory};
 use std::fmt;
-
-fn arg_from_str(arg: &str, index: u16, memory: &[u8]) -> Result<Argument, String> {
-    let result = match arg {
-        "DE" => Argument::Register16Constant(RegisterLabel16::DE),
-        "HL" => Argument::Register16Constant(RegisterLabel16::HL),
-        "SP" => Argument::Register16Constant(RegisterLabel16::StackPointer),
-        "BC" => Argument::Register16Constant(RegisterLabel16::BC),
-        "(HL-)" => Argument::RegisterIndirectDec(RegisterLabel16::HL),
-        "A" => Argument::Register8Constant(RegisterLabel8::A),
-        "B" => Argument::Register8Constant(RegisterLabel8::B),
-        "C" => Argument::Register8Constant(RegisterLabel8::C),
-        "H" => Argument::Register8Constant(RegisterLabel8::H),
-        "(C)" => Argument::HighOffsetRegister(RegisterLabel8::C),
-        "(DE)" => Argument::RegisterIndirect(RegisterLabel16::DE),
-        "(HL)" => Argument::RegisterIndirect(RegisterLabel16::HL),
-        "(a8)" => Argument::HighOffsetConstant(memory[index as usize + 1]),
-        "a16" => Argument::Label(u16::from_le_bytes([
-            memory[(index + 1) as usize],
-            memory[(index + 2) as usize],
-        ])),
-        "d16" => Argument::LargeValue(u16::from_le_bytes([
-            memory[(index + 1) as usize],
-            memory[(index + 2) as usize],
-        ])),
-        "d8" => Argument::SmallValue(memory[(index + 1) as usize]),
-        "NZ" => Argument::JumpArgument(JumpCondition::NotZero),
-        "r8" => Argument::JumpDistance(memory[(index + 1) as usize] as i8),
-        "7" => Argument::Bit(7),
-        _ => return Err(format!("Unknown argument: {}", arg)),
-    };
-    Ok(result)
-}
-
-fn catagory_from_str(cat: &str) -> Catagory {
-    match cat {
-        "NOP" => Catagory::NOP,
-        "LD16" => Catagory::LD16,
-        "LD8" => Catagory::LD8,
-        "XOR" => Catagory::XOR,
-        "BIT" => Catagory::BIT,
-        "JR" => Catagory::JR,
-        "INC" => Catagory::INC,
-        "CALL" => Catagory::CALL,
-        "PUSH" => Catagory::PUSH,
-        "RL" => Catagory::RL,
-        _ => Catagory::NOP,
-    }
-}
 
 pub fn decode_instruction(program_counter: u16, program_code: &[u8]) -> Result<OpCode, String> {
     let code = program_code[program_counter as usize];
@@ -180,7 +133,7 @@ impl OpCode {
         cycles
     }
 
-    fn new(catagory: Catagory, args: Vec<Argument>) -> OpCode {
+    pub fn new(catagory: Catagory, args: Vec<Argument>) -> OpCode {
         OpCode { catagory, args }
     }
 
@@ -203,33 +156,4 @@ impl fmt::Display for OpCode {
 
         write!(f, "{} {}", catagory, args)
     }
-}
-
-#[derive(Debug, Copy, Clone)]
-enum Catagory {
-    NOP,
-    LD16,
-    LD8,
-    XOR,
-    BIT,
-    JR,
-    INC,
-    CALL,
-    PUSH,
-    RL,
-    RLA,
-}
-
-fn is_cb_catagory(catagory: Catagory) -> bool {
-    match catagory {
-        Catagory::RL => true,
-        Catagory::BIT => true,
-        _ => false,
-    }
-}
-
-fn catagory_size(catagory: Catagory) -> u16 {
-    let cb_size = if is_cb_catagory(catagory) { 1 } else { 0 };
-    let total_size = cb_size + 1;
-    total_size
 }

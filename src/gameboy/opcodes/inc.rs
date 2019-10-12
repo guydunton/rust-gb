@@ -1,4 +1,5 @@
-use super::{write_flag, Argument, Flags, OpCode, ReadWriteRegister};
+use super::super::{write_flag, Flags};
+use super::{Argument, OpCode, ReadWriteRegister};
 
 impl OpCode {
     pub fn run_inc<T: ReadWriteRegister>(
