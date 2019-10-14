@@ -136,7 +136,7 @@ impl Gameboy {
     }
 
     #[allow(dead_code)]
-    pub fn get_instruction_offset(&self, offset: u16) -> Result<String, ()> {
+    pub fn get_instruction_offset(&self, offset: u16) -> Result<(String, u16), ()> {
         let current_counter = self.cpu.read_16_bits(RegisterLabel16::ProgramCounter);
         let mut opcode_size_offset: u16 = 0;
         // Loop through instructions to get the correct instructions
@@ -170,7 +170,7 @@ impl Gameboy {
                 }
                 let opcode = self.get_opcode(value);
                 return opcode
-                    .map(|op| op.to_string().trim().to_owned())
+                    .map(|op| (op.to_string().trim().to_owned(), value))
                     .map_err(|_| ({}));
             }
             None => {

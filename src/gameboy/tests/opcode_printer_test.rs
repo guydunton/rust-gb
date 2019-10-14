@@ -15,16 +15,18 @@ mod opcode_printer_tests {
 
         test("Can get instruction plus offset") {
             let gb = Gameboy::new(vec![0x00, 0x0C]);
-            let next_instruction = gb.get_instruction_offset(1).unwrap();
+            let (next_instruction, address) = gb.get_instruction_offset(1).unwrap();
 
             assert_eq!(next_instruction, "INC C".to_owned());
+            assert_eq!(address, 0x01);
         }
 
         test("Get a second instruction correctly") {
             let gb = Gameboy::new(vec![0x31, 0xFE, 0xFF, 0x00]);
-            let next_instruction = gb.get_instruction_offset(1).unwrap();
+            let (next_instruction, address) = gb.get_instruction_offset(1).unwrap();
 
             assert_eq!(next_instruction, "NOP".to_owned());
+            assert_eq!(address, 0x03);
         }
     }
 

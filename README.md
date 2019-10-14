@@ -26,5 +26,5 @@ The link to my modified version can be found here: [Opcodes](https://www.guydunt
 
 - [x] Clean up debug cli
 - [x] Clean up opcodes directory
-- [ ] Clean the opcode tests
 - [ ] Continue adding support for bootloader commands.
+- [ ] Clean the opcode tests

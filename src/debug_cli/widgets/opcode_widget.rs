@@ -19,9 +19,12 @@ impl<'a> OpCodeWidget<'a> {
         let mut count = 0;
         loop {
             let opcode = self.gb.get_instruction_offset(count);
-            instructions.push(Instruction {
-                address: self.gb.get_register_16(RegisterLabel16::ProgramCounter) + count,
-                opcode: opcode.unwrap_or_else(|()| String::from("unknown instruction")),
+            instructions.push(match opcode {
+                Ok((opcode, address)) => Instruction { address, opcode },
+                Err(_) => Instruction {
+                    address: 0x00,
+                    opcode: String::from("unknown instruction"),
+                },
             });
             count += 1;
 
