@@ -9,6 +9,7 @@ pub enum Catagory {
     INC,
     CALL,
     PUSH,
+    POP,
     RL,
     RLA,
 }
@@ -32,8 +33,11 @@ pub fn catagory_from_str(cat: &str) -> Catagory {
         "INC" => Catagory::INC,
         "CALL" => Catagory::CALL,
         "PUSH" => Catagory::PUSH,
+        "POP" => Catagory::POP,
         "RL" => Catagory::RL,
-        _ => Catagory::NOP,
+        _ => {
+            panic!("Failed to create category {:?}", cat);
+        }
     }
 }
 

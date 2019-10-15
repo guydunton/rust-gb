@@ -51,11 +51,11 @@ impl Gameboy {
         Gameboy::new(bootloader)
     }
 
-    /// Construct a new Gameboy
-    /// 
-    /// Create a Gameboy object using the passed in Vec to fill the
-    /// first section of memory. All other parts of memory will be set
-    /// to zero.
+    /// Construct a new Gameboy.
+    ///
+    /// The provided Vec to fill the first section of memory,
+    /// starting at 0x0000. All other parts of memory will be
+    /// set to zero.
     #[allow(dead_code)]
     pub fn new(data: Vec<u8>) -> Gameboy {
         let mut memory = vec![0; 0xFFFF];
@@ -90,6 +90,7 @@ impl Gameboy {
         }
     }
 
+    /// Run the next instruction and return the number of cycles used.
     #[allow(dead_code)]
     pub fn step_once(&mut self) -> u32 {
         let opcode = self.current_opcode();

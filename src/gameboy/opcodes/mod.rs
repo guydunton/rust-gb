@@ -6,6 +6,7 @@ mod inc;
 mod jmp;
 mod ld16;
 mod ld8;
+mod pop;
 mod push;
 mod rotate_left;
 mod rotate_left_a;
@@ -53,6 +54,7 @@ pub fn decode_instruction(program_counter: u16, program_code: &[u8]) -> Result<O
         0x4F => opcode("LD8 C A"),
         0x77 => opcode("LD8 (HL) A"),
         0xAF => opcode("XOR A"),
+        0xC1 => opcode("POP BC"),
         0xC5 => opcode("PUSH BC"),
         0xCB => {
             // 0xCB is prefix and the next byte shows the actual instruction
@@ -118,6 +120,9 @@ impl OpCode {
             }
             Catagory::PUSH => {
                 cycles += self.run_push::<T>(cpu, memory);
+            }
+            Catagory::POP => {
+                cycles += self.run_pop::<T>(cpu, memory);
             }
             Catagory::INC => {
                 cycles += self.run_inc::<T>(cpu, memory);
