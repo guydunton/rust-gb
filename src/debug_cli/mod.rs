@@ -24,7 +24,7 @@ pub fn update(gb: &Gameboy) {
     }
 
     loop {
-        println!("Continue? (h for help)");
+        println!("Continue? (h for help) [c]");
         let mut text = String::new();
         io::stdin()
             .read_line(&mut text)
@@ -33,7 +33,7 @@ pub fn update(gb: &Gameboy) {
         match trimmed.as_ref() {
             "c" => break,
             "h" => print_help(),
-            _ => print_help(),
+            _ => break,
         }
     }
 }
