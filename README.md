@@ -26,7 +26,8 @@ The link to my modified version can be found here: [Opcodes](https://www.guydunt
 
 - [x] Clean up debug cli
 - [x] Clean up opcodes directory
-- [ ] Support 0xC1 at 0x9C
+- [x] Support 0xC1 at 0x9C
+- [ ] Support 0x50 at 0xA0
 - [ ] Debug should continue by default
 - [ ] Add debug breakpoints
 - [ ] Continue adding support for bootloader commands.
