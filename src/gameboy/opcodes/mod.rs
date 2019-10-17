@@ -51,6 +51,7 @@ pub fn decode_instruction(program_counter: u16, program_code: &[u8]) -> Result<O
         0x20 => opcode("JR NZ r8"),
         0x21 => opcode("LD16 HL d16"),
         0x22 => opcode("LD8 (HL+) A"),
+        0x23 => opcode("INC HL"),
         0x31 => opcode("LD16 SP d16"),
         0x32 => opcode("LD8 (HL-) A"),
         0x3E => opcode("LD8 A d8"),

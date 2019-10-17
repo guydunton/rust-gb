@@ -26,6 +26,11 @@ impl OpCode {
             cpu.write_8_bits(reg, new_val);
 
             cycles += 4;
+        } else if let Argument::Register16Constant(register) = self.args[0] {
+            let current_value = cpu.read_16_bits(register);
+            let (result, _) = current_value.overflowing_add(1);
+            cpu.write_16_bits(register, result);
+            cycles += 8
         }
         cycles
     }
