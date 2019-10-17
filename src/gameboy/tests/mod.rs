@@ -1,5 +1,6 @@
 mod opcode_printer_test;
 mod pop_test;
+mod dec_test;
 
 #[cfg(test)]
 mod opcode_tests {

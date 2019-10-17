@@ -2,6 +2,7 @@ mod argument;
 mod bit;
 mod call;
 mod catagory;
+mod dec;
 mod inc;
 mod jmp;
 mod ld16;
@@ -14,7 +15,7 @@ mod rotate_method;
 mod xor;
 
 use super::read_write_register::ReadWriteRegister;
-use super::RegisterLabel16;
+use super::{RegisterLabel16, RegisterLabel8};
 use argument::{arg_from_str, size_in_bytes, Argument};
 use catagory::{catagory_from_str, catagory_size, Catagory};
 use std::fmt;
@@ -40,6 +41,7 @@ pub fn decode_instruction(program_counter: u16, program_code: &[u8]) -> Result<O
 
     match code {
         0x00 => opcode("NOP"),
+        0x05 => opcode("DEC B"),
         0x06 => opcode("LD8 B d8"),
         0x0C => opcode("INC C"),
         0x0E => opcode("LD8 C d8"),
@@ -126,6 +128,9 @@ impl OpCode {
             }
             Catagory::INC => {
                 cycles += self.run_inc::<T>(cpu, memory);
+            }
+            Catagory::DEC => {
+                cycles += self.run_dec::<T>(cpu, memory);
             }
             Catagory::RL => {
                 cycles += self.run_rl::<T>(cpu, memory);
