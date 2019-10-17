@@ -1,6 +1,8 @@
+mod dec_test;
+mod load16_test;
+mod load8_test;
 mod opcode_printer_test;
 mod pop_test;
-mod dec_test;
 
 #[cfg(test)]
 mod opcode_tests {
@@ -13,103 +15,6 @@ mod opcode_tests {
         ([ $( $x:expr ),* ]) => {
             Gameboy::new( vec![$($x,)*])
         };
-    }
-
-    #[test]
-    fn load16_instructions() {
-        let ld_16_test = |byte_code, register| {
-            let mut gb = testgb!([byte_code, 0xFE, 0xFF]);
-            let cycles = gb.step_once();
-
-            assert_eq!(gb.get_register_16(register), 0xFFFE);
-            assert_eq!(gb.get_register_16(RegisterLabel16::ProgramCounter), 0x0003);
-            assert_eq!(cycles, 12);
-        };
-
-        // LD SP d16
-        ld_16_test(0x31, RegisterLabel16::StackPointer);
-
-        // LD HL d16
-        ld_16_test(0x21, RegisterLabel16::HL);
-
-        // LD DE d16
-        ld_16_test(0x11, RegisterLabel16::DE);
-    }
-
-    #[test]
-    fn load8_instructions() {
-        {
-            // LD (HL-) A
-            let mut gb = testgb!([0x32, 0x00]);
-            gb.set_register_16(RegisterLabel16::HL, 0x0001);
-            gb.set_register_8(RegisterLabel8::A, 0x01);
-            let cycles = gb.step_once();
-
-            assert_eq!(gb.get_register_16(RegisterLabel16::HL), 0x0000);
-            assert_eq!(gb.get_memory_at(1), 0x01);
-            assert_eq!(gb.get_register_16(RegisterLabel16::ProgramCounter), 0x0001);
-            assert_eq!(cycles, 8);
-        }
-
-        let ld8_test = |byte_code, register| {
-            let mut gb = testgb!([byte_code, 0x01]);
-            let _ = gb.step_once();
-            assert_eq!(gb.get_register_8(register), 0x01);
-            assert_eq!(gb.get_register_16(RegisterLabel16::ProgramCounter), 0x02);
-        };
-
-        // LD c d8
-        ld8_test(0x0E, RegisterLabel8::C);
-
-        // LD A d8
-        ld8_test(0x3E, RegisterLabel8::A);
-
-        {
-            // LD (C) A
-            let mut gb = testgb!([0xE2]);
-            gb.set_register_8(RegisterLabel8::C, 0x01);
-            gb.set_register_8(RegisterLabel8::A, 0x02);
-
-            let cycles = gb.step_once();
-
-            assert_eq!(gb.get_memory_at(0xFF01), 0x02);
-            assert_eq!(gb.get_register_16(RegisterLabel16::ProgramCounter), 0x01);
-            assert_eq!(cycles, 8);
-        }
-
-        {
-            // LD (HL) A
-            let mut gb = testgb!([0x77]);
-            gb.set_register_16(RegisterLabel16::HL, 0x0005);
-            gb.set_register_8(RegisterLabel8::A, 0x01);
-            let cycles = gb.step_once();
-
-            assert_eq!(gb.get_memory_at(0x0005), 0x01);
-            assert_eq!(gb.get_register_16(RegisterLabel16::ProgramCounter), 0x01);
-            assert_eq!(cycles, 8);
-        }
-
-        {
-            // LDH (a8) A
-            let mut gb = testgb!([0xE0, 0x01]);
-            gb.set_register_8(RegisterLabel8::A, 0x02);
-
-            let cycles = gb.step_once();
-            assert_eq!(gb.get_memory_at(0xFF01) as usize, 0x02);
-            assert_eq!(cycles, 12);
-            assert_eq!(gb.get_register_16(RegisterLabel16::ProgramCounter), 0x02);
-        }
-
-        {
-            // LD A (DE)
-            let mut gb = testgb!([0x1A, 0x01]);
-            gb.set_register_16(RegisterLabel16::DE, 0x01);
-
-            let cycles = gb.step_once();
-            assert_eq!(cycles, 8);
-            assert_eq!(gb.get_register_8(RegisterLabel8::A), 0x01);
-            assert_eq!(gb.get_register_16(RegisterLabel16::ProgramCounter), 0x01);
-        }
     }
 
     #[test]

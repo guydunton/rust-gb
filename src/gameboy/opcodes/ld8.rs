@@ -7,47 +7,38 @@ impl OpCode {
         cpu: &mut dyn ReadWriteRegister,
         memory: &mut Vec<u8>,
     ) -> u32 {
-        let mut cycles = 0;
         assert_eq!(self.args.len(), 2);
         {
             let source = match self.args[1] {
                 Argument::Register8Constant(register) => cpu.read_8_bits(register),
-                Argument::RegisterIndirect(register) => {
-                    cycles += 4;
-                    memory[cpu.read_16_bits(register) as usize]
-                }
+                Argument::RegisterIndirect(register) => memory[cpu.read_16_bits(register) as usize],
                 Argument::SmallValue(val) => val,
                 _ => panic!("Command does not support argument {:?}", self.args[1]),
             };
 
             let mut dest = |val: u8| match self.args[0] {
                 Argument::RegisterIndirectDec(register) => {
-                    cycles += 4;
+                    memory[cpu.read_16_bits(register) as usize] = val;
+                }
+                Argument::RegisterIndirectInc(register) => {
                     memory[cpu.read_16_bits(register) as usize] = val;
                 }
                 Argument::RegisterIndirect(register) => {
-                    let address = cpu.read_16_bits(register);
-                    memory[address as usize] = val;
-                    cycles += 4;
+                    memory[cpu.read_16_bits(register) as usize] = val;
                 }
                 Argument::HighOffsetConstant(offset) => {
-                    let address = (0xFF00 as usize) + (offset as usize);
-                    memory[address] = val;
-                    cycles += 8;
+                    memory[(0xFF00 as usize) + (offset as usize)] = val;
                 }
                 Argument::Register8Constant(register) => {
                     cpu.write_8_bits(register, val);
                 }
                 Argument::HighOffsetRegister(register) => {
-                    cycles += 4;
-                    let offset = cpu.read_8_bits(register) as u16;
-                    memory[(0xFF00 + offset) as usize] = val;
+                    memory[(0xFF00 + cpu.read_8_bits(register) as u16) as usize] = val;
                 }
                 _ => panic!("Command does not support argument {:?}", self.args[0]),
             };
 
             dest(source);
-            cycles += 4;
         }
 
         match self.args[0] {
@@ -55,9 +46,25 @@ impl OpCode {
                 let new_val = cpu.read_16_bits(register) - 1;
                 cpu.write_16_bits(register, new_val);
             }
+            Argument::RegisterIndirectInc(register) => {
+                let new_val = cpu.read_16_bits(register) + 1;
+                cpu.write_16_bits(register, new_val);
+            }
             _ => {} // Do nothing
         }
 
-        cycles
+        // Get the cycle cost of each argument + the base for the command
+        4 + get_argument_cycles(self.args[1]) + get_argument_cycles(self.args[0])
+    }
+}
+
+fn get_argument_cycles(argument: Argument) -> u32 {
+    match argument {
+        Argument::RegisterIndirect(_) => 4,
+        Argument::RegisterIndirectDec(_) => 4,
+        Argument::RegisterIndirectInc(_) => 4,
+        Argument::HighOffsetConstant(_) => 8,
+        Argument::HighOffsetRegister(_) => 4,
+        _ => 0,
     }
 }
