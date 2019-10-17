@@ -7,31 +7,44 @@ impl OpCode {
         cpu: &mut dyn ReadWriteRegister,
         _memory: &mut Vec<u8>,
     ) -> u32 {
-        let mut cycles = 0;
-        if let Argument::Register8Constant(reg) = self.args[0] {
-            let reg_value = cpu.read_8_bits(reg);
+        match self.args[0] {
+            Argument::Register8Constant(reg) => {
+                let reg_value = cpu.read_8_bits(reg);
 
-            let (new_val, overflow) = reg_value.overflowing_add(1);
+                let (new_val, overflow) = reg_value.overflowing_add(1);
 
-            if overflow {
-                write_flag::<T>(cpu, Flags::Z, true);
+                if overflow {
+                    write_flag::<T>(cpu, Flags::Z, true);
+                }
+
+                write_flag::<T>(cpu, Flags::N, false);
+
+                if new_val == (0x0F + 1) {
+                    write_flag::<T>(cpu, Flags::H, true);
+                }
+
+                cpu.write_8_bits(reg, new_val);
             }
-
-            write_flag::<T>(cpu, Flags::N, false);
-
-            if new_val == (0x0F + 1) {
-                write_flag::<T>(cpu, Flags::H, true);
+            Argument::Register16Constant(register) => {
+                let current_value = cpu.read_16_bits(register);
+                let (result, _) = current_value.overflowing_add(1);
+                cpu.write_16_bits(register, result);
             }
-
-            cpu.write_8_bits(reg, new_val);
-
-            cycles += 4;
-        } else if let Argument::Register16Constant(register) = self.args[0] {
-            let current_value = cpu.read_16_bits(register);
-            let (result, _) = current_value.overflowing_add(1);
-            cpu.write_16_bits(register, result);
-            cycles += 8
+            _ => {
+                panic!(
+                    "Unsupported argument found in IN instruction: {:?}",
+                    self.args[0]
+                );
+            }
         }
-        cycles
+        get_argument_cycles(self.args[0])
+    }
+}
+
+fn get_argument_cycles(argument: Argument) -> u32 {
+    match argument {
+        Argument::Register8Constant(_) => 4,
+        Argument::Register16Constant(_) => 8,
+        _ => 0,
     }
 }
