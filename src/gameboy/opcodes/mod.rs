@@ -1,7 +1,7 @@
 mod argument;
 mod bit;
 mod call;
-mod catagory;
+mod category;
 mod dec;
 mod inc;
 mod jmp;
@@ -17,7 +17,7 @@ mod xor;
 use super::read_write_register::ReadWriteRegister;
 use super::{RegisterLabel16, RegisterLabel8};
 use argument::{arg_from_str, size_in_bytes, Argument};
-use catagory::{catagory_from_str, catagory_size, Catagory};
+use category::{category_from_str, category_size, Category};
 use std::fmt;
 
 pub fn decode_instruction(program_counter: u16, program_code: &[u8]) -> Result<OpCode, String> {
@@ -25,7 +25,7 @@ pub fn decode_instruction(program_counter: u16, program_code: &[u8]) -> Result<O
 
     let opcode = |text: &str| -> Result<OpCode, String> {
         let parts = text.split(' ').collect::<Vec<&str>>();
-        let catagory = catagory_from_str(parts[0]);
+        let category = category_from_str(parts[0]);
 
         let args = parts[1..]
             .iter()
@@ -36,7 +36,7 @@ pub fn decode_instruction(program_counter: u16, program_code: &[u8]) -> Result<O
             clean_args.push(arg?);
         }
 
-        Ok(OpCode::new(catagory, clean_args))
+        Ok(OpCode::new(category, clean_args))
     };
 
     match code {
@@ -46,7 +46,7 @@ pub fn decode_instruction(program_counter: u16, program_code: &[u8]) -> Result<O
         0x0C => opcode("INC C"),
         0x0E => opcode("LD8 C d8"),
         0x11 => opcode("LD16 DE d16"),
-        0x17 => Ok(OpCode::new(Catagory::RLA, vec![])),
+        0x17 => Ok(OpCode::new(Category::RLA, vec![])),
         0x1A => opcode("LD8 A (DE)"),
         0x20 => opcode("JR NZ r8"),
         0x21 => opcode("LD16 HL d16"),
@@ -80,7 +80,7 @@ pub fn decode_instruction(program_counter: u16, program_code: &[u8]) -> Result<O
 }
 
 pub struct OpCode {
-    catagory: Catagory,
+    category: Category,
     args: Vec<Argument>,
 }
 
@@ -99,45 +99,45 @@ impl OpCode {
 
         let mut cycles = 0;
 
-        match self.catagory {
-            Catagory::LD16 => {
+        match self.category {
+            Category::LD16 => {
                 cycles += self.run_ld16::<T>(cpu, memory);
             }
-            Catagory::LD8 => {
+            Category::LD8 => {
                 cycles += self.run_ld8::<T>(cpu, memory);
             }
-            Catagory::NOP => {
+            Category::NOP => {
                 // Do nothing
                 cycles += 4;
             }
-            Catagory::XOR => {
+            Category::XOR => {
                 cycles += self.run_xor::<T>(cpu, memory);
             }
-            Catagory::BIT => {
+            Category::BIT => {
                 cycles += self.run_bit::<T>(cpu, memory);
             }
-            Catagory::JR => {
+            Category::JR => {
                 cycles += self.run_jmp::<T>(cpu, memory);
             }
-            Catagory::CALL => {
+            Category::CALL => {
                 cycles += self.run_call::<T>(cpu, memory);
             }
-            Catagory::PUSH => {
+            Category::PUSH => {
                 cycles += self.run_push::<T>(cpu, memory);
             }
-            Catagory::POP => {
+            Category::POP => {
                 cycles += self.run_pop::<T>(cpu, memory);
             }
-            Catagory::INC => {
+            Category::INC => {
                 cycles += self.run_inc::<T>(cpu, memory);
             }
-            Catagory::DEC => {
+            Category::DEC => {
                 cycles += self.run_dec::<T>(cpu, memory);
             }
-            Catagory::RL => {
+            Category::RL => {
                 cycles += self.run_rl::<T>(cpu, memory);
             }
-            Catagory::RLA => {
+            Category::RLA => {
                 cycles += self.run_rla::<T>(cpu, memory);
             }
         };
@@ -145,19 +145,19 @@ impl OpCode {
         cycles
     }
 
-    pub fn new(catagory: Catagory, args: Vec<Argument>) -> OpCode {
-        OpCode { catagory, args }
+    pub fn new(category: Category, args: Vec<Argument>) -> OpCode {
+        OpCode { category, args }
     }
 
     pub fn size(&self) -> u16 {
-        let type_size = catagory_size(self.catagory);
+        let type_size = category_size(self.category);
         self.args.iter().map(|arg| size_in_bytes(*arg)).sum::<u16>() + type_size
     }
 }
 
 impl fmt::Display for OpCode {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let catagory = format!("{:?}", self.catagory);
+        let category = format!("{:?}", self.category);
 
         let args = self
             .args
@@ -166,6 +166,6 @@ impl fmt::Display for OpCode {
             .collect::<Vec<String>>()
             .join(" ");
 
-        write!(f, "{} {}", catagory, args)
+        write!(f, "{} {}", category, args)
     }
 }
