@@ -26,6 +26,7 @@ fn is_cb_category(category: Category) -> bool {
 pub fn category_from_str(cat: &str) -> Category {
     match cat {
         "NOP" => Category::NOP,
+        "RLA" => Category::RLA,
         "LD16" => Category::LD16,
         "LD8" => Category::LD8,
         "XOR" => Category::XOR,
