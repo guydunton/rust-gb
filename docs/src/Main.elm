@@ -27,16 +27,17 @@ printOpcode opcode =
 
 convertRow : Int -> List (Html ()) -> Html ()
 convertRow index row =
-    tr [] ([td [] [text (String.fromInt index)]] ++ row)
+    tr [] ([ td [] [ text (String.fromInt index) ] ] ++ row)
 
 
 convertToTable : List (Html ()) -> Html ()
 convertToTable rows =
     let
-        headerRow = List.range 0 15
-            |> List.map (\i -> td [] [text (String.fromInt i)])
+        headerRow =
+            List.range 0 15
+                |> List.map (\i -> td [] [ text (String.fromInt i) ])
     in
-    table [] (( td [] [] :: headerRow) ++ rows)
+    table [] ((td [] [] :: headerRow) ++ rows)
 
 
 main =
