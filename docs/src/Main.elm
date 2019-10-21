@@ -25,14 +25,18 @@ printOpcode opcode =
             td [] [ text "unset" ]
 
 
-convertRow : List (Html ()) -> Html ()
-convertRow row =
-    tr [] row
+convertRow : Int -> List (Html ()) -> Html ()
+convertRow index row =
+    tr [] ([td [] [text (String.fromInt index)]] ++ row)
 
 
 convertToTable : List (Html ()) -> Html ()
 convertToTable rows =
-    table [] rows
+    let
+        headerRow = List.range 0 15
+            |> List.map (\i -> td [] [text (String.fromInt i)])
+    in
+    table [] (( td [] [] :: headerRow) ++ rows)
 
 
 main =
@@ -41,5 +45,5 @@ main =
     opcodes_dict
         |> List.map printOpcode
         |> split 16
-        |> List.map convertRow
+        |> List.indexedMap convertRow
         |> convertToTable
