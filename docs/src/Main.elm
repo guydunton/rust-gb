@@ -1,7 +1,8 @@
 module Main exposing (main)
 
-import Html exposing (Html, p, table, td, text, tr)
-import Opcode exposing (Opcode(..))
+import Html exposing (Html, br, p, span, table, td, text, tr)
+import Html.Attributes exposing (style)
+import Opcode exposing (Opcode(..), OpcodeData)
 import OpcodesDict exposing (opcodes_dict)
 
 
@@ -15,19 +16,57 @@ split i list =
             listHead :: split i (List.drop i list)
 
 
+cellStyles : String -> List (Html.Attribute msg)
+cellStyles color =
+    [ style "background-color" color
+    , style "border-width" "1px"
+    , style "border-style" "solid"
+    , style "border-color" "black"
+    , style "border-collapse" "collapse"
+    , style "font-size" "8pt"
+    , style "width" "8em"
+    ]
+
+
+createCell : String -> List String -> Html ()
+createCell color contents =
+    td
+        (cellStyles color ++ [ style "width" "" ])
+        (contents |> List.map (\t -> text t))
+
+
+cellFromOpcode : OpcodeData -> Html ()
+cellFromOpcode opcode =
+    td
+        (cellStyles opcode.bgColor)
+        [ text opcode.pneumonic
+        , br [] []
+        , span
+            [ style "padding-right" "1em" ]
+            [ text (String.fromInt opcode.size) ]
+        , text opcode.timeTaken
+        , br [] []
+        , text opcode.flags
+        ]
+
+
 printOpcode : Opcode -> Html ()
 printOpcode opcode =
     case opcode of
         Set data ->
-            td [] [ text data.pneumonic ]
+            cellFromOpcode data
 
         Unset ->
-            td [] [ text "unset" ]
+            createCell "" [ "" ]
 
 
 convertRow : Int -> List (Html ()) -> Html ()
 convertRow index row =
-    tr [] ([ td [] [ text (String.fromInt index) ] ] ++ row)
+    let
+        rowLabel =
+            createCell "#9f9f9f" [ String.fromInt index ]
+    in
+    tr [] (rowLabel :: row)
 
 
 convertToTable : List (Html ()) -> Html ()
@@ -35,9 +74,20 @@ convertToTable rows =
     let
         headerRow =
             List.range 0 15
-                |> List.map (\i -> td [] [ text (String.fromInt i) ])
+                |> List.map (\i -> createCell "#9f9f9f" [ String.fromInt i ])
+                |> (\row -> tr [] (createCell "#9f9f9f" [ "" ] :: row))
     in
-    table [] ((td [] [] :: headerRow) ++ rows)
+    table
+        [ style "background-color" "#bfbfbf"
+        , style "border-width" "1px"
+        , style "font-family" "monospace"
+        , style "line-height" "normal"
+        , style "border-style" "solid"
+        , style "border-color" "black"
+        , style "border-collapse" "collapse"
+        , style "text-align" "center"
+        ]
+        (headerRow :: rows)
 
 
 main =
