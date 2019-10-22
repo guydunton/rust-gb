@@ -1,5 +1,6 @@
 module OpcodeTable exposing (DisplayProperties, showAll, viewTable)
 
+import Hex exposing (toHex)
 import Html exposing (Html, br, span, table, td, text, tr)
 import Html.Attributes exposing (style)
 import Opcode exposing (Opcode(..), OpcodeData)
@@ -95,7 +96,7 @@ convertRow : Int -> List (Html msg) -> Html msg
 convertRow index row =
     let
         rowLabel =
-            createCell "#9f9f9f" [ String.fromInt index ]
+            createCell "#9f9f9f" [ "0x" ++ toHex index ++ "X" ]
     in
     tr [] (rowLabel :: row)
 
@@ -105,7 +106,7 @@ convertToTable rows =
     let
         headerRow =
             List.range 0 15
-                |> List.map (\i -> createCell "#9f9f9f" [ String.fromInt i ])
+                |> List.map (\i -> createCell "#9f9f9f" [ "0xX" ++ toHex i ])
                 |> (\row -> tr [] (createCell "#9f9f9f" [ "" ] :: row))
     in
     table
