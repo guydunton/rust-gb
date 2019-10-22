@@ -4,6 +4,7 @@ import Html exposing (Html, br, p, span, table, td, text, tr)
 import Html.Attributes exposing (style)
 import Opcode exposing (Opcode(..), OpcodeData)
 import OpcodesDict exposing (opcodes_dict)
+import SupportedCodes exposing (isCoordSupported, supportedCodes)
 
 
 split : Int -> List a -> List (List a)
@@ -23,7 +24,7 @@ cellStyles color =
     , style "border-style" "solid"
     , style "border-color" "black"
     , style "border-collapse" "collapse"
-    , style "font-size" "8pt"
+    , style "font-size" "6pt"
     , style "width" "8em"
     ]
 
@@ -35,10 +36,17 @@ createCell color contents =
         (contents |> List.map (\t -> text t))
 
 
-cellFromOpcode : OpcodeData -> Html ()
-cellFromOpcode opcode =
+cellFromOpcode : Bool -> OpcodeData -> Html ()
+cellFromOpcode isSupported opcode =
     td
-        (cellStyles opcode.bgColor)
+        (cellStyles
+            (if isSupported then
+                opcode.bgColor
+
+             else
+                "#fbfbfb"
+            )
+        )
         [ text opcode.pneumonic
         , br [] []
         , span
@@ -50,11 +58,15 @@ cellFromOpcode opcode =
         ]
 
 
-printOpcode : Opcode -> Html ()
-printOpcode opcode =
+printOpcode : Int -> Opcode -> Html ()
+printOpcode index opcode =
+    let
+        coord =
+            ( modBy 16 index, index // 16 )
+    in
     case opcode of
         Set data ->
-            cellFromOpcode data
+            cellFromOpcode (isCoordSupported coord) data
 
         Unset ->
             createCell "" [ "" ]
@@ -94,7 +106,7 @@ main =
     -- Create all table coords
     -- Loop through table coords
     opcodes_dict
-        |> List.map printOpcode
+        |> List.indexedMap printOpcode
         |> split 16
         |> List.indexedMap convertRow
         |> convertToTable
