@@ -1,112 +1,55 @@
 module Main exposing (main)
 
-import Html exposing (Html, br, p, span, table, td, text, tr)
-import Html.Attributes exposing (style)
-import Opcode exposing (Opcode(..), OpcodeData)
-import OpcodesDict exposing (opcodes_dict)
-import SupportedCodes exposing (isCoordSupported, supportedCodes)
+import Browser
+import Html exposing (Html, div, input, text)
+import Html.Attributes exposing (type_)
+import Html.Events exposing (onCheck)
+import OpcodeTable exposing (showAll, viewTable)
 
 
-split : Int -> List a -> List (List a)
-split i list =
-    case List.take i list of
-        [] ->
-            []
-
-        listHead ->
-            listHead :: split i (List.drop i list)
+type alias Model =
+    { showSupported : Bool
+    }
 
 
-cellStyles : String -> List (Html.Attribute msg)
-cellStyles color =
-    [ style "background-color" color
-    , style "border-width" "1px"
-    , style "border-style" "solid"
-    , style "border-color" "black"
-    , style "border-collapse" "collapse"
-    , style "font-size" "6pt"
-    , style "width" "8em"
-    ]
+type Msg
+    = ToggleSupported Bool
 
 
-createCell : String -> List String -> Html ()
-createCell color contents =
-    td
-        (cellStyles color ++ [ style "width" "" ])
-        (contents |> List.map (\t -> text t))
+init : Model
+init =
+    { showSupported = False
+    }
 
 
-cellFromOpcode : Bool -> OpcodeData -> Html ()
-cellFromOpcode isSupported opcode =
-    td
-        (cellStyles
-            (if isSupported then
-                opcode.bgColor
+view : Model -> Html Msg
+view model =
+    let
+        table =
+            viewTable
+                (if not model.showSupported then
+                    [ showAll ]
 
-             else
-                "#fbfbfb"
-            )
-        )
-        [ text opcode.pneumonic
-        , br [] []
-        , span
-            [ style "padding-right" "1em" ]
-            [ text (String.fromInt opcode.size) ]
-        , text opcode.timeTaken
-        , br [] []
-        , text opcode.flags
+                 else
+                    []
+                )
+    in
+    div []
+        [ table
+        , input [ type_ "checkbox", onCheck ToggleSupported ] [ text "Show Supported" ]
         ]
 
 
-printOpcode : Int -> Opcode -> Html ()
-printOpcode index opcode =
-    let
-        coord =
-            ( modBy 16 index, index // 16 )
-    in
-    case opcode of
-        Set data ->
-            cellFromOpcode (isCoordSupported coord) data
-
-        Unset ->
-            createCell "" [ "" ]
-
-
-convertRow : Int -> List (Html ()) -> Html ()
-convertRow index row =
-    let
-        rowLabel =
-            createCell "#9f9f9f" [ String.fromInt index ]
-    in
-    tr [] (rowLabel :: row)
-
-
-convertToTable : List (Html ()) -> Html ()
-convertToTable rows =
-    let
-        headerRow =
-            List.range 0 15
-                |> List.map (\i -> createCell "#9f9f9f" [ String.fromInt i ])
-                |> (\row -> tr [] (createCell "#9f9f9f" [ "" ] :: row))
-    in
-    table
-        [ style "background-color" "#bfbfbf"
-        , style "border-width" "1px"
-        , style "font-family" "monospace"
-        , style "line-height" "normal"
-        , style "border-style" "solid"
-        , style "border-color" "black"
-        , style "border-collapse" "collapse"
-        , style "text-align" "center"
-        ]
-        (headerRow :: rows)
+update : Msg -> Model -> Model
+update msg model =
+    case msg of
+        ToggleSupported checked ->
+            { model | showSupported = checked }
 
 
 main =
-    -- Create all table coords
-    -- Loop through table coords
-    opcodes_dict
-        |> List.indexedMap printOpcode
-        |> split 16
-        |> List.indexedMap convertRow
-        |> convertToTable
+    Browser.sandbox
+        { init = init
+        , update = update
+        , view = view
+        }
