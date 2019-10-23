@@ -1,17 +1,26 @@
-language: elm
+jobs:
+  include:
+    - stage: test
+      language: rust
+      rust: stable
+      cache: cargo
+    - stage: docs
+      language: elm
+      cache:
+        directories:
+          - $HOME/.elm
+      script:
+        - mkdir build
+        - mkdir build/js
+        - cd docs
+        - ./update-supported.sh
+        - elm make --optimize --output=../build/js/elm.js src/Main.elm
+        - cp index.html ../build/index.html
 
-script:
-  - mkdir build
-  - mkdir build/js
-  - cd docs
-  - ./update-supported.sh
-  - elm make --optimize --output=../build/js/elm.js src/Main.elm
-  - cp index.html ../build/index.html
-
-deploy:
-  provider: pages
-  skip_cleanup: true
-  github_token: $GITHUB_TOKEN
-  local_dir: build
-  on:
-    branch: master
+      deploy:
+        provider: pages
+        skip_cleanup: true
+        github_token: $GITHUB_TOKEN
+        local_dir: build
+        on:
+          branch: master
