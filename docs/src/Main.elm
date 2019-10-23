@@ -1,7 +1,7 @@
 module Main exposing (main)
 
 import Browser
-import Html exposing (Html, div, input, label, text)
+import Html exposing (Html, div, h3, input, label, text)
 import Html.Attributes exposing (for, id, type_)
 import Html.Events exposing (onCheck)
 import OpcodeTable exposing (showAll, showSupported, viewTable)
@@ -42,6 +42,7 @@ view model =
         [ input [ type_ "checkbox", onCheck ToggleSupported, id "show-supported" ] []
         , label [ for "show-supported" ] [ text "Show Supported" ]
         , table
+        , h3 [] [ text "CB Opcodes" ]
         , div [] [ cbTable ]
         ]
 
