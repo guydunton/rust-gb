@@ -5,7 +5,7 @@ script:
   - mkdir build/js
   - cd docs
   - elm make --optimize --output=../build/js/elm.js src/Main.elm
-  - cp docs/index.html ../build/index.html
+  - cp index.html ../build/index.html
 
 deploy:
   provider: pages
