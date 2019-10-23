@@ -265,6 +265,7 @@ opcodes_dict =
     ]
 
 
+cb_opcodes_dict : List Opcode
 cb_opcodes_dict =
     [ Set (OpcodeData "#80ffff" "RLC B" 1 "8" "Z 0 0 C")
     , Set (OpcodeData "#80ffff" "RLC C" 1 "8" "Z 0 0 C")

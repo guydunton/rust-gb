@@ -1,4 +1,4 @@
-module SupportedCodes exposing (isCoordSupported, supportedCodes)
+module SupportedCodes exposing (isCoordSupported, supportedCBCodes, supportedCodes)
 
 import Hex exposing (toHex)
 
@@ -32,8 +32,15 @@ supportedCodes =
     ]
 
 
-isCoordSupported : ( Int, Int ) -> Bool
-isCoordSupported ( x, y ) =
+supportedCBCodes : List String
+supportedCBCodes =
+    [ "0x11"
+    , "0x7C"
+    ]
+
+
+isCoordSupported : List String -> ( Int, Int ) -> Bool
+isCoordSupported supported ( x, y ) =
     let
         xChar =
             toHex x
@@ -44,4 +51,4 @@ isCoordSupported ( x, y ) =
         hexCoord =
             "0x" ++ yChar ++ xChar
     in
-    List.member hexCoord supportedCodes
+    List.member hexCoord supported

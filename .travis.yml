@@ -1,0 +1,15 @@
+language: elm
+
+script:
+  - mkdir build
+  - mkdir build/js
+  - elm make --optimize --output=build/js/elm.js docs/src/Main.elm
+  - cp docs/index.html build/index.html
+
+deploy:
+  provider: pages
+  skip_cleanup: true
+  github_token: $GITHUB_TOKEN
+  local_dir: build
+  on:
+    branch: master

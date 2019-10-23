@@ -4,7 +4,9 @@ import Browser
 import Html exposing (Html, div, input, label, text)
 import Html.Attributes exposing (for, id, type_)
 import Html.Events exposing (onCheck)
-import OpcodeTable exposing (showAll, viewTable)
+import OpcodeTable exposing (showAll, showSupported, viewTable)
+import OpcodesDict exposing (cb_opcodes_dict, opcodes_dict)
+import SupportedCodes exposing (supportedCBCodes, supportedCodes)
 
 
 type alias Model =
@@ -25,19 +27,22 @@ init =
 view : Model -> Html Msg
 view model =
     let
-        table =
-            viewTable
-                (if not model.showSupported then
-                    [ showAll ]
+        ( table, cbTable ) =
+            if model.showSupported then
+                ( viewTable opcodes_dict (showSupported supportedCodes)
+                , viewTable cb_opcodes_dict (showSupported supportedCBCodes)
+                )
 
-                 else
-                    []
+            else
+                ( viewTable opcodes_dict showAll
+                , viewTable cb_opcodes_dict showAll
                 )
     in
     div []
-        [ table
-        , input [ type_ "checkbox", onCheck ToggleSupported, id "show-supported" ] []
+        [ input [ type_ "checkbox", onCheck ToggleSupported, id "show-supported" ] []
         , label [ for "show-supported" ] [ text "Show Supported" ]
+        , table
+        , div [] [ cbTable ]
         ]
 
 

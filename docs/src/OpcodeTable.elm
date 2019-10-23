@@ -1,4 +1,4 @@
-module OpcodeTable exposing (DisplayProperties, showAll, viewTable)
+module OpcodeTable exposing (DisplayProperty, showAll, showSupported, viewTable)
 
 import Hex exposing (toHex)
 import Html exposing (Html, br, span, table, td, text, tr)
@@ -8,13 +8,19 @@ import OpcodesDict exposing (opcodes_dict)
 import SupportedCodes exposing (isCoordSupported, supportedCodes)
 
 
-type DisplayProperties
+type DisplayProperty
     = ShowAll
+    | ShowSupported (List String)
 
 
-showAll : DisplayProperties
+showAll : DisplayProperty
 showAll =
     ShowAll
+
+
+showSupported : List String -> DisplayProperty
+showSupported supported =
+    ShowSupported supported
 
 
 split : Int -> List a -> List (List a)
@@ -34,7 +40,7 @@ cellStyles color =
     , style "border-style" "solid"
     , style "border-color" "black"
     , style "border-collapse" "collapse"
-    , style "font-size" "6pt"
+    , style "font-size" "8pt"
     , style "width" "8em"
     ]
 
@@ -68,23 +74,21 @@ cellFromOpcode isSupported opcode =
         ]
 
 
-printOpcode : List DisplayProperties -> Int -> Opcode -> Html msg
+printOpcode : DisplayProperty -> Int -> Opcode -> Html msg
 printOpcode properties index opcode =
     let
         coord =
             ( modBy 16 index, index // 16 )
-
-        shouldShowAll =
-            List.member showAll properties
     in
     case opcode of
         Set data ->
             cellFromOpcode
-                (if shouldShowAll then
-                    True
+                (case properties of
+                    ShowAll ->
+                        True
 
-                 else
-                    isCoordSupported coord
+                    ShowSupported codes ->
+                        isCoordSupported codes coord
                 )
                 data
 
@@ -122,9 +126,9 @@ convertToTable rows =
         (headerRow :: rows)
 
 
-viewTable : List DisplayProperties -> Html msg
-viewTable properties =
-    opcodes_dict
+viewTable : List Opcode -> DisplayProperty -> Html msg
+viewTable opcodes properties =
+    opcodes
         |> List.indexedMap (printOpcode properties)
         |> split 16
         |> List.indexedMap convertRow
