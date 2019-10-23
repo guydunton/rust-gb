@@ -36,7 +36,6 @@ supportedCBCodes : List String
 supportedCBCodes =
     [ "0x11"
     , "0x7C"
-    , "0xAA"
     ]
 
 
