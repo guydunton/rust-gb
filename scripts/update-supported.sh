@@ -29,7 +29,7 @@ if ! git diff-index --quiet HEAD --; then
     git add docs/src/SupportedCodes.elm
     git commit -m "Automated commit of supported codes"
     git remote rm origin
-    git remote add origin https://guydunton:<GITHUB_TOKEN>@github.com/guydunton/rust-gb.git
+    git remote add origin https://guydunton:$GITHUB_TOKEN@github.com/guydunton/rust-gb.git
     git push
 else
     echo "Nothing has changed. Not committing"
