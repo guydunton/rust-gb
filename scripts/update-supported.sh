@@ -30,7 +30,7 @@ if ! git diff-index --quiet HEAD --; then
     git commit -m "Automated commit of supported codes"
     git remote rm origin
     git remote add origin https://guydunton:$GITHUB_TOKEN@github.com/guydunton/rust-gb.git
-    git push
+    git push origin HEAD:master
 else
     echo "Nothing has changed. Not committing"
 fi
