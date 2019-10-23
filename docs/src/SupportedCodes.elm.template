@@ -1,0 +1,30 @@
+module SupportedCodes exposing (isCoordSupported, supportedCBCodes, supportedCodes)
+
+import Hex exposing (toHex)
+
+
+supportedCodes : List String
+supportedCodes =
+    [ {supportedCodes}
+    ]
+
+
+supportedCBCodes : List String
+supportedCBCodes =
+    [ {supportedCBCodes}
+    ]
+
+
+isCoordSupported : List String -> ( Int, Int ) -> Bool
+isCoordSupported supported ( x, y ) =
+    let
+        xChar =
+            toHex x
+
+        yChar =
+            toHex y
+
+        hexCoord =
+            "0x" ++ yChar ++ xChar
+    in
+    List.member hexCoord supported
