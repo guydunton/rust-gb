@@ -23,5 +23,11 @@ sed "s/{supportedCodes}/${SUPPORTED_CODES}/g" src/SupportedCodes.elm.template \
 | elm-format --stdin \
 > src/SupportedCodes.elm
 
-git add docs/src/SupportedCodes.elm
-git commit -m "Automated commit of supported codes"
+# Update git
+git update-index -q --refresh
+if ! git diff-index --quiet HEAD --; then
+    # There are changes
+    echo "There are changes"
+    #git add docs/src/SupportedCodes.elm
+    #git commit -m "Automated commit of supported codes"
+fi
