@@ -4,18 +4,14 @@ script:
   - mkdir build
   - mkdir build/js
   - cd docs
+  - ./update-supported.sh
   - elm make --optimize --output=../build/js/elm.js src/Main.elm
   - cp index.html ../build/index.html
-  - cd ..
 
 deploy:
-  - provider: script
-    script: bash scripts/update-supported.sh
-    on:
-      branch: master
-  - provider: pages
-    skip_cleanup: true
-    github_token: $GITHUB_TOKEN
-    local_dir: build
-    on:
-      branch: master
+  provider: pages
+  skip_cleanup: true
+  github_token: $GITHUB_TOKEN
+  local_dir: build
+  on:
+    branch: master
