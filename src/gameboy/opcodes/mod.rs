@@ -2,11 +2,13 @@ mod argument;
 mod bit;
 mod call;
 mod category;
+mod cb_opcodes;
 mod dec;
 mod inc;
 mod jmp;
 mod ld16;
 mod ld8;
+mod opcodes;
 mod pop;
 mod push;
 mod rotate_left;
@@ -19,6 +21,7 @@ use super::{RegisterLabel16, RegisterLabel8};
 use argument::{arg_from_str, size_in_bytes, Argument};
 use category::{category_from_str, category_size, Category};
 use std::fmt;
+use opcodes::code_to_opcode;
 
 pub fn decode_instruction(program_counter: u16, program_code: &[u8]) -> Result<OpCode, String> {
     let code = program_code[program_counter as usize];
@@ -39,44 +42,9 @@ pub fn decode_instruction(program_counter: u16, program_code: &[u8]) -> Result<O
         Ok(OpCode::new(category, clean_args))
     };
 
-    match code {
-        0x00 => opcode("NOP"),
-        0x05 => opcode("DEC B"),
-        0x06 => opcode("LD8 B d8"),
-        0x0C => opcode("INC C"),
-        0x0E => opcode("LD8 C d8"),
-        0x11 => opcode("LD16 DE d16"),
-        0x17 => opcode("RLA"),
-        0x1A => opcode("LD8 A (DE)"),
-        0x20 => opcode("JR NZ r8"),
-        0x21 => opcode("LD16 HL d16"),
-        0x22 => opcode("LD8 (HL+) A"),
-        0x23 => opcode("INC HL"),
-        0x31 => opcode("LD16 SP d16"),
-        0x32 => opcode("LD8 (HL-) A"),
-        0x3E => opcode("LD8 A d8"),
-        0x4F => opcode("LD8 C A"),
-        0x77 => opcode("LD8 (HL) A"),
-        0xAF => opcode("XOR A"),
-        0xC1 => opcode("POP BC"),
-        0xC5 => opcode("PUSH BC"),
-        0xCB => {
-            // 0xCB is prefix and the next byte shows the actual instruction
-            let cb_instruction = program_code[program_counter as usize + 1];
-            match cb_instruction {
-                0x11 => opcode("RL C"),
-                0x7C => opcode("BIT 7 H"),
-                _ => Err(format!("Unknown command 0xCB {:#X}", cb_instruction)),
-            }
-        }
-        0xCD => opcode("CALL a16"),
-        0xE0 => opcode("LD8 (a8) A"),
-        0xE2 => opcode("LD8 (C) A"),
-        _ => Err(format!(
-            "Unknown command {:#X} at address: {:#X}",
-            code, program_counter
-        )),
-    }
+    let code_result = code_to_opcode(code, program_counter, program_code);
+    opcode(code_result?)
+
 }
 
 pub struct OpCode {
