@@ -40,7 +40,6 @@ cellStyles color =
     , style "border-style" "solid"
     , style "border-color" "black"
     , style "border-collapse" "collapse"
-    , style "font-size" "8pt"
     , style "width" "8em"
     ]
 
