@@ -15,6 +15,7 @@ mod rotate_left;
 mod rotate_left_a;
 mod rotate_method;
 mod xor;
+mod ret;
 
 use super::read_write_register::ReadWriteRegister;
 use super::{RegisterLabel16, RegisterLabel8};
@@ -89,6 +90,9 @@ impl OpCode {
             }
             Category::CALL => {
                 cycles += self.run_call::<T>(cpu, memory);
+            }
+            Category::RET => {
+                cycles += self.run_ret::<T>(cpu, memory);
             }
             Category::PUSH => {
                 cycles += self.run_push::<T>(cpu, memory);

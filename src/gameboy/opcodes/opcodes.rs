@@ -22,6 +22,7 @@ pub fn code_to_opcode(code: u8, program_counter: u16, program_code: &[u8]) -> Re
         0xAF => Ok("XOR A"),
         0xC1 => Ok("POP BC"),
         0xC5 => Ok("PUSH BC"),
+        0xC9 => Ok("RET"),
         0xCB => {
             // 0xCB is prefix and the next byte shows the actual instruction
             let cb_instruction = program_code[program_counter as usize + 1];

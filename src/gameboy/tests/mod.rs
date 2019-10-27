@@ -4,6 +4,7 @@ mod load16_test;
 mod load8_test;
 mod opcode_printer_test;
 mod pop_test;
+mod ret_test;
 
 #[cfg(test)]
 mod opcode_tests {
