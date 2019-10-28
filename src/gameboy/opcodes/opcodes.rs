@@ -8,6 +8,7 @@ pub fn code_to_opcode(code: u8, program_counter: u16, program_code: &[u8]) -> Re
         0x0C => Ok("INC C"),
         0x0E => Ok("LD8 C d8"),
         0x11 => Ok("LD16 DE d16"),
+        0x13 => Ok("INC DE"),
         0x17 => Ok("RLA"),
         0x1A => Ok("LD8 A (DE)"),
         0x20 => Ok("JR NZ r8"),

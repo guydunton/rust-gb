@@ -11,18 +11,18 @@ mod ld8;
 mod opcodes;
 mod pop;
 mod push;
+mod ret;
 mod rotate_left;
 mod rotate_left_a;
 mod rotate_method;
 mod xor;
-mod ret;
 
 use super::read_write_register::ReadWriteRegister;
 use super::{RegisterLabel16, RegisterLabel8};
 use argument::{arg_from_str, size_in_bytes, Argument};
 use category::{category_from_str, category_size, Category};
-use std::fmt;
 use opcodes::code_to_opcode;
+use std::fmt;
 
 pub fn decode_instruction(program_counter: u16, program_code: &[u8]) -> Result<OpCode, String> {
     let code = program_code[program_counter as usize];
@@ -45,7 +45,6 @@ pub fn decode_instruction(program_counter: u16, program_code: &[u8]) -> Result<O
 
     let code_result = code_to_opcode(code, program_counter, program_code);
     opcode(code_result?)
-
 }
 
 pub struct OpCode {

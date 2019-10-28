@@ -53,27 +53,36 @@ mod inc_test {
         }
 
         test("INC 16 instruction") {
+
             // INC HL
-            let mut gb = Gameboy::new(vec![0x23]);
-            let cycles = gb.step_once();
+            // INC DE
+            let instructions: Vec<(u8, RegisterLabel16)> = vec![
+                (0x23, RegisterLabel16::HL),
+                (0x13, RegisterLabel16::DE)
+            ];
 
-            // Set the flags
-            gb.set_flag(Flags::N, false);
-            gb.set_flag(Flags::H, true);
-            gb.set_flag(Flags::Z, false);
-            gb.set_flag(Flags::C, true);
+            for &(instruction, register) in instructions.iter() {
+                let mut gb = Gameboy::new(vec![instruction]);
+                let cycles = gb.step_once();
 
-            // The 16 bit register should be changed
-            assert_eq!(gb.get_register_16(RegisterLabel16::HL), 1);
+                // Set the flags
+                gb.set_flag(Flags::N, false);
+                gb.set_flag(Flags::H, true);
+                gb.set_flag(Flags::Z, false);
+                gb.set_flag(Flags::C, true);
 
-            assert_eq!(cycles, 8);
-            assert_eq!(gb.get_register_16(RegisterLabel16::ProgramCounter), 0x01);
+                // The 16 bit register should be changed
+                assert_eq!(gb.get_register_16(register), 1);
 
-            // The flags should be unchaged
-            assert_eq!(gb.get_flag(Flags::N), false);
-            assert_eq!(gb.get_flag(Flags::H), true);
-            assert_eq!(gb.get_flag(Flags::Z), false);
-            assert_eq!(gb.get_flag(Flags::C), true);
+                assert_eq!(cycles, 8);
+                assert_eq!(gb.get_register_16(RegisterLabel16::ProgramCounter), 0x01);
+
+                // The flags should be unchanged
+                assert_eq!(gb.get_flag(Flags::N), false);
+                assert_eq!(gb.get_flag(Flags::H), true);
+                assert_eq!(gb.get_flag(Flags::Z), false);
+                assert_eq!(gb.get_flag(Flags::C), true);
+            }
         }
     }
 }
