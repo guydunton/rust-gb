@@ -20,6 +20,7 @@ pub fn code_to_opcode(code: u8, program_counter: u16, program_code: &[u8]) -> Re
         0x3E => Ok("LD8 A d8"),
         0x4F => Ok("LD8 C A"),
         0x77 => Ok("LD8 (HL) A"),
+        0x7B => Ok("LD8 A E"),
         0xAF => Ok("XOR A"),
         0xC1 => Ok("POP BC"),
         0xC5 => Ok("PUSH BC"),

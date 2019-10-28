@@ -33,7 +33,7 @@ mod load8_test {
         ld8_test(0x3E, RegisterLabel8::A);
 
         {
-            // LD (C) A
+            // LD C A
             let mut gb = Gameboy::new(vec![0xE2]);
             gb.set_register_8(RegisterLabel8::C, 0x01);
             gb.set_register_8(RegisterLabel8::A, 0x02);
@@ -93,6 +93,24 @@ mod load8_test {
             assert_eq!(gb.get_register_16(RegisterLabel16::HL), 0x02);
             assert_eq!(gb.get_memory_at(0x01), 0x12);
             assert_eq!(gb.get_register_16(RegisterLabel16::ProgramCounter), 0x01);
+        }
+
+        test("Generic LD8 r8 r8 test") {
+
+            let instructions = vec![
+                (0x7B, RegisterLabel8::A, RegisterLabel8::E)
+            ];
+
+            for &(code, dest, src) in instructions.iter() {
+                let mut gb= Gameboy::new(vec![code]);
+
+                gb.set_register_8(src, 0x04);
+                gb.set_register_8(dest, 0x01);
+
+                let _ = gb.step_once();
+
+                assert_eq!(gb.get_register_8(RegisterLabel8::A), 0x04);
+            }
         }
     }
 }
