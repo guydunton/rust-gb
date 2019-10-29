@@ -112,5 +112,17 @@ mod load8_test {
                 assert_eq!(gb.get_register_8(RegisterLabel8::A), 0x04);
             }
         }
+
+        test("LD8 into address address") {
+            let mut gb = Gameboy::new(vec![0xEA, 0x10, 0x99]); // LD8 ($9910), A
+
+            gb.set_register_8(RegisterLabel8::A, 0xFF);
+
+            let cycles = gb.step_once();
+
+            assert_eq!(cycles, 16);
+            assert_eq!(gb.get_register_16(RegisterLabel16::ProgramCounter), 0x03);
+            assert_eq!(gb.get_memory_at(0x9910), 0xFF);
+        }
     }
 }
