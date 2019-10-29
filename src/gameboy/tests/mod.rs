@@ -1,3 +1,4 @@
+mod cp_test;
 mod dec_test;
 mod inc_test;
 mod load16_test;

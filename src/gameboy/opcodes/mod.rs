@@ -12,6 +12,7 @@ mod opcodes;
 mod pop;
 mod push;
 mod ret;
+mod cp;
 mod rotate_left;
 mod rotate_left_a;
 mod rotate_method;
@@ -110,6 +111,9 @@ impl OpCode {
             }
             Category::RLA => {
                 cycles += self.run_rla::<T>(cpu, memory);
+            }
+            Category::CP => {
+                cycles += self.run_cp::<T>(cpu, memory);
             }
         };
 
