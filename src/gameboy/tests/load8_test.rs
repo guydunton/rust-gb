@@ -98,7 +98,8 @@ mod load8_test {
         test("Generic LD8 r8 r8 test") {
 
             let instructions = vec![
-                (0x7B, RegisterLabel8::A, RegisterLabel8::E)
+                (0x7B, RegisterLabel8::A, RegisterLabel8::E),
+                (0x67, RegisterLabel8::H, RegisterLabel8::A),
             ];
 
             for &(code, dest, src) in instructions.iter() {
