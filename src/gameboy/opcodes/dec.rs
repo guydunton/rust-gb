@@ -1,5 +1,5 @@
 use super::super::{write_flag, Flags};
-use super::{Argument, OpCode, ReadWriteRegister, RegisterLabel8};
+use super::{Argument, OpCode, ReadWriteRegister};
 
 impl OpCode {
     pub fn run_dec<T: ReadWriteRegister>(
@@ -7,9 +7,9 @@ impl OpCode {
         cpu: &mut dyn ReadWriteRegister,
         _memory: &mut Vec<u8>,
     ) -> u32 {
-        if let Argument::Register8Constant(_) = self.args[0] {
+        if let Argument::Register8Constant(register) = self.args[0] {
             // Get the value in the register
-            let b = cpu.read_8_bits(RegisterLabel8::B);
+            let b = cpu.read_8_bits(register);
 
             // If the result will be 0 then set the Z flag
             if b == 1 {
@@ -25,7 +25,7 @@ impl OpCode {
             write_flag::<T>(cpu, Flags::N, true);
 
             // Reduce and write back to register
-            cpu.write_8_bits(RegisterLabel8::B, b - 1);
+            cpu.write_8_bits(register, b - 1);
         } else {
             panic!("Unknown argument found in DEC opcode");
         }

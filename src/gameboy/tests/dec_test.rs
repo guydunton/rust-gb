@@ -5,20 +5,24 @@ mod dec_test {
 
     tests! {
         test("DEC instruction removes one from the correct register") {
-            let mut gb = Gameboy::new(vec![0x05]);
-            gb.set_register_8(RegisterLabel8::B, 6);
 
-            let cycles = gb.step_once();
+            let instructions = vec![(0x05, RegisterLabel8::B), (0x3D, RegisterLabel8::A)];
 
-            // The opcode needs to be 1 byte & take 4 cycles
-            assert_eq!(gb.get_register_16(RegisterLabel16::ProgramCounter), 0x1);
-            assert_eq!(cycles, 4);
+            for (opcode, register) in instructions {
+                let mut gb = Gameboy::new(vec![opcode]);
+                gb.set_register_8(register, 6);
 
-            // The register needs to be decremented
-            assert_eq!(gb.get_register_8(RegisterLabel8::B), 5);
+                let cycles = gb.step_once();
 
-            // Test the flags
-            section("DEC instruction sets the N and zero flag") {
+                // The opcode needs to be 1 byte & take 4 cycles
+                assert_eq!(gb.get_register_16(RegisterLabel16::ProgramCounter), 0x1);
+                assert_eq!(cycles, 4);
+
+                // The register needs to be decremented
+                assert_eq!(gb.get_register_8(register), 5);
+
+                // Test the flags
+                // DEC instruction sets the N and zero flag
                 assert_eq!(gb.get_flag(Flags::Z), false);
                 assert_eq!(gb.get_flag(Flags::N), true);
                 assert_eq!(gb.get_flag(Flags::H), false);
