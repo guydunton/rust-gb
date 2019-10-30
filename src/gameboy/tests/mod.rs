@@ -1,6 +1,7 @@
 mod cp_test;
 mod dec_test;
 mod inc_test;
+mod jump_test;
 mod load16_test;
 mod load8_test;
 mod opcode_printer_test;
@@ -62,33 +63,6 @@ mod opcode_tests {
 
             assert_eq!(gb.get_flag(Flags::Z), true);
             assert_eq!(cycles, 12);
-        }
-    }
-
-    #[test]
-    fn jump_instruction() {
-        // JR NZ -5
-
-        let mut gb = testgb!([0x00, 0x00, 0x00, 0x20, 0xFB]);
-
-        {
-            gb.set_register_16(RegisterLabel16::ProgramCounter, 0x0003);
-            gb.set_flag(Flags::Z, false);
-
-            let cycles = gb.step_once();
-
-            assert_eq!(gb.get_register_16(RegisterLabel16::ProgramCounter), 0x0000);
-            assert_eq!(cycles, 12); // cycles different for action vs no action
-        }
-
-        {
-            gb.set_register_16(RegisterLabel16::ProgramCounter, 0x0003);
-            gb.set_flag(Flags::Z, true);
-
-            let cycles = gb.step_once();
-
-            assert_eq!(gb.get_register_16(RegisterLabel16::ProgramCounter), 0x0005);
-            assert_eq!(cycles, 8);
         }
     }
 

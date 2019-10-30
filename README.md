@@ -32,6 +32,7 @@ The link to my modified version can be found here: [Opcodes](https://www.guydunt
 - [x] Support 0x50 at 0xA0
 - [x] Debug should continue by default
 - [x] Support 0x22 at 0xA3
-- [ ] Support 0x3D at 0x4A
+- [x] Support 0x3D at 0x4A
+- [ ] Support 0x28 at 0x4B
 - [ ] Add debug breakpoints
 - [ ] Continue adding support for bootloader commands.
