@@ -32,6 +32,9 @@ impl OpCode {
                 Argument::Register8Constant(register) => {
                     cpu.write_8_bits(register, val);
                 }
+                Argument::AddressIndirect(address) => {
+                    memory[address as usize] = val;
+                }
                 Argument::HighOffsetRegister(register) => {
                     memory[(0xFF00 + cpu.read_8_bits(register) as u16) as usize] = val;
                 }
@@ -60,6 +63,7 @@ impl OpCode {
 
 fn get_argument_cycles(argument: Argument) -> u32 {
     match argument {
+        Argument::AddressIndirect(_) => 12,
         Argument::RegisterIndirect(_) => 4,
         Argument::RegisterIndirectDec(_) => 4,
         Argument::RegisterIndirectInc(_) => 4,

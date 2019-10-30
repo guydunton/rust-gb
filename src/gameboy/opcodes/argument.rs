@@ -16,6 +16,7 @@ pub enum Argument {
     Bit(u8),
     JumpArgument(JumpCondition),
     Label(u16),
+    AddressIndirect(u16),
 }
 
 pub fn size_in_bytes(argument: Argument) -> u16 {
@@ -33,6 +34,7 @@ pub fn size_in_bytes(argument: Argument) -> u16 {
         Argument::JumpDistance(_) => 1,
         Argument::Bit(_) => 0,
         Argument::Label(_) => 2,
+        Argument::AddressIndirect(_) => 2,
     }
 }
 
@@ -57,6 +59,7 @@ impl fmt::Display for Argument {
             Argument::Bit(val) => write!(f, "{}", val),
             Argument::JumpArgument(val) => write!(f, "{:?}", val),
             Argument::Label(val) => write!(f, "{:#X}", val),
+            Argument::AddressIndirect(val) => write!(f, "({:#X})", val),
         }
     }
 }
@@ -78,6 +81,10 @@ pub fn arg_from_str(arg: &str, index: u16, memory: &[u8]) -> Result<Argument, St
         "(DE)" => Argument::RegisterIndirect(RegisterLabel16::DE),
         "(HL)" => Argument::RegisterIndirect(RegisterLabel16::HL),
         "(a8)" => Argument::HighOffsetConstant(memory[index as usize + 1]),
+        "(a16)" => Argument::AddressIndirect(u16::from_le_bytes([
+            memory[index as usize + 1],
+            memory[index as usize + 2],
+        ])),
         "a16" => Argument::Label(u16::from_le_bytes([
             memory[(index + 1) as usize],
             memory[(index + 2) as usize],
