@@ -23,6 +23,7 @@ impl OpCode {
         let condition_checker = || -> bool {
             match condition {
                 JumpCondition::NotZero => read_flag::<T>(cpu, Flags::Z) == false,
+                JumpCondition::Zero => read_flag::<T>(cpu, Flags::Z) == true,
             }
         };
 
