@@ -3,6 +3,7 @@ use super::cb_opcodes::cb_code_to_opcode;
 pub fn code_to_opcode(code: u8, program_counter: u16, program_code: &[u8]) -> Result<&str, String> {
     match code {
         0x00 => Ok("NOP"),
+        0x04 => Ok("INC B"),
         0x05 => Ok("DEC B"),
         0x06 => Ok("LD8 B d8"),
         0x0C => Ok("INC C"),
