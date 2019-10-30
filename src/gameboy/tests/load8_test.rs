@@ -100,6 +100,7 @@ mod load8_test {
             let instructions = vec![
                 (0x7B, RegisterLabel8::A, RegisterLabel8::E),
                 (0x67, RegisterLabel8::H, RegisterLabel8::A),
+                (0x57, RegisterLabel8::D, RegisterLabel8::A),
             ];
 
             for &(code, dest, src) in instructions.iter() {
