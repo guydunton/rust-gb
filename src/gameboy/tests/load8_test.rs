@@ -32,6 +32,8 @@ mod load8_test {
         // LD A d8
         ld8_test(0x3E, RegisterLabel8::A);
 
+        ld8_test(0x1E, RegisterLabel8::E);
+
         {
             // LD C A
             let mut gb = Gameboy::new(vec![0xE2]);
