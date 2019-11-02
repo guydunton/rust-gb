@@ -40,6 +40,7 @@ pub fn code_to_opcode(code: u8, program_counter: u16, program_code: &[u8]) -> Re
         0xE0 => Ok("LD8 (a8) A"),
         0xE2 => Ok("LD8 (C) A"),
         0xEA => Ok("LD8 (a16) A"),
+        0xF0 => Ok("LD8 A (a8)"),
         0xFE => Ok("CP d8"),
         _ => Err(format!(
             "Unknown command {:#X} at address: {:#X}",

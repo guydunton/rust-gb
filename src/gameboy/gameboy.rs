@@ -73,7 +73,7 @@ impl Gameboy {
         let mut total_cycles_used = 0;
 
         loop {
-            let opcode = self.current_opcode();
+            let opcode = self.get_opcode();
             match opcode {
                 Ok(op) => {
                     let cycles_used = op.run::<CPU>(&mut self.cpu, &mut self.memory);
@@ -93,7 +93,7 @@ impl Gameboy {
     /// Run the next instruction and return the number of cycles used.
     #[allow(dead_code)]
     pub fn step_once(&mut self) -> u32 {
-        let opcode = self.current_opcode();
+        let opcode = self.get_opcode();
         match opcode {
             Ok(op) => {
                 let cycles = op.run::<CPU>(&mut self.cpu, &mut self.memory);
@@ -147,12 +147,12 @@ impl Gameboy {
 
     #[allow(dead_code)]
     pub fn get_current_instruction(&self) -> Option<String> {
-        let opcode = self.current_opcode();
+        let opcode = self.get_opcode();
         opcode.map(|op| op.to_string().trim().to_owned()).ok()
     }
 
     #[allow(dead_code)]
-    pub fn get_instruction_offset(&self, offset: u16) -> Result<(String, u16), ()> {
+    pub fn get_opcode_with_offset(&self, offset: u16) -> Result<(String, u16), ()> {
         let current_counter = self.cpu.read_16_bits(RegisterLabel16::ProgramCounter);
         let mut opcode_size_offset: u16 = 0;
         // Loop through instructions to get the correct instructions
@@ -165,7 +165,7 @@ impl Gameboy {
                     if value == u16::max_value() {
                         return Err({});
                     }
-                    let opcode = self.get_opcode(value);
+                    let opcode = self.get_opcode_at(value);
                     match opcode {
                         Ok(op) => opcode_size_offset += op.size(),
                         Err(_err) => return Err({}),
@@ -184,7 +184,7 @@ impl Gameboy {
                 if value == u16::max_value() {
                     return Err({});
                 }
-                let opcode = self.get_opcode(value);
+                let opcode = self.get_opcode_at(value);
                 return opcode
                     .map(|op| (op.to_string().trim().to_owned(), value))
                     .map_err(|_| ({}));
@@ -195,12 +195,12 @@ impl Gameboy {
         }
     }
 
-    fn current_opcode(&self) -> Result<OpCode, String> {
+    fn get_opcode(&self) -> Result<OpCode, String> {
         let counter = self.cpu.read_16_bits(RegisterLabel16::ProgramCounter);
-        self.get_opcode(counter)
+        self.get_opcode_at(counter)
     }
 
-    fn get_opcode(&self, address: u16) -> Result<OpCode, String> {
+    fn get_opcode_at(&self, address: u16) -> Result<OpCode, String> {
         decode_instruction(address, &self.memory)
     }
 }

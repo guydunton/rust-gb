@@ -60,17 +60,6 @@ mod load8_test {
         }
 
         {
-            // LDH (a8) A
-            let mut gb = Gameboy::new(vec![0xE0, 0x01]);
-            gb.set_register_8(RegisterLabel8::A, 0x02);
-
-            let cycles = gb.step_once();
-            assert_eq!(gb.get_memory_at(0xFF01) as usize, 0x02);
-            assert_eq!(cycles, 12);
-            assert_eq!(gb.get_register_16(RegisterLabel16::ProgramCounter), 0x02);
-        }
-
-        {
             // LD A (DE)
             let mut gb = Gameboy::new(vec![0x1A, 0x01]);
             gb.set_register_16(RegisterLabel16::DE, 0x01);
@@ -95,6 +84,32 @@ mod load8_test {
             assert_eq!(gb.get_register_16(RegisterLabel16::HL), 0x02);
             assert_eq!(gb.get_memory_at(0x01), 0x12);
             assert_eq!(gb.get_register_16(RegisterLabel16::ProgramCounter), 0x01);
+        }
+
+        test("LDH a8 A") {
+
+            // LDH (a8) A
+            let mut gb = Gameboy::new(vec![0xE0, 0x01]);
+            gb.set_register_8(RegisterLabel8::A, 0x02);
+
+            let cycles = gb.step_once();
+
+            assert_eq!(gb.get_memory_at(0xFF01) as usize, 0x02);
+            assert_eq!(cycles, 12);
+            assert_eq!(gb.get_register_16(RegisterLabel16::ProgramCounter), 0x02);
+        }
+
+        test("LDH A a8") {
+            let mut gb = Gameboy::new(vec![0xF0, 0x02]);
+            gb.set_memory_at(0xFF02, 0x34);
+
+            let cycles = gb.step_once();
+
+            println!("A register: {:?}", gb.get_register_8(RegisterLabel8::A));
+
+            assert_eq!(gb.get_register_8(RegisterLabel8::A), 0x34);
+            assert_eq!(cycles, 12);
+            assert_eq!(gb.get_register_16(RegisterLabel16::ProgramCounter), 0x02);
         }
 
         test("Generic LD8 r8 r8 test") {

@@ -18,7 +18,7 @@ impl<'a> OpCodeWidget<'a> {
 
         let mut count = 0;
         loop {
-            let opcode = self.gb.get_instruction_offset(count);
+            let opcode = self.gb.get_opcode_with_offset(count);
             instructions.push(match opcode {
                 Ok((opcode, address)) => Instruction { address, opcode },
                 Err(_) => Instruction {
