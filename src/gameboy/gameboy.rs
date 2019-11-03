@@ -1,6 +1,7 @@
 use super::cpu::CPU;
 use super::opcodes::decode_instruction;
 use super::read_write_register::ReadWriteRegister;
+use super::screen::{Screen, ScreenColor};
 use super::OpCode;
 use super::RegisterLabel16;
 use super::RegisterLabel8;
@@ -9,6 +10,7 @@ use super::{read_flag, write_flag, Flags};
 pub struct Gameboy {
     cpu: CPU,
     memory: Vec<u8>,
+    screen: Screen,
 }
 
 impl Gameboy {
@@ -64,6 +66,7 @@ impl Gameboy {
         Gameboy {
             cpu: CPU::new(),
             memory,
+            screen: Screen::new(),
         }
     }
 
@@ -143,6 +146,73 @@ impl Gameboy {
     #[allow(dead_code)]
     pub fn get_memory_at(&self, address: u16) -> u8 {
         self.memory[address as usize]
+    }
+
+    #[allow(dead_code)]
+    fn get_memory_slice_at(&self, address: u16, size: u8) -> &[u8] {
+        let start = address as usize;
+        let end = (address + size as u16) as usize;
+        &self.memory[start..end]
+    }
+
+    #[allow(dead_code)]
+    pub fn get_screen_data(&self) -> &Vec<ScreenColor> {
+        self.screen.pixels()
+    }
+
+    fn byte_to_colors(byte1: u8, byte2: u8) -> [ScreenColor; 8] {
+        [
+            ScreenColor::Black,
+            ScreenColor::Black,
+            ScreenColor::Black,
+            ScreenColor::Black,
+            ScreenColor::Black,
+            ScreenColor::Black,
+            ScreenColor::Black,
+            ScreenColor::Black,
+        ]
+    }
+
+    /// Return the VRAM information
+    ///
+    /// Return the data stored in the VRAM as pixel data. This is useful for
+    /// viewing all the tiles currently stored
+    #[allow(dead_code)]
+    pub fn get_vram_data(&self) -> Vec<ScreenColor> {
+        let mut vram = vec![ScreenColor::White; 256 * 256];
+
+        // Loop through $9800-$9BFF - BG Map Data 1 to see all the sprites on screen
+        for map_index in 0..1024 {
+            // Get the value in vram for this index
+            let index = self.get_memory_at(0x9800 + map_index as u16);
+
+            // For each point check the tile at that index
+            let sprite_data = self.get_memory_slice_at(0x8000 + index as u16, 16);
+
+            // Render the sprite into the VRAM
+            for i in 0..8 {
+                //let colors = Gameboy::byte_to_colors(sprite_data[i * 2], sprite_data[i * 2 + 1]);
+                let colors = vec![
+                    match map_index % 3 {
+                        0 => ScreenColor::Black,
+                        1 => ScreenColor::Dark,
+                        _ => ScreenColor::Light,
+                    };
+                    8
+                ];
+                let x_offset = map_index * 8;
+                let y_offset = (map_index / 32) * 7 * 256;
+                let sprite_line_offset = i * 256;
+                let start_of_line = x_offset + sprite_line_offset + y_offset;
+                if map_index == (32 * 32) {
+                    println!("x_offset: {}", x_offset);
+                    println!("y_offset: {}", y_offset);
+                }
+                vram[start_of_line..(start_of_line + 8)].clone_from_slice(&colors);
+            }
+        }
+
+        vram
     }
 
     #[allow(dead_code)]

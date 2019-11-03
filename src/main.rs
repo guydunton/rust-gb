@@ -18,13 +18,15 @@ fn screen_color_to_color(c: ScreenColor) -> [f32; 4] {
     }
 }
 
-fn render_screen(screen: &Screen, c: &graphics::Context, gl: &mut GlGraphics) {
+fn render_vram(gb: &Gameboy, c: &graphics::Context, gl: &mut GlGraphics) {
     use graphics::*;
     let square = rectangle::square(0.0, 0.0, 2.0);
 
-    for row in 0..144 {
-        for col in 0..160 {
-            let pixel = screen.pixels()[col + row * 160];
+    let vram_pixels = gb.get_vram_data();
+
+    for row in 0..256 {
+        for col in 0..256 {
+            let pixel = vram_pixels[col + row * 256];
             let color = screen_color_to_color(pixel);
             let (x, y) = (col * 2, row * 2);
 
@@ -45,11 +47,11 @@ impl App {
     fn render(&mut self, args: &RenderArgs) {
         const WHITE: [f32; 4] = [1.0, 1.0, 1.0, 1.0];
 
-        let screen = &self.screen;
+        let gb = &self.gb;
 
         self.gl.draw(args.viewport(), |c, gl| {
             graphics::clear(WHITE, gl);
-            render_screen(&screen, &c, gl);
+            render_vram(&gb, &c, gl);
         });
     }
 
@@ -83,12 +85,19 @@ impl App {
 fn main() {
     let opengl = OpenGL::V3_2;
 
-    let mut window: Window = WindowSettings::new("Gameboy", [320, 288])
-        .opengl(opengl)
-        .exit_on_esc(true)
-        .resizable(false)
-        .build()
-        .unwrap();
+    //let gb_screen_height = 144;
+    //let gb_screen_width = 160;
+
+    let gb_screen_height = 256;
+    let gb_screen_width = 256;
+
+    let mut window: Window =
+        WindowSettings::new("Gameboy", [gb_screen_width * 2, gb_screen_height * 2])
+            .opengl(opengl)
+            .exit_on_esc(true)
+            .resizable(false)
+            .build()
+            .unwrap();
 
     let args: Vec<String> = env::args().collect();
 

@@ -1,5 +1,5 @@
 #[repr(u8)]
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq)]
 pub enum ScreenColor {
     White = 0,
     Light = 1,
