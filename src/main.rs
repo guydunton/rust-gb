@@ -1,13 +1,12 @@
 use glutin_window::GlutinWindow as Window;
 use opengl_graphics::{GlGraphics, OpenGL};
 use piston::{event_loop::*, input::*, window::WindowSettings};
-use rand::prelude::*;
 use std::env;
 
 mod debug_cli;
 mod gameboy;
 use crate::debug_cli::update;
-use crate::gameboy::{screen::*, Gameboy};
+use crate::gameboy::{screen::*, Gameboy, RegisterLabel16};
 
 fn screen_color_to_color(c: ScreenColor) -> [f32; 4] {
     match c {
@@ -38,7 +37,6 @@ fn render_vram(gb: &Gameboy, c: &graphics::Context, gl: &mut GlGraphics) {
 
 pub struct App {
     gl: GlGraphics,
-    screen: Screen,
     gb: Gameboy,
     is_debug: bool,
 }
@@ -55,30 +53,21 @@ impl App {
         });
     }
 
-    fn update(&mut self, args: UpdateArgs, rng: &mut ThreadRng) {
+    fn update(&mut self, args: UpdateArgs) {
         if self.is_debug {
             update(&self.gb);
         }
 
+        let breakpoint = 0xFFFF;
+
         if self.is_debug {
             self.gb.step_once();
         } else {
-            self.gb.tick(args.dt);
+            self.gb.tick(args.dt, breakpoint);
+            if self.gb.get_register_16(RegisterLabel16::ProgramCounter) == breakpoint {
+                self.is_debug = true;
+            }
         }
-
-        let mut pixels = Vec::new();
-        for _ in 0..160 {
-            let num = rng.gen_range(0, 4);
-            let px_color = match num {
-                0 => ScreenColor::White,
-                1 => ScreenColor::Light,
-                2 => ScreenColor::Dark,
-                _ => ScreenColor::Black,
-            };
-            pixels.push(px_color);
-        }
-
-        self.screen.push_pixels(&pixels);
     }
 }
 
@@ -103,12 +92,9 @@ fn main() {
 
     let mut app = App {
         gl: GlGraphics::new(opengl),
-        screen: Screen::new(),
         gb: Gameboy::new_with_bootloader(),
         is_debug: args.contains(&String::from("-d")),
     };
-
-    let mut rnd = rand::thread_rng();
 
     let mut events = Events::new(EventSettings::new());
     while let Some(e) = events.next(&mut window) {
@@ -117,7 +103,7 @@ fn main() {
         }
 
         if let Some(u) = e.update_args() {
-            app.update(u, &mut rnd);
+            app.update(u);
         }
     }
 }

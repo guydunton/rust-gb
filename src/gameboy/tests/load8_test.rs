@@ -26,8 +26,11 @@ mod load8_test {
             assert_eq!(gb.get_register_16(RegisterLabel16::ProgramCounter), 0x02);
         };
 
-        // LD c d8
+        // LD C d8
         ld8_test(0x0E, RegisterLabel8::C);
+
+        // LD L d8
+        ld8_test(0x2E, RegisterLabel8::L);
 
         // LD A d8
         ld8_test(0x3E, RegisterLabel8::A);

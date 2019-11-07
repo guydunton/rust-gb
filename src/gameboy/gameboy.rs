@@ -1,7 +1,7 @@
 use super::cpu::CPU;
 use super::opcodes::decode_instruction;
 use super::read_write_register::ReadWriteRegister;
-use super::screen::{Screen, ScreenColor};
+use super::screen::{ScreenColor};
 use super::OpCode;
 use super::RegisterLabel16;
 use super::RegisterLabel8;
@@ -10,7 +10,6 @@ use super::{read_flag, write_flag, Flags};
 pub struct Gameboy {
     cpu: CPU,
     memory: Vec<u8>,
-    screen: Screen,
 }
 
 impl Gameboy {
@@ -50,7 +49,19 @@ impl Gameboy {
             0xE0, 0x50,
         ];
 
-        Gameboy::new(bootloader)
+        let fake_header_data = vec![
+            0x00, 0x00, 0x00, 0x00, 0xCE, 0xED, 0x66, 0x66, 0xCC, 0x0D, 0x00, 0x0B, 0x03, 0x73,
+            0x00, 0x83, 0x00, 0x0C, 0x00, 0x0D, 0x00, 0x08, 0x11, 0x1F, 0x88, 0x89, 0x00, 0x0E,
+            0xDC, 0xCC, 0x6E, 0xE6, 0xDD, 0xDD, 0xD9, 0x99, 0xBB, 0xBB, 0x67, 0x63, 0x6E, 0x0E,
+            0xEC, 0xCC, 0xDD, 0xDC, 0x99, 0x9F, 0xBB, 0xB9, 0x33, 0x3E,
+        ];
+
+        let mut data = vec![0x0; bootloader.len() + fake_header_data.len()];
+        data[..bootloader.len()].clone_from_slice(&bootloader[..]);
+        data[bootloader.len()..(bootloader.len() + fake_header_data.len())]
+            .clone_from_slice(&fake_header_data[..]);
+
+        Gameboy::new(data)
     }
 
     /// Construct a new Gameboy.
@@ -65,13 +76,12 @@ impl Gameboy {
 
         Gameboy {
             cpu: CPU::new(),
-            memory,
-            screen: Screen::new(),
+            memory
         }
     }
 
     #[allow(dead_code)]
-    pub fn tick(&mut self, dt: f64) {
+    pub fn tick(&mut self, dt: f64, breakpoint: u16) {
         let cycles_to_use = (dt * 1000000f64) as u32;
         let mut total_cycles_used = 0;
 
@@ -89,6 +99,10 @@ impl Gameboy {
                 Err(err) => {
                     panic!("{}", err);
                 }
+            }
+
+            if self.cpu.read_16_bits(RegisterLabel16::ProgramCounter) == breakpoint {
+                break;
             }
         }
     }
@@ -149,28 +163,48 @@ impl Gameboy {
     }
 
     #[allow(dead_code)]
-    fn get_memory_slice_at(&self, address: u16, size: u8) -> &[u8] {
+    pub fn get_memory_slice_at(&self, address: u16, size: u16) -> &[u8] {
         let start = address as usize;
-        let end = (address + size as u16) as usize;
+        let end = (address + size) as usize;
         &self.memory[start..end]
     }
 
-    #[allow(dead_code)]
-    pub fn get_screen_data(&self) -> &Vec<ScreenColor> {
-        self.screen.pixels()
-    }
-
     fn byte_to_colors(byte1: u8, byte2: u8) -> [ScreenColor; 8] {
-        [
-            ScreenColor::Black,
-            ScreenColor::Black,
-            ScreenColor::Black,
-            ScreenColor::Black,
-            ScreenColor::Black,
-            ScreenColor::Black,
-            ScreenColor::Black,
-            ScreenColor::Black,
-        ]
+        // 0b1010_1010
+        // 0b0101_0110
+        // Results in:
+        //   1212_1230
+
+        // e.g.
+        // [0,0] => 0
+        // [1,0] => 1
+        // [0,1] => 2
+        // [1,1] => 3
+
+        let mut pixels = [ScreenColor::White; 8];
+
+        let black_bits = byte1 & byte2;
+
+        let bit_mask = byte1 | byte2;
+
+        let light_bits = bit_mask ^ byte2;
+        let dark_bits = bit_mask ^ byte1;
+
+        for i in 0..8 {
+            if ((black_bits >> i) & 1) == 1 {
+                pixels[i] = ScreenColor::Black;
+            } else if (light_bits >> i) & 1 == 1 {
+                //pixels[i] = ScreenColor::Black;
+                pixels[i] = ScreenColor::Light;
+            } else if (dark_bits >> i) & 1 == 1 {
+                //pixels[i] = ScreenColor::Black;
+                pixels[i] = ScreenColor::Dark;
+            }
+        }
+
+        pixels.reverse();
+
+        pixels
     }
 
     /// Return the VRAM information
@@ -187,27 +221,16 @@ impl Gameboy {
             let index = self.get_memory_at(0x9800 + map_index as u16);
 
             // For each point check the tile at that index
-            let sprite_data = self.get_memory_slice_at(0x8000 + index as u16, 16);
+            let sprite_data = self.get_memory_slice_at(0x8000 + (index as u16 * 16), 16);
 
             // Render the sprite into the VRAM
             for i in 0..8 {
-                //let colors = Gameboy::byte_to_colors(sprite_data[i * 2], sprite_data[i * 2 + 1]);
-                let colors = vec![
-                    match map_index % 3 {
-                        0 => ScreenColor::Black,
-                        1 => ScreenColor::Dark,
-                        _ => ScreenColor::Light,
-                    };
-                    8
-                ];
-                let x_offset = map_index * 8;
-                let y_offset = (map_index / 32) * 7 * 256;
+                let colors = Gameboy::byte_to_colors(sprite_data[i * 2], sprite_data[i * 2 + 1]);
+                let x_offset = (map_index % 32) * 8;
+                let y_offset = (map_index / 32) * 8 * 256;
                 let sprite_line_offset = i * 256;
                 let start_of_line = x_offset + sprite_line_offset + y_offset;
-                if map_index == (32 * 32) {
-                    println!("x_offset: {}", x_offset);
-                    println!("y_offset: {}", y_offset);
-                }
+
                 vram[start_of_line..(start_of_line + 8)].clone_from_slice(&colors);
             }
         }
