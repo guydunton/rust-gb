@@ -38,13 +38,9 @@ http://bgb.bircd.org/pandocs.htm#videodisplay
 
 - [x] Clean up debug cli
 - [x] Clean up opcodes directory
-- [x] Support 0xC1 at 0x9C
-- [x] Support 0x50 at 0xA0
 - [x] Debug should continue by default
-- [x] Support 0x22 at 0xA3
-- [x] Support 0x3D at 0x4A
-- [x] Support 0x28 at 0x4B
-- [ ] Clean up PPU code
+- [x] Clean up PPU code
+- [ ] Add test for multiple shades in tile
 - [ ] Support palette correctly
 - [ ] Remove cowboy breakpoint code
 - [ ] Add proper debug breakpoints

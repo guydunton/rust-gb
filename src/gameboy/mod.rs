@@ -4,6 +4,8 @@ mod gameboy;
 mod opcodes;
 mod read_write_register;
 mod register;
+mod ppu;
+mod memory_view;
 
 // Expose screen because it's not finished yet
 pub mod screen;
@@ -15,4 +17,5 @@ mod tests;
 pub use self::flags_register::{read_flag, write_flag, Flags};
 pub use self::gameboy::Gameboy;
 pub use self::opcodes::OpCode;
+pub use self::screen::ScreenColor;
 pub use self::register::{RegisterLabel16, RegisterLabel8};

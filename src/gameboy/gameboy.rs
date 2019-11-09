@@ -1,14 +1,17 @@
 use super::cpu::CPU;
 use super::opcodes::decode_instruction;
+use super::memory_view::MemoryView;
 use super::read_write_register::ReadWriteRegister;
 use super::screen::ScreenColor;
 use super::OpCode;
 use super::RegisterLabel16;
 use super::RegisterLabel8;
+use super::ppu::PPU;
 use super::{read_flag, write_flag, Flags};
 
 pub struct Gameboy {
     cpu: CPU,
+    ppu: PPU,
     memory: Vec<u8>,
 }
 
@@ -76,6 +79,7 @@ impl Gameboy {
 
         Gameboy {
             cpu: CPU::new(),
+            ppu: PPU::new(),
             memory,
         }
     }
@@ -159,52 +163,12 @@ impl Gameboy {
 
     #[allow(dead_code)]
     pub fn get_memory_at(&self, address: u16) -> u8 {
-        self.memory[address as usize]
+        MemoryView::new(&self.memory).get_memory_at(address)
     }
 
     #[allow(dead_code)]
     pub fn get_memory_slice_at(&self, address: u16, size: u16) -> &[u8] {
-        let start = address as usize;
-        let end = (address + size) as usize;
-        &self.memory[start..end]
-    }
-
-    fn byte_to_colors(byte1: u8, byte2: u8) -> [ScreenColor; 8] {
-        // 0b1010_1010
-        // 0b0101_0110
-        // Results in:
-        //   1212_1230
-
-        // e.g.
-        // [0,0] => 0
-        // [1,0] => 1
-        // [0,1] => 2
-        // [1,1] => 3
-
-        let mut pixels = [ScreenColor::White; 8];
-
-        let black_bits = byte1 & byte2;
-
-        let bit_mask = byte1 | byte2;
-
-        let light_bits = bit_mask ^ byte2;
-        let dark_bits = bit_mask ^ byte1;
-
-        for i in 0..8 {
-            if ((black_bits >> i) & 1) == 1 {
-                pixels[i] = ScreenColor::Black;
-            } else if (light_bits >> i) & 1 == 1 {
-                //pixels[i] = ScreenColor::Black;
-                pixels[i] = ScreenColor::Light;
-            } else if (dark_bits >> i) & 1 == 1 {
-                //pixels[i] = ScreenColor::Black;
-                pixels[i] = ScreenColor::Dark;
-            }
-        }
-
-        pixels.reverse();
-
-        pixels
+        MemoryView::new(&self.memory).get_memory_slice_at(address, size)
     }
 
     /// Return the VRAM information
@@ -213,29 +177,7 @@ impl Gameboy {
     /// viewing all the tiles currently stored
     #[allow(dead_code)]
     pub fn get_vram_data(&self) -> Vec<ScreenColor> {
-        let mut vram = vec![ScreenColor::White; 256 * 256];
-
-        // Loop through $9800-$9BFF - BG Map Data 1 to see all the sprites on screen
-        for map_index in 0..1024 {
-            // Get the value in vram for this index
-            let index = self.get_memory_at(0x9800 + map_index as u16);
-
-            // For each point check the tile at that index
-            let sprite_data = self.get_memory_slice_at(0x8000 + (index as u16 * 16), 16);
-
-            // Render the sprite into the VRAM
-            for i in 0..8 {
-                let colors = Gameboy::byte_to_colors(sprite_data[i * 2], sprite_data[i * 2 + 1]);
-                let x_offset = (map_index % 32) * 8;
-                let y_offset = (map_index / 32) * 8 * 256;
-                let sprite_line_offset = i * 256;
-                let start_of_line = x_offset + sprite_line_offset + y_offset;
-
-                vram[start_of_line..(start_of_line + 8)].clone_from_slice(&colors);
-            }
-        }
-
-        vram
+        self.ppu.get_vram_data(&self.memory)
     }
 
     #[allow(dead_code)]
