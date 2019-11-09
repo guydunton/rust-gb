@@ -6,8 +6,8 @@ mod load16_test;
 mod load8_test;
 mod opcode_printer_test;
 mod pop_test;
-mod ret_test;
 mod psu_test;
+mod ret_test;
 
 #[cfg(test)]
 mod opcode_tests {
@@ -215,5 +215,5 @@ mod opcode_tests {
             assert_eq!(gb.get_memory_slice_at(0x00, 0x02), [0x01, 0x02]);
 
         }
-    } 
+    }
 }

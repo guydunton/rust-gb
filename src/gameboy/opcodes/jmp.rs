@@ -54,6 +54,5 @@ impl OpCode {
                 panic!("Invalid argument for jump statement {:?}", self.args[0]);
             }
         };
-
     }
 }

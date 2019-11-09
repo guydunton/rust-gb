@@ -12,7 +12,9 @@ impl OpCode {
             let source = match self.args[1] {
                 Argument::Register8Constant(register) => cpu.read_8_bits(register),
                 Argument::RegisterIndirect(register) => memory[cpu.read_16_bits(register) as usize],
-                Argument::HighOffsetConstant(offset) => memory[(0xFF00 as usize) + (offset as usize)],
+                Argument::HighOffsetConstant(offset) => {
+                    memory[(0xFF00 as usize) + (offset as usize)]
+                }
                 Argument::SmallValue(val) => val,
                 _ => panic!(
                     "Command does not support source argument {:?}",

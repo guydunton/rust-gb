@@ -26,7 +26,12 @@ impl<'a> Print for MemoryWidget<'a> {
         let chunk_size = 16;
         for (i, chunk) in memory.chunks(chunk_size).enumerate() {
             let marker = format!("{:#X}", self.start + (i * chunk_size) as u16);
-            let bytes: Vec<String> = chunk.iter().map(|val| -> String { return format!("{:02X}", val); }).collect();
+            let bytes: Vec<String> = chunk
+                .iter()
+                .map(|val| -> String {
+                    return format!("{:02X}", val);
+                })
+                .collect();
 
             output.push(format!("{}: {}", marker, bytes.join(",")));
         }

@@ -7,7 +7,6 @@ impl OpCode {
         cpu: &mut dyn ReadWriteRegister,
         _memory: &mut Vec<u8>,
     ) -> u32 {
-
         // Reset Z & H flags flags. Ignore N because it's always set to 1
         write_flag::<T>(cpu, Flags::Z, false);
         write_flag::<T>(cpu, Flags::H, false);

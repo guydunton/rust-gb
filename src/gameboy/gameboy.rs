@@ -1,7 +1,7 @@
 use super::cpu::CPU;
 use super::opcodes::decode_instruction;
 use super::read_write_register::ReadWriteRegister;
-use super::screen::{ScreenColor};
+use super::screen::ScreenColor;
 use super::OpCode;
 use super::RegisterLabel16;
 use super::RegisterLabel8;
@@ -76,7 +76,7 @@ impl Gameboy {
 
         Gameboy {
             cpu: CPU::new(),
-            memory
+            memory,
         }
     }
 

@@ -6,7 +6,7 @@ mod widgets;
 use crate::Gameboy;
 use layout::Layout;
 use std::io;
-use widgets::{FlagsWidget, OpCodeWidget, RegistersWidget, MemoryWidget};
+use widgets::{FlagsWidget, MemoryWidget, OpCodeWidget, RegistersWidget};
 
 pub fn update(gb: &Gameboy) {
     // Clear the screen

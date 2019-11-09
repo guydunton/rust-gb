@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod ret_test {
-    use crate::gameboy::Gameboy;
     use crate::gameboy::screen::ScreenColor;
+    use crate::gameboy::Gameboy;
     use rust_catch::tests;
 
     tests! {
@@ -10,7 +10,7 @@ mod ret_test {
 
             // Get the VRAM to find the set pixel
             let pixels = gb.get_vram_data();
-            
+
             assert_eq!(pixels.len(), 256 * 256);
         }
 
@@ -63,12 +63,14 @@ mod ret_test {
     }
 
     fn colors(cols: Vec<i32>) -> Vec<ScreenColor> {
-        cols.iter().map(|val| match val {
-            0 => ScreenColor::White,
-            1 => ScreenColor::Light,
-            2 => ScreenColor::Dark,
-            3 => ScreenColor::Black,
-            _ => ScreenColor::White
-        }).collect::<Vec<ScreenColor>>()
+        cols.iter()
+            .map(|val| match val {
+                0 => ScreenColor::White,
+                1 => ScreenColor::Light,
+                2 => ScreenColor::Dark,
+                3 => ScreenColor::Black,
+                _ => ScreenColor::White,
+            })
+            .collect::<Vec<ScreenColor>>()
     }
 }
