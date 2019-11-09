@@ -6,7 +6,7 @@ mod load16_test;
 mod load8_test;
 mod opcode_printer_test;
 mod pop_test;
-mod psu_test;
+mod ppu_test;
 mod ret_test;
 
 #[cfg(test)]
