@@ -44,5 +44,8 @@ http://bgb.bircd.org/pandocs.htm#videodisplay
 - [x] Support 0x22 at 0xA3
 - [x] Support 0x3D at 0x4A
 - [x] Support 0x28 at 0x4B
-- [ ] Add debug breakpoints
+- [ ] Clean up PPU code
+- [ ] Support palette correctly
+- [ ] Remove cowboy breakpoint code
+- [ ] Add proper debug breakpoints
 - [ ] Continue adding support for bootloader commands.
