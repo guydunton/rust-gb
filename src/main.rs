@@ -6,7 +6,7 @@ use std::env;
 mod debug_cli;
 mod gameboy;
 use crate::debug_cli::update;
-use crate::gameboy::{ScreenColor, Gameboy, RegisterLabel16};
+use crate::gameboy::{Gameboy, RegisterLabel16, ScreenColor};
 
 fn screen_color_to_color(c: ScreenColor) -> [f32; 4] {
     match c {

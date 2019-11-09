@@ -1,12 +1,12 @@
 use super::cpu::CPU;
-use super::opcodes::decode_instruction;
 use super::memory_view::MemoryView;
+use super::opcodes::decode_instruction;
+use super::ppu::PPU;
 use super::read_write_register::ReadWriteRegister;
 use super::screen::ScreenColor;
 use super::OpCode;
 use super::RegisterLabel16;
 use super::RegisterLabel8;
-use super::ppu::PPU;
 use super::{read_flag, write_flag, Flags};
 
 pub struct Gameboy {

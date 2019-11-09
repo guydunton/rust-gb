@@ -4,10 +4,8 @@ pub struct MemoryView<'a> {
 
 impl<'a> MemoryView<'a> {
     pub fn new(memory: &Vec<u8>) -> MemoryView {
-        MemoryView {
-            memory
-        }
-    } 
+        MemoryView { memory }
+    }
 
     pub fn get_memory_at(&self, address: u16) -> u8 {
         self.memory[address as usize]

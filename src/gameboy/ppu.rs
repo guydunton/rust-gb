@@ -1,5 +1,6 @@
-use super::ScreenColor;
 use super::memory_view::MemoryView;
+use super::Labels;
+use super::ScreenColor;
 
 pub struct PPU {}
 
@@ -49,10 +50,11 @@ impl PPU {
         // Loop through $9800-$9BFF - BG Map Data 1 to see all the sprites on screen
         for map_index in 0..1024 {
             // Get the value in vram for this index
-            let index = mem_view.get_memory_at(0x9800 + map_index as u16);
+            let index = mem_view.get_memory_at(Labels::BG_MAP_DATA_1_START + map_index as u16);
 
             // For each point check the tile at that index
-            let sprite_data = mem_view.get_memory_slice_at(0x8000 + (index as u16 * 16), 16);
+            let sprite_data =
+                mem_view.get_memory_slice_at(Labels::CHARACTER_RAM_START + (index as u16 * 16), 16);
 
             // Render the sprite into the VRAM
             for i in 0..8 {

@@ -32,7 +32,7 @@ https://realboyemulator.wordpress.com/2013/01/03/a-look-at-the-game-boy-bootstra
 
 ### Hardware interrupts
 
-http://bgb.bircd.org/pandocs.htm#videodisplay
+http://bgb.bircd.org/pandocs.htm
 
 ## Todo
 
@@ -40,7 +40,7 @@ http://bgb.bircd.org/pandocs.htm#videodisplay
 - [x] Clean up opcodes directory
 - [x] Debug should continue by default
 - [x] Clean up PPU code
-- [ ] Add test for multiple shades in tile
+- [x] Add test for multiple shades in tile
 - [ ] Support palette correctly
 - [ ] Remove cowboy breakpoint code
 - [ ] Add proper debug breakpoints
