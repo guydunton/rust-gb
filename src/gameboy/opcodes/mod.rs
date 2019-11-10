@@ -24,6 +24,7 @@ use argument::{arg_from_str, size_in_bytes, Argument};
 use category::{category_from_str, category_size, Category};
 use opcodes::code_to_opcode;
 use std::fmt;
+use super::memory_adapter::MemoryAdapter;
 
 pub fn decode_instruction(program_counter: u16, program_code: &[u8]) -> Result<OpCode, String> {
     let code = program_code[program_counter as usize];
@@ -57,7 +58,7 @@ impl OpCode {
     pub fn run<T: ReadWriteRegister>(
         &self,
         cpu: &mut dyn ReadWriteRegister,
-        memory: &mut Vec<u8>,
+        mut memory: MemoryAdapter,
     ) -> u32 {
         // Update the program counter
         let program_counter = cpu.read_16_bits(RegisterLabel16::ProgramCounter);
@@ -70,50 +71,50 @@ impl OpCode {
 
         match self.category {
             Category::LD16 => {
-                cycles += self.run_ld16::<T>(cpu, memory);
+                cycles += self.run_ld16::<T>(cpu, memory.get_memory());
             }
             Category::LD8 => {
-                cycles += self.run_ld8::<T>(cpu, memory);
+                cycles += self.run_ld8::<T>(cpu, &mut memory);
             }
             Category::NOP => {
                 // Do nothing
                 cycles += 4;
             }
             Category::XOR => {
-                cycles += self.run_xor::<T>(cpu, memory);
+                cycles += self.run_xor::<T>(cpu, memory.get_memory());
             }
             Category::BIT => {
-                cycles += self.run_bit::<T>(cpu, memory);
+                cycles += self.run_bit::<T>(cpu, memory.get_memory());
             }
             Category::JR => {
-                cycles += self.run_jmp::<T>(cpu, memory);
+                cycles += self.run_jmp::<T>(cpu, memory.get_memory());
             }
             Category::CALL => {
-                cycles += self.run_call::<T>(cpu, memory);
+                cycles += self.run_call::<T>(cpu, memory.get_memory());
             }
             Category::RET => {
-                cycles += self.run_ret::<T>(cpu, memory);
+                cycles += self.run_ret::<T>(cpu, memory.get_memory());
             }
             Category::PUSH => {
-                cycles += self.run_push::<T>(cpu, memory);
+                cycles += self.run_push::<T>(cpu, memory.get_memory());
             }
             Category::POP => {
-                cycles += self.run_pop::<T>(cpu, memory);
+                cycles += self.run_pop::<T>(cpu, memory.get_memory());
             }
             Category::INC => {
-                cycles += self.run_inc::<T>(cpu, memory);
+                cycles += self.run_inc::<T>(cpu, memory.get_memory());
             }
             Category::DEC => {
-                cycles += self.run_dec::<T>(cpu, memory);
+                cycles += self.run_dec::<T>(cpu, memory.get_memory());
             }
             Category::RL => {
-                cycles += self.run_rl::<T>(cpu, memory);
+                cycles += self.run_rl::<T>(cpu, memory.get_memory());
             }
             Category::RLA => {
-                cycles += self.run_rla::<T>(cpu, memory);
+                cycles += self.run_rla::<T>(cpu, memory.get_memory());
             }
             Category::CP => {
-                cycles += self.run_cp::<T>(cpu, memory);
+                cycles += self.run_cp::<T>(cpu, memory.get_memory());
             }
         };
 

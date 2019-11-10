@@ -8,6 +8,7 @@ mod ppu;
 mod read_write_register;
 mod register;
 mod screen;
+mod memory_adapter;
 
 // Include the gameboy test suite
 mod tests;

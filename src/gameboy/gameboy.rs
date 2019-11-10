@@ -1,6 +1,7 @@
 use super::cpu::CPU;
-use super::memory_view::MemoryView;
 use super::opcodes::decode_instruction;
+use super::memory_view::MemoryView;
+use super::memory_adapter::MemoryAdapter;
 use super::ppu::PPU;
 use super::read_write_register::ReadWriteRegister;
 use super::screen::ScreenColor;
@@ -93,7 +94,12 @@ impl Gameboy {
             let opcode = self.get_opcode();
             match opcode {
                 Ok(op) => {
-                    let cycles_used = op.run::<CPU>(&mut self.cpu, &mut self.memory);
+                    let mut mem_adapter = MemoryAdapter::new(&mut self.memory);
+                    let ppu_ref = &mut self.ppu;
+                    mem_adapter.add_callback(0xFF47, |new_palette| {
+                        ppu_ref.reset_bg_palette(new_palette);
+                    });
+                    let cycles_used = op.run::<CPU>(&mut self.cpu, mem_adapter);
 
                     total_cycles_used += cycles_used;
                     if total_cycles_used > cycles_to_use {
@@ -117,7 +123,12 @@ impl Gameboy {
         let opcode = self.get_opcode();
         match opcode {
             Ok(op) => {
-                let cycles = op.run::<CPU>(&mut self.cpu, &mut self.memory);
+                let mut mem_adapter = MemoryAdapter::new(&mut self.memory);
+                let ppu_ref = &mut self.ppu;
+                mem_adapter.add_callback(0xFF47, |new_palette| {
+                    ppu_ref.reset_bg_palette(new_palette);
+                });
+                let cycles = op.run::<CPU>(&mut self.cpu, mem_adapter);
                 return cycles;
             }
             Err(err) => {
@@ -159,6 +170,10 @@ impl Gameboy {
     #[allow(dead_code)]
     pub fn set_memory_at(&mut self, address: u16, value: u8) {
         self.memory[address as usize] = value;
+
+        if address == 0xFF47 {
+            self.ppu.reset_bg_palette(value);
+        }
     }
 
     #[allow(dead_code)]

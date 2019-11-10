@@ -1,19 +1,20 @@
 use super::ReadWriteRegister;
 use super::{Argument, OpCode};
+use super::MemoryAdapter;
 
 impl OpCode {
     pub fn run_ld8<T: ReadWriteRegister>(
         &self,
         cpu: &mut dyn ReadWriteRegister,
-        memory: &mut Vec<u8>,
+        memory: &mut MemoryAdapter,
     ) -> u32 {
         assert_eq!(self.args.len(), 2);
         {
             let source = match self.args[1] {
                 Argument::Register8Constant(register) => cpu.read_8_bits(register),
-                Argument::RegisterIndirect(register) => memory[cpu.read_16_bits(register) as usize],
+                Argument::RegisterIndirect(register) => memory.get_memory_at(cpu.read_16_bits(register)),
                 Argument::HighOffsetConstant(offset) => {
-                    memory[(0xFF00 as usize) + (offset as usize)]
+                    memory.get_memory_at(0xFF00 + offset as u16)
                 }
                 Argument::SmallValue(val) => val,
                 _ => panic!(
@@ -24,25 +25,25 @@ impl OpCode {
 
             let mut dest = |val: u8| match self.args[0] {
                 Argument::RegisterIndirectDec(register) => {
-                    memory[cpu.read_16_bits(register) as usize] = val;
+                    memory.set_memory_at(cpu.read_16_bits(register), val);
                 }
                 Argument::RegisterIndirectInc(register) => {
-                    memory[cpu.read_16_bits(register) as usize] = val;
+                    memory.set_memory_at(cpu.read_16_bits(register), val);
                 }
                 Argument::RegisterIndirect(register) => {
-                    memory[cpu.read_16_bits(register) as usize] = val;
+                    memory.set_memory_at(cpu.read_16_bits(register), val);
                 }
                 Argument::HighOffsetConstant(offset) => {
-                    memory[(0xFF00 as usize) + (offset as usize)] = val;
+                    memory.set_memory_at(0xFF00 + offset as u16, val);
                 }
                 Argument::Register8Constant(register) => {
                     cpu.write_8_bits(register, val);
                 }
                 Argument::AddressIndirect(address) => {
-                    memory[address as usize] = val;
+                    memory.set_memory_at(address, val);
                 }
                 Argument::HighOffsetRegister(register) => {
-                    memory[(0xFF00 + cpu.read_8_bits(register) as u16) as usize] = val;
+                    memory.set_memory_at(0xFF00 + cpu.read_8_bits(register) as u16, val);
                 }
                 _ => panic!(
                     "Command does not support destination argument {:?}",

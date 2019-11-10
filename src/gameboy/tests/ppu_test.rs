@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod ret_test {
-    use crate::gameboy::{ScreenColor, Gameboy, Labels};
+    use crate::gameboy::{Gameboy, Labels, ScreenColor, RegisterLabel8, RegisterLabel16};
     use rust_catch::tests;
 
     tests! {
@@ -16,6 +16,8 @@ mod ret_test {
         test("Tiles are displayed correctly") {
             let mut gb = Gameboy::new(vec![]);
 
+            gb.set_memory_at(0xFF47, 0xE4);
+
             // Tiles go at 8000
             gb.set_memory_at(Labels::CHARACTER_RAM_START + 0x10, 0xFF);
             gb.set_memory_at(Labels::CHARACTER_RAM_START + 0x11, 0xFF);
@@ -30,6 +32,8 @@ mod ret_test {
 
         test("Tile gets drawn the right way around") {
             let mut gb = Gameboy::new(vec![]);
+
+            gb.set_memory_at(0xFF47, 0xE4);
 
             // Draw the ® symbol
             gb.set_memory_at(Labels::CHARACTER_RAM_START + 0x0, 0x3C);
@@ -67,8 +71,60 @@ mod ret_test {
             gb.set_memory_at(Labels::CHARACTER_RAM_START, 0x55);
             gb.set_memory_at(Labels::CHARACTER_RAM_START + 1, 0x33);
 
+            gb.set_memory_at(0xFF47, 0xE4);
+
             let vram : Vec<ScreenColor> = gb.get_vram_data().into_iter().take(8).collect();
             assert_eq!(vram, colors(vec![0, 1, 2, 3, 0, 1, 2, 3]));
+        }
+
+        test("Setting the palette color sets the colors of the sprites") {
+            let mut gb = Gameboy::new(vec![]);
+
+            // BG palette is FF47
+            gb.set_memory_at(0xFF47, 0xFC);
+
+            // This will set the palette to:
+            // 1111_1100
+            // Which corresponds to:
+            // Color 0 => White
+            // Color 1 => Black
+            // Color 2 => Black
+            // Color 3 => Black
+
+            gb.set_memory_at(Labels::CHARACTER_RAM_START + 0x0, 0x50);
+            gb.set_memory_at(Labels::CHARACTER_RAM_START + 0x1, 0x30);
+
+            // This sprite is:
+            // 0, 1, 2, 3
+            // So the resulting pixels should be WHITE, BLACK, BLACK, BLACK
+
+            let vram_pixels : Vec<ScreenColor> = gb.get_vram_data().into_iter().take(4).collect();
+
+            assert_eq!(vram_pixels, colors(vec![0, 3, 3, 3]));
+        }
+
+        test("Use instruction to load a palette") {
+            // A contains 0xE4
+            // HL contains FF47
+            // LD (HL), A
+            let mut gb = Gameboy::new(vec![0x77]);
+            gb.set_register_8(RegisterLabel8::A, 0xE4);
+            gb.set_register_16(RegisterLabel16::HL, 0xFF47);
+
+            gb.step_once();
+
+            // The palette should now be set
+
+            gb.set_memory_at(Labels::CHARACTER_RAM_START + 0x0, 0x50);
+            gb.set_memory_at(Labels::CHARACTER_RAM_START + 0x1, 0x30);
+
+            // This sprite is:
+            // 0, 1, 2, 3
+            // So the resulting pixels should be WHITE, LIGHT, DARK, BLACK
+
+            let vram_pixels : Vec<ScreenColor> = gb.get_vram_data().into_iter().take(4).collect();
+
+            assert_eq!(vram_pixels, colors(vec![0, 1, 2, 3]));
         }
     }
 
