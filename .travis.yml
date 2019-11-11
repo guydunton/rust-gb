@@ -6,6 +6,7 @@ jobs:
       cache: cargo
     - stage: docs
       language: elm
+      if: branch = master
       cache:
         directories:
           - $HOME/.elm
