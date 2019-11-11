@@ -9,6 +9,7 @@ use super::OpCode;
 use super::RegisterLabel16;
 use super::RegisterLabel8;
 use super::{read_flag, write_flag, Flags};
+use super::memory_labels::Labels;
 
 pub struct Gameboy {
     cpu: CPU,
@@ -91,24 +92,9 @@ impl Gameboy {
         let mut total_cycles_used = 0;
 
         loop {
-            let opcode = self.get_opcode();
-            match opcode {
-                Ok(op) => {
-                    let mut mem_adapter = MemoryAdapter::new(&mut self.memory);
-                    let ppu_ref = &mut self.ppu;
-                    mem_adapter.add_callback(0xFF47, |new_palette| {
-                        ppu_ref.reset_bg_palette(new_palette);
-                    });
-                    let cycles_used = op.run::<CPU>(&mut self.cpu, mem_adapter);
-
-                    total_cycles_used += cycles_used;
-                    if total_cycles_used > cycles_to_use {
-                        break;
-                    }
-                }
-                Err(err) => {
-                    panic!("{}", err);
-                }
+            total_cycles_used += self.step_once();
+            if total_cycles_used > cycles_to_use {
+                break;
             }
 
             if self.cpu.read_16_bits(RegisterLabel16::ProgramCounter) == breakpoint {
@@ -123,11 +109,13 @@ impl Gameboy {
         let opcode = self.get_opcode();
         match opcode {
             Ok(op) => {
+                // Set up the memory callbacks
                 let mut mem_adapter = MemoryAdapter::new(&mut self.memory);
                 let ppu_ref = &mut self.ppu;
-                mem_adapter.add_callback(0xFF47, |new_palette| {
+                mem_adapter.add_callback(Labels::BG_PALETTE, |new_palette| {
                     ppu_ref.reset_bg_palette(new_palette);
                 });
+                
                 let cycles = op.run::<CPU>(&mut self.cpu, mem_adapter);
                 return cycles;
             }
@@ -171,7 +159,7 @@ impl Gameboy {
     pub fn set_memory_at(&mut self, address: u16, value: u8) {
         self.memory[address as usize] = value;
 
-        if address == 0xFF47 {
+        if address == Labels::BG_PALETTE {
             self.ppu.reset_bg_palette(value);
         }
     }

@@ -16,7 +16,7 @@ mod ret_test {
         test("Tiles are displayed correctly") {
             let mut gb = Gameboy::new(vec![]);
 
-            gb.set_memory_at(0xFF47, 0xE4);
+            gb.set_memory_at(Labels::BG_PALETTE, 0xE4);
 
             // Tiles go at 8000
             gb.set_memory_at(Labels::CHARACTER_RAM_START + 0x10, 0xFF);
@@ -33,7 +33,7 @@ mod ret_test {
         test("Tile gets drawn the right way around") {
             let mut gb = Gameboy::new(vec![]);
 
-            gb.set_memory_at(0xFF47, 0xE4);
+            gb.set_memory_at(Labels::BG_PALETTE, 0xE4);
 
             // Draw the ® symbol
             gb.set_memory_at(Labels::CHARACTER_RAM_START + 0x0, 0x3C);
@@ -71,7 +71,7 @@ mod ret_test {
             gb.set_memory_at(Labels::CHARACTER_RAM_START, 0x55);
             gb.set_memory_at(Labels::CHARACTER_RAM_START + 1, 0x33);
 
-            gb.set_memory_at(0xFF47, 0xE4);
+            gb.set_memory_at(Labels::BG_PALETTE, 0xE4);
 
             let vram : Vec<ScreenColor> = gb.get_vram_data().into_iter().take(8).collect();
             assert_eq!(vram, colors(vec![0, 1, 2, 3, 0, 1, 2, 3]));
@@ -81,7 +81,7 @@ mod ret_test {
             let mut gb = Gameboy::new(vec![]);
 
             // BG palette is FF47
-            gb.set_memory_at(0xFF47, 0xFC);
+            gb.set_memory_at(Labels::BG_PALETTE, 0xFC);
 
             // This will set the palette to:
             // 1111_1100
@@ -109,7 +109,7 @@ mod ret_test {
             // LD (HL), A
             let mut gb = Gameboy::new(vec![0x77]);
             gb.set_register_8(RegisterLabel8::A, 0xE4);
-            gb.set_register_16(RegisterLabel16::HL, 0xFF47);
+            gb.set_register_16(RegisterLabel16::HL, Labels::BG_PALETTE);
 
             gb.step_once();
 
