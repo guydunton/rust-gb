@@ -6,7 +6,7 @@ mod dec_test {
     tests! {
         test("DEC instruction removes one from the correct register") {
 
-            let instructions = vec![(0x05, RegisterLabel8::B), (0x3D, RegisterLabel8::A)];
+            let instructions = vec![(0x05, RegisterLabel8::B), (0x3D, RegisterLabel8::A), (0x0D, RegisterLabel8::C)];
 
             for (opcode, register) in instructions {
                 let mut gb = Gameboy::new(vec![opcode]);
@@ -43,6 +43,20 @@ mod dec_test {
             let _ = gb.step_once();
 
             assert_eq!(gb.get_flag(Flags::H), true);
+        }
+
+        test("DEC should reset the zero flag if already set") {
+            let mut gb = Gameboy::new(vec![0x3D]); // DEC A
+
+            gb.set_register_8(RegisterLabel8::A, 0x19);
+
+            // Set the register
+            gb.set_flag(Flags::Z, true);
+
+            // run the instructions
+            gb.step_once();
+
+            assert_eq!(gb.get_flag(Flags::Z), false);
         }
     }
 }

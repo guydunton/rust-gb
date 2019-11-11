@@ -6,6 +6,7 @@ mod load16_test;
 mod load8_test;
 mod opcode_printer_test;
 mod pop_test;
+mod ppu_test;
 mod ret_test;
 
 #[cfg(test)]
@@ -206,6 +207,13 @@ mod opcode_tests {
             assert_eq!(gb.get_flag(Flags::Z), false);
             assert_eq!(gb.get_flag(Flags::N), false);
             assert_eq!(gb.get_flag(Flags::H), false);
+        }
+
+        test("get_memory_slice_at works") {
+            let gb = Gameboy::new(vec![0x01, 0x02]);
+
+            assert_eq!(gb.get_memory_slice_at(0x00, 0x02), [0x01, 0x02]);
+
         }
     }
 }

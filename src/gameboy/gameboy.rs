@@ -1,13 +1,19 @@
 use super::cpu::CPU;
 use super::opcodes::decode_instruction;
+use super::memory_view::MemoryView;
+use super::memory_adapter::MemoryAdapter;
+use super::ppu::PPU;
 use super::read_write_register::ReadWriteRegister;
+use super::screen::ScreenColor;
 use super::OpCode;
 use super::RegisterLabel16;
 use super::RegisterLabel8;
 use super::{read_flag, write_flag, Flags};
+use super::memory_labels::Labels;
 
 pub struct Gameboy {
     cpu: CPU,
+    ppu: PPU,
     memory: Vec<u8>,
 }
 
@@ -48,7 +54,19 @@ impl Gameboy {
             0xE0, 0x50,
         ];
 
-        Gameboy::new(bootloader)
+        let fake_header_data = vec![
+            0x00, 0x00, 0x00, 0x00, 0xCE, 0xED, 0x66, 0x66, 0xCC, 0x0D, 0x00, 0x0B, 0x03, 0x73,
+            0x00, 0x83, 0x00, 0x0C, 0x00, 0x0D, 0x00, 0x08, 0x11, 0x1F, 0x88, 0x89, 0x00, 0x0E,
+            0xDC, 0xCC, 0x6E, 0xE6, 0xDD, 0xDD, 0xD9, 0x99, 0xBB, 0xBB, 0x67, 0x63, 0x6E, 0x0E,
+            0xEC, 0xCC, 0xDD, 0xDC, 0x99, 0x9F, 0xBB, 0xB9, 0x33, 0x3E,
+        ];
+
+        let mut data = vec![0x0; bootloader.len() + fake_header_data.len()];
+        data[..bootloader.len()].clone_from_slice(&bootloader[..]);
+        data[bootloader.len()..(bootloader.len() + fake_header_data.len())]
+            .clone_from_slice(&fake_header_data[..]);
+
+        Gameboy::new(data)
     }
 
     /// Construct a new Gameboy.
@@ -63,29 +81,24 @@ impl Gameboy {
 
         Gameboy {
             cpu: CPU::new(),
+            ppu: PPU::new(),
             memory,
         }
     }
 
     #[allow(dead_code)]
-    pub fn tick(&mut self, dt: f64) {
+    pub fn tick(&mut self, dt: f64, breakpoint: u16) {
         let cycles_to_use = (dt * 1000000f64) as u32;
         let mut total_cycles_used = 0;
 
         loop {
-            let opcode = self.get_opcode();
-            match opcode {
-                Ok(op) => {
-                    let cycles_used = op.run::<CPU>(&mut self.cpu, &mut self.memory);
+            total_cycles_used += self.step_once();
+            if total_cycles_used > cycles_to_use {
+                break;
+            }
 
-                    total_cycles_used += cycles_used;
-                    if total_cycles_used > cycles_to_use {
-                        break;
-                    }
-                }
-                Err(err) => {
-                    panic!("{}", err);
-                }
+            if self.cpu.read_16_bits(RegisterLabel16::ProgramCounter) == breakpoint {
+                break;
             }
         }
     }
@@ -96,7 +109,14 @@ impl Gameboy {
         let opcode = self.get_opcode();
         match opcode {
             Ok(op) => {
-                let cycles = op.run::<CPU>(&mut self.cpu, &mut self.memory);
+                // Set up the memory callbacks
+                let mut mem_adapter = MemoryAdapter::new(&mut self.memory);
+                let ppu_ref = &mut self.ppu;
+                mem_adapter.add_callback(Labels::BG_PALETTE, |new_palette| {
+                    ppu_ref.reset_bg_palette(new_palette);
+                });
+                
+                let cycles = op.run::<CPU>(&mut self.cpu, mem_adapter);
                 return cycles;
             }
             Err(err) => {
@@ -138,11 +158,29 @@ impl Gameboy {
     #[allow(dead_code)]
     pub fn set_memory_at(&mut self, address: u16, value: u8) {
         self.memory[address as usize] = value;
+
+        if address == Labels::BG_PALETTE {
+            self.ppu.reset_bg_palette(value);
+        }
     }
 
     #[allow(dead_code)]
     pub fn get_memory_at(&self, address: u16) -> u8 {
-        self.memory[address as usize]
+        MemoryView::new(&self.memory).get_memory_at(address)
+    }
+
+    #[allow(dead_code)]
+    pub fn get_memory_slice_at(&self, address: u16, size: u16) -> &[u8] {
+        MemoryView::new(&self.memory).get_memory_slice_at(address, size)
+    }
+
+    /// Return the VRAM information
+    ///
+    /// Return the data stored in the VRAM as pixel data. This is useful for
+    /// viewing all the tiles currently stored
+    #[allow(dead_code)]
+    pub fn get_vram_data(&self) -> Vec<ScreenColor> {
+        self.ppu.get_vram_data(&self.memory)
     }
 
     #[allow(dead_code)]

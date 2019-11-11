@@ -18,21 +18,30 @@ cargo run -- -d
 
 To stop debugging press `Ctrl+c`
 
-## OpCode page
+## Resources
+
+### OpCode page
 
 There were a couple of errors in the main GBZ80 opcode table so I'm hosting a modified version. Almost all the work for it was done by [pastraiser](http://www.pastraiser.com/) rather than myself with the original being found [here](http://www.pastraiser.com/cpu/gameboy/gameboy_opcodes.html)
 
 The link to my modified version can be found here: [Opcodes](https://www.guydunton.com/rust-gb/).
 
+### Bootstrap explanation
+
+https://realboyemulator.wordpress.com/2013/01/03/a-look-at-the-game-boy-bootstrap-let-the-fun-begin/
+
+### Hardware interrupts
+
+http://bgb.bircd.org/pandocs.htm
+
 ## Todo
 
 - [x] Clean up debug cli
 - [x] Clean up opcodes directory
-- [x] Support 0xC1 at 0x9C
-- [x] Support 0x50 at 0xA0
 - [x] Debug should continue by default
-- [x] Support 0x22 at 0xA3
-- [x] Support 0x3D at 0x4A
-- [x] Support 0x28 at 0x4B
-- [ ] Add debug breakpoints
+- [x] Clean up PPU code
+- [x] Add test for multiple shades in tile
+- [ ] Support palette correctly
+- [ ] Remove cowboy breakpoint code
+- [ ] Add proper debug breakpoints
 - [ ] Continue adding support for bootloader commands.
