@@ -42,6 +42,6 @@ http://bgb.bircd.org/pandocs.htm
 - [x] Clean up PPU code
 - [x] Add test for multiple shades in tile
 - [x] Support palette correctly
-- [ ] Remove cowboy breakpoint code
-- [ ] Add proper debug breakpoints
+- [x] Remove cowboy breakpoint code
+- [x] Add proper debug breakpoints
 - [ ] Continue adding support for bootloader commands.

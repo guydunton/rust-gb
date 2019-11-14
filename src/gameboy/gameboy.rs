@@ -1,7 +1,8 @@
 use super::cpu::CPU;
-use super::opcodes::decode_instruction;
-use super::memory_view::MemoryView;
 use super::memory_adapter::MemoryAdapter;
+use super::memory_labels::Labels;
+use super::memory_view::MemoryView;
+use super::opcodes::decode_instruction;
 use super::ppu::PPU;
 use super::read_write_register::ReadWriteRegister;
 use super::screen::ScreenColor;
@@ -9,7 +10,12 @@ use super::OpCode;
 use super::RegisterLabel16;
 use super::RegisterLabel8;
 use super::{read_flag, write_flag, Flags};
-use super::memory_labels::Labels;
+
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+pub enum TickResult {
+    HitBreakpoint,
+    FrameComplete,
+}
 
 pub struct Gameboy {
     cpu: CPU,
@@ -87,7 +93,7 @@ impl Gameboy {
     }
 
     #[allow(dead_code)]
-    pub fn tick(&mut self, dt: f64, breakpoint: u16) {
+    pub fn tick(&mut self, dt: f64, breakpoints: &Vec<u16>) -> TickResult {
         let cycles_to_use = (dt * 1000000f64) as u32;
         let mut total_cycles_used = 0;
 
@@ -96,11 +102,14 @@ impl Gameboy {
             if total_cycles_used > cycles_to_use {
                 break;
             }
-
-            if self.cpu.read_16_bits(RegisterLabel16::ProgramCounter) == breakpoint {
-                break;
+            if breakpoints
+                .iter()
+                .any(|bp| *bp == self.cpu.read_16_bits(RegisterLabel16::ProgramCounter))
+            {
+                return TickResult::HitBreakpoint;
             }
         }
+        return TickResult::FrameComplete;
     }
 
     /// Run the next instruction and return the number of cycles used.
@@ -115,7 +124,6 @@ impl Gameboy {
                 mem_adapter.add_callback(Labels::BG_PALETTE, |new_palette| {
                     ppu_ref.reset_bg_palette(new_palette);
                 });
-                
                 let cycles = op.run::<CPU>(&mut self.cpu, mem_adapter);
                 return cycles;
             }

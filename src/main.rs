@@ -5,8 +5,8 @@ use std::env;
 
 mod debug_cli;
 mod gameboy;
-use crate::debug_cli::update;
-use crate::gameboy::{Gameboy, RegisterLabel16, ScreenColor};
+use crate::debug_cli::{update, DebugControls};
+use crate::gameboy::{Gameboy, ScreenColor, TickResult};
 
 fn screen_color_to_color(c: ScreenColor) -> [f32; 4] {
     match c {
@@ -39,6 +39,7 @@ pub struct App {
     gl: GlGraphics,
     gb: Gameboy,
     is_debug: bool,
+    breakpoints: Vec<u16>,
 }
 
 impl App {
@@ -55,16 +56,24 @@ impl App {
 
     fn update(&mut self, args: UpdateArgs) {
         if self.is_debug {
-            update(&self.gb);
-        }
+            let debug_controls = update(&self.gb, &mut self.breakpoints);
 
-        let breakpoint = 0xFFFF;
+            match debug_controls {
+                DebugControls::Continue => {
+                    self.is_debug = false;
+                }
+                _ => {
+                    // Do nothing
+                }
+            }
+        }
 
         if self.is_debug {
             self.gb.step_once();
         } else {
-            self.gb.tick(args.dt, breakpoint);
-            if self.gb.get_register_16(RegisterLabel16::ProgramCounter) == breakpoint {
+            let stop_reason = self.gb.tick(args.dt, &self.breakpoints);
+
+            if stop_reason == TickResult::HitBreakpoint {
                 self.is_debug = true;
             }
         }
@@ -94,6 +103,7 @@ fn main() {
         gl: GlGraphics::new(opengl),
         gb: Gameboy::new_with_bootloader(),
         is_debug: args.contains(&String::from("-d")),
+        breakpoints: vec![],
     };
 
     let mut events = Events::new(EventSettings::new());

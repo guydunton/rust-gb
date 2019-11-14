@@ -8,6 +8,7 @@ mod opcode_printer_test;
 mod pop_test;
 mod ppu_test;
 mod ret_test;
+mod timing;
 
 #[cfg(test)]
 mod opcode_tests {
