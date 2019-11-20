@@ -44,4 +44,5 @@ http://bgb.bircd.org/pandocs.htm
 - [x] Support palette correctly
 - [x] Remove cowboy breakpoint code
 - [x] Add proper debug breakpoints
+- [ ] Fix callback system within opcodes
 - [ ] Continue adding support for bootloader commands.

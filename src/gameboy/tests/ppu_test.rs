@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod ret_test {
-    use crate::gameboy::{Gameboy, Labels, ScreenColor, RegisterLabel8, RegisterLabel16};
+    use crate::gameboy::{Gameboy, Labels, RegisterLabel16, RegisterLabel8, ScreenColor};
     use rust_catch::tests;
 
     tests! {
@@ -125,6 +125,63 @@ mod ret_test {
             let vram_pixels : Vec<ScreenColor> = gb.get_vram_data().into_iter().take(4).collect();
 
             assert_eq!(vram_pixels, colors(vec![0, 1, 2, 3]));
+        }
+
+        test("The PPU should set the LY register every 456 clocks when screen on") {
+
+            // Each loop will be 16 clocks & take 2 steps
+            // NOP
+            // JR -3
+            let mut gb = Gameboy::new(vec![0x00, 0x18, 0xFD]);
+
+            // Turn the screen on
+            gb.set_memory_at(0xFF40, 0x80);
+
+            // Run an infinite loop
+            for _ in 0..28 {
+                // At every cycle check that the LY counter is 0
+                gb.step_once();
+                gb.step_once();
+                assert_eq!(gb.get_memory_at(0xFF44), 0);
+            }
+
+            // Every 456 clocks the LY register will tick up
+            gb.step_once();
+            gb.step_once();
+
+            assert_eq!(gb.get_memory_at(0xFF44), 1);
+
+            // If we set the LY to 153 and tick up it will wrap around to 0
+            gb.set_memory_at(0xFF44, 153);
+
+            // Flip over the scan line
+            for _ in 0..29 {
+                gb.step_once();
+                gb.step_once();
+            }
+
+            assert_eq!(gb.get_memory_at(0xFF44), 0);
+
+            // Turn off the screen and run over a scan line
+            gb.set_memory_at(0xFF00, 0);
+        }
+
+        test("Turning off the LCD screen resets LY register to 0") {
+            let mut gb = Gameboy::new(vec![0x00, 0x18, 0xFD]);
+
+            // Turn the screen on
+            gb.set_memory_at(0xFF40, 0x80);
+
+            for _ in 0..29 {
+                gb.step_once();
+                gb.step_once();
+            }
+
+            // set the screen to off
+            gb.set_memory_at(0xFF40, 0);
+
+            // The LY register should be set to zero
+            assert_eq!(gb.get_memory_at(0xFF44), 0);
         }
     }
 

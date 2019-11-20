@@ -18,13 +18,13 @@ mod rotate_left_a;
 mod rotate_method;
 mod xor;
 
+use super::memory_adapter::MemoryAdapter;
 use super::read_write_register::ReadWriteRegister;
 use super::{RegisterLabel16, RegisterLabel8};
 use argument::{arg_from_str, size_in_bytes, Argument};
 use category::{category_from_str, category_size, Category};
 use opcodes::code_to_opcode;
 use std::fmt;
-use super::memory_adapter::MemoryAdapter;
 
 pub fn decode_instruction(program_counter: u16, program_code: &[u8]) -> Result<OpCode, String> {
     let code = program_code[program_counter as usize];

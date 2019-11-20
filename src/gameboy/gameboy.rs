@@ -118,13 +118,20 @@ impl Gameboy {
         let opcode = self.get_opcode();
         match opcode {
             Ok(op) => {
-                // Set up the memory callbacks
-                let mut mem_adapter = MemoryAdapter::new(&mut self.memory);
-                let ppu_ref = &mut self.ppu;
-                mem_adapter.add_callback(Labels::BG_PALETTE, |new_palette| {
-                    ppu_ref.reset_bg_palette(new_palette);
-                });
-                let cycles = op.run::<CPU>(&mut self.cpu, mem_adapter);
+                let cycles;
+                {
+                    // Set up the memory callbacks
+                    let mut mem_adapter = MemoryAdapter::new(&mut self.memory);
+                    let ppu_ref = &mut self.ppu;
+                    mem_adapter.add_callback(Labels::BG_PALETTE, |new_palette| {
+                        ppu_ref.reset_bg_palette(new_palette);
+                    });
+                    cycles = op.run::<CPU>(&mut self.cpu, mem_adapter);
+                }
+
+                // Now run the PPU by the same amount of cycles
+                self.ppu.tick(cycles, &mut self.memory);
+
                 return cycles;
             }
             Err(err) => {
@@ -170,6 +177,9 @@ impl Gameboy {
         if address == Labels::BG_PALETTE {
             self.ppu.reset_bg_palette(value);
         }
+
+        // This hack resets any values in the case of the display being switched off
+        self.ppu.tick(0, &mut self.memory);
     }
 
     #[allow(dead_code)]

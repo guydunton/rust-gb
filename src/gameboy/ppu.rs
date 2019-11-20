@@ -4,6 +4,7 @@ use super::ScreenColor;
 
 pub struct PPU {
     bg_palette: [ScreenColor; 4],
+    cycles: u32,
 }
 
 fn convert_base_to_color(palette_base: u8) -> [ScreenColor; 4] {
@@ -35,7 +36,10 @@ impl PPU {
         let palette_base = 0;
         let bg_palette = convert_base_to_color(palette_base);
 
-        PPU { bg_palette }
+        PPU {
+            bg_palette,
+            cycles: 0,
+        }
     }
 
     pub fn byte_to_colors(&self, byte1: u8, byte2: u8) -> [ScreenColor; 8] {
@@ -101,7 +105,27 @@ impl PPU {
         vram
     }
 
-    pub fn reset_bg_palette(&mut self, value : u8) {
+    pub fn reset_bg_palette(&mut self, value: u8) {
         self.bg_palette = convert_base_to_color(value);
+    }
+
+    pub fn tick(&mut self, cycles: u32, memory: &mut Vec<u8>) {
+        // Get the 7th bit
+        let bit_7_set = (memory[0xFF40] & 0b1000_0000) != 0;
+        let is_screen_on = bit_7_set;
+
+        if is_screen_on {
+            let new_cycles = self.cycles + cycles;
+
+            if new_cycles >= 456 {
+                // increment the LY register
+                memory[0xFF44] = (memory[0xFF44] + 1) % 154;
+            }
+
+            self.cycles = new_cycles % 456;
+        } else {
+            // Reset the LY register
+            memory[0xFF44] = 0;
+        }
     }
 }
