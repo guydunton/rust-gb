@@ -121,6 +121,7 @@ mod load8_test {
                 (0x7B, RegisterLabel8::A, RegisterLabel8::E),
                 (0x67, RegisterLabel8::H, RegisterLabel8::A),
                 (0x57, RegisterLabel8::D, RegisterLabel8::A),
+                (0x7C, RegisterLabel8::A, RegisterLabel8::H)
             ];
 
             for &(code, dest, src) in instructions.iter() {
