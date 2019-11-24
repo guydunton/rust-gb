@@ -6,7 +6,12 @@ mod dec_test {
     tests! {
         test("DEC instruction removes one from the correct register") {
 
-            let instructions = vec![(0x05, RegisterLabel8::B), (0x3D, RegisterLabel8::A), (0x0D, RegisterLabel8::C)];
+            let instructions = vec![
+                (0x05, RegisterLabel8::B),
+                (0x3D, RegisterLabel8::A),
+                (0x0D, RegisterLabel8::C),
+                (0x1D, RegisterLabel8::E)
+            ];
 
             for (opcode, register) in instructions {
                 let mut gb = Gameboy::new(vec![opcode]);
