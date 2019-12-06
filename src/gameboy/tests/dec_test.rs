@@ -7,9 +7,10 @@ mod dec_test {
         test("DEC instruction removes one from the correct register") {
 
             let instructions = vec![
-                (0x05, RegisterLabel8::B),
                 (0x3D, RegisterLabel8::A),
+                (0x05, RegisterLabel8::B),
                 (0x0D, RegisterLabel8::C),
+                (0x15, RegisterLabel8::D),
                 (0x1D, RegisterLabel8::E)
             ];
 
