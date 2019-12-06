@@ -16,6 +16,7 @@ mod ret;
 mod rotate_left;
 mod rotate_left_a;
 mod rotate_method;
+mod sub;
 mod xor;
 
 use super::memory_adapter::MemoryAdapter;
@@ -112,6 +113,9 @@ impl OpCode {
             }
             Category::RLA => {
                 cycles += self.run_rla::<T>(cpu, memory.get_memory());
+            }
+            Category::SUB => {
+                cycles += self.run_sub::<T>(cpu, memory.get_memory());
             }
             Category::CP => {
                 cycles += self.run_cp::<T>(cpu, memory.get_memory());

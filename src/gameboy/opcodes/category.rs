@@ -14,6 +14,7 @@ pub enum Category {
     POP,
     RL,
     RLA,
+    SUB,
     CP,
 }
 
@@ -41,6 +42,7 @@ pub fn category_from_str(cat: &str) -> Category {
         "PUSH" => Category::PUSH,
         "POP" => Category::POP,
         "RL" => Category::RL,
+        "SUB" => Category::SUB,
         "CP" => Category::CP,
         _ => {
             panic!("Failed to create category {:?}", cat);

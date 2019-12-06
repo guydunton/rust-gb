@@ -33,6 +33,7 @@ pub fn code_to_opcode(code: u8, program_counter: u16, program_code: &[u8]) -> Re
         0x77 => Ok("LD8 (HL) A"),
         0x7B => Ok("LD8 A E"),
         0x7C => Ok("LD8 A H"),
+        0x90 => Ok("SUB B"),
         0xAF => Ok("XOR A"),
         0xC1 => Ok("POP BC"),
         0xC5 => Ok("PUSH BC"),
