@@ -111,7 +111,7 @@ impl PPU {
 
     pub fn tick(&mut self, cycles: u32, memory: &mut Vec<u8>) {
         // Get the 7th bit
-        let bit_7_set = (memory[0xFF40] & 0b1000_0000) != 0;
+        let bit_7_set = (memory[Labels::V_BLANK as usize] & 0b1000_0000) != 0;
         let is_screen_on = bit_7_set;
 
         if is_screen_on {
@@ -119,13 +119,13 @@ impl PPU {
 
             if new_cycles >= 456 {
                 // increment the LY register
-                memory[0xFF44] = (memory[0xFF44] + 1) % 154;
+                memory[Labels::LCDC_Y as usize] = (memory[Labels::LCDC_Y as usize] + 1) % 154;
             }
 
             self.cycles = new_cycles % 456;
         } else {
             // Reset the LY register
-            memory[0xFF44] = 0;
+            memory[Labels::LCDC_Y as usize] = 0;
         }
     }
 }

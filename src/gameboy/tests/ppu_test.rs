@@ -3,6 +3,13 @@ mod ret_test {
     use crate::gameboy::{Gameboy, Labels, RegisterLabel16, RegisterLabel8, ScreenColor};
     use rust_catch::tests;
 
+    // Default palette:
+    // 0 => White
+    // 1 => Light
+    // 2 => Dark
+    // 3 => Black
+    const DEFAULT_PALLETE: u8 = 0b1110_0100;
+
     tests! {
         test("A default gameboy will have a white screen") {
             let gb = Gameboy::new(vec![]);
@@ -16,7 +23,7 @@ mod ret_test {
         test("Tiles are displayed correctly") {
             let mut gb = Gameboy::new(vec![]);
 
-            gb.set_memory_at(Labels::BG_PALETTE, 0xE4);
+            gb.set_memory_at(Labels::BG_PALETTE, DEFAULT_PALLETE);
 
             // Tiles go at 8000
             gb.set_memory_at(Labels::CHARACTER_RAM_START + 0x10, 0xFF);
@@ -33,7 +40,7 @@ mod ret_test {
         test("Tile gets drawn the right way around") {
             let mut gb = Gameboy::new(vec![]);
 
-            gb.set_memory_at(Labels::BG_PALETTE, 0xE4);
+            gb.set_memory_at(Labels::BG_PALETTE, DEFAULT_PALLETE);
 
             // Draw the ® symbol
             gb.set_memory_at(Labels::CHARACTER_RAM_START + 0x0, 0x3C);
@@ -71,7 +78,7 @@ mod ret_test {
             gb.set_memory_at(Labels::CHARACTER_RAM_START, 0x55);
             gb.set_memory_at(Labels::CHARACTER_RAM_START + 1, 0x33);
 
-            gb.set_memory_at(Labels::BG_PALETTE, 0xE4);
+            gb.set_memory_at(Labels::BG_PALETTE, DEFAULT_PALLETE);
 
             let vram : Vec<ScreenColor> = gb.get_vram_data().into_iter().take(8).collect();
             assert_eq!(vram, colors(vec![0, 1, 2, 3, 0, 1, 2, 3]));
@@ -108,7 +115,7 @@ mod ret_test {
             // HL contains FF47
             // LD (HL), A
             let mut gb = Gameboy::new(vec![0x77]);
-            gb.set_register_8(RegisterLabel8::A, 0xE4);
+            gb.set_register_8(RegisterLabel8::A, DEFAULT_PALLETE);
             gb.set_register_16(RegisterLabel16::HL, Labels::BG_PALETTE);
 
             gb.step_once();
@@ -135,24 +142,24 @@ mod ret_test {
             let mut gb = Gameboy::new(vec![0x00, 0x18, 0xFD]);
 
             // Turn the screen on
-            gb.set_memory_at(0xFF40, 0x80);
+            gb.set_memory_at(Labels::V_BLANK, 0x80);
 
             // Run an infinite loop
             for _ in 0..28 {
                 // At every cycle check that the LY counter is 0
                 gb.step_once();
                 gb.step_once();
-                assert_eq!(gb.get_memory_at(0xFF44), 0);
+                assert_eq!(gb.get_memory_at(Labels::LCDC_Y), 0);
             }
 
             // Every 456 clocks the LY register will tick up
             gb.step_once();
             gb.step_once();
 
-            assert_eq!(gb.get_memory_at(0xFF44), 1);
+            assert_eq!(gb.get_memory_at(Labels::LCDC_Y), 1);
 
             // If we set the LY to 153 and tick up it will wrap around to 0
-            gb.set_memory_at(0xFF44, 153);
+            gb.set_memory_at(Labels::LCDC_Y, 153);
 
             // Flip over the scan line
             for _ in 0..29 {
@@ -160,7 +167,7 @@ mod ret_test {
                 gb.step_once();
             }
 
-            assert_eq!(gb.get_memory_at(0xFF44), 0);
+            assert_eq!(gb.get_memory_at(Labels::LCDC_Y), 0);
 
             // Turn off the screen and run over a scan line
             gb.set_memory_at(0xFF00, 0);
@@ -170,7 +177,7 @@ mod ret_test {
             let mut gb = Gameboy::new(vec![0x00, 0x18, 0xFD]);
 
             // Turn the screen on
-            gb.set_memory_at(0xFF40, 0x80);
+            gb.set_memory_at(Labels::V_BLANK, 0x80);
 
             for _ in 0..29 {
                 gb.step_once();
@@ -178,10 +185,10 @@ mod ret_test {
             }
 
             // set the screen to off
-            gb.set_memory_at(0xFF40, 0);
+            gb.set_memory_at(Labels::V_BLANK, 0);
 
             // The LY register should be set to zero
-            assert_eq!(gb.get_memory_at(0xFF44), 0);
+            assert_eq!(gb.get_memory_at(Labels::LCDC_Y), 0);
         }
     }
 
