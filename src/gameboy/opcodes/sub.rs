@@ -19,7 +19,7 @@ impl OpCode {
             let a_reg_value = cpu.read_8_bits(RegisterLabel8::A);
 
             // Subtract one from the other
-            let result = a_reg_value - reg_value; // This is underflowing
+            let result = a_reg_value.saturating_sub(reg_value);
 
             // Write away the A flag
             cpu.write_8_bits(RegisterLabel8::A, result);
@@ -30,6 +30,10 @@ impl OpCode {
 
             if reg_value > a_reg_value {
                 write_flag::<T>(cpu, Flags::C, true);
+            }
+
+            if a_reg_value >= 0b0001_0000 && result < 0b0001_0000 {
+                write_flag::<T>(cpu, Flags::H, true);
             }
         }
 

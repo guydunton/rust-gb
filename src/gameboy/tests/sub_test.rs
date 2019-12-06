@@ -52,6 +52,15 @@ mod sub_test {
 
                 assert_eq!(gb.get_flag(Flags::C), true);
             }
+
+            section("set H if 4th bit is borrowed") {
+                gb.set_register_8(RegisterLabel8::A, 0b0001_0000);
+                gb.set_register_8(RegisterLabel8::B, 1);
+
+                let _ = gb.step_once();
+
+                assert_eq!(gb.get_flag(Flags::H), true);
+            }
         }
     }
 }
