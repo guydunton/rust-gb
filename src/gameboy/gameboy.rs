@@ -202,6 +202,11 @@ impl Gameboy {
     }
 
     #[allow(dead_code)]
+    pub fn get_screen_data(&self) -> &Vec<ScreenColor> {
+        self.ppu.get_screen_data()
+    }
+
+    #[allow(dead_code)]
     pub fn get_current_instruction(&self) -> Option<String> {
         let opcode = self.get_opcode();
         opcode.map(|op| op.to_string().trim().to_owned()).ok()

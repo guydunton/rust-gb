@@ -3,6 +3,7 @@ use super::Labels;
 use super::ScreenColor;
 
 pub struct PPU {
+    screen_data: Vec<ScreenColor>,
     bg_palette: [ScreenColor; 4],
     cycles: u32,
 }
@@ -35,8 +36,10 @@ impl PPU {
         // Create the palette
         let palette_base = 0;
         let bg_palette = convert_base_to_color(palette_base);
+        let screen_data = vec![ScreenColor::White; 160 * 144];
 
         PPU {
+            screen_data,
             bg_palette,
             cycles: 0,
         }
@@ -105,6 +108,10 @@ impl PPU {
         vram
     }
 
+    pub fn get_screen_data(&self) -> &Vec<ScreenColor> {
+        &self.screen_data
+    }
+
     pub fn reset_bg_palette(&mut self, value: u8) {
         self.bg_palette = convert_base_to_color(value);
     }
@@ -120,6 +127,40 @@ impl PPU {
             if new_cycles >= 456 {
                 // increment the LY register
                 memory[Labels::LCDC_Y as usize] = (memory[Labels::LCDC_Y as usize] + 1) % 154;
+
+                if memory[Labels::LCDC_Y as usize] <= 144 {
+                    // Write a line into the screen data starting at LCDC_Y - 1
+                    
+                    // Which line are we drawing
+                    let drawing_line = memory[Labels::LCDC_Y as usize].saturating_sub(1);
+
+                    // This would be where we pick which pixels we want from VRAM
+
+                    // Find the screen x & screen y
+                    let screen_origin_x = memory[Labels::SCROLL_X as usize];
+                    let screen_origin_y = memory[Labels::SCROLL_Y as usize];
+
+                    // for each pixel in line
+                    for pixel in 0..160 {
+                        // Find the coord in the screen data we are writing
+                        let pixel_index = pixel + drawing_line * 160;
+
+                        // Find the pixel in vram
+                        let vram_x = screen_origin_x + pixel;
+                        let vram_y = screen_origin_y + drawing_line;
+
+                        let tile_index = find_tile_index(vram_x, vram_y);
+                        let tile_bytes = get_tile_data(tile_index, memory);
+
+                        // Find the pixel within the tile that the screen is looking at
+                        let inside_tile_x = vram_x % 8;
+                        let inside_tile_y = vram_y % 8;
+
+                        let pixel_value = get_pixel_value_from_sprite(inside_tile_x, inside_tile_y, &tile_bytes);
+                        let pixel_color = self.bg_palette[pixel_value as usize];
+                        self.screen_data[pixel_index as usize] = pixel_color;
+                    }
+                }
             }
 
             self.cycles = new_cycles % 456;
@@ -128,4 +169,51 @@ impl PPU {
             memory[Labels::LCDC_Y as usize] = 0;
         }
     }
+}
+
+fn find_tile_index(vram_x: u8, vram_y: u8) -> u16 {
+    // Find which tile it is
+    let tile_x = vram_x / 8;
+    let tile_y = vram_y / 8;
+
+    // Find the tile index
+    let tile_index = (tile_x + tile_y * 32) as u16;
+    tile_index
+}
+
+fn get_tile_data(tile_index: u16, memory: &Vec<u8>) -> &[u8] {
+    // Get the tile_data_start
+    let tile_data_start = (Labels::CHARACTER_RAM_START + 
+        memory[(Labels::BG_MAP_DATA_1_START + tile_index) as usize] as u16 * 16) as usize;
+
+    let tile_bytes = &memory[tile_data_start..(tile_data_start + 16)];
+    tile_bytes
+}
+ 
+fn get_pixel_value_from_sprite(x: u8, y: u8, sprite_data: &[u8]) -> u8 {
+    let row_bytes: [u8;2] = [
+        sprite_data[y as usize * 2],
+        sprite_data[y as usize * 2 + 1]
+    ];
+
+    // Get the least significant bit
+    let ls_bit = (row_bytes[0] >> (7-x)) & 1;
+    let ms_bit = (row_bytes[1] >> (7-x)) & 1;
+
+    ls_bit | (ms_bit << 1)
+}
+
+#[test]
+fn get_the_correct_pixel_from_background_sprite() {
+    // Sprite Data
+    let sprite_data = [
+        0x55, 0x33, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+    ];
+
+    // Get the correct color
+    assert_eq!(get_pixel_value_from_sprite(0, 0, &sprite_data), 0);
+    assert_eq!(get_pixel_value_from_sprite(1, 0, &sprite_data), 1);
+    assert_eq!(get_pixel_value_from_sprite(2, 0, &sprite_data), 2);
+    assert_eq!(get_pixel_value_from_sprite(3, 0, &sprite_data), 3);
 }

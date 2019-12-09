@@ -190,6 +190,85 @@ mod ret_test {
             // The LY register should be set to zero
             assert_eq!(gb.get_memory_at(Labels::LCDC_Y), 0);
         }
+
+        test("Retrieving the screen colors gets the top left of the VRAM") {
+            let mut gb = Gameboy::new(vec![0x00, 0x18, 0xFD]);
+
+            // Turn the screen on & set the palette
+            gb.set_memory_at(Labels::V_BLANK, 0x80);
+            gb.set_memory_at(Labels::BG_PALETTE, DEFAULT_PALLETE);
+
+            // Add a sprite to the top let corner of vram 
+            let sprite1 = [
+                0x50, 0x30, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
+                0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0
+            ];
+            add_sprite_to_vram(&mut gb, 1, &sprite1);
+            gb.set_memory_at(Labels::BG_MAP_DATA_1_START, 1);
+
+            let sprite2 = [
+                0xA, 0xC, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
+                0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
+            ];
+            add_sprite_to_vram(&mut gb, 2, &sprite2);
+            gb.set_memory_at(Labels::BG_MAP_DATA_1_START + 19, 2);
+
+            // This sprite is:
+            // 0, 1, 2, 3
+            // So the resulting pixels should be WHITE, LIGHT, DARK, BLACK
+
+            let screen_data_pre = gb.get_screen_data();
+            assert_eq!(screen_data_pre.len(), 144 * 160);
+
+            // Tick the gb for 456 clocks at which point the
+            // first line of the screen will have been rendered
+            for _ in 0..29 {
+                gb.step_once();
+                gb.step_once();
+            }
+
+            // The first line of the screen will have been drawn
+            // starting with: 0, 1, 2, 3 & finishing with 3, 2, 1, 0
+            let screen_data_post = gb.get_screen_data();
+            let first_part: Vec<ScreenColor> = screen_data_post.iter().take(4).map(|x| *x).collect();
+            let last_part: Vec<ScreenColor> = screen_data_post.iter().take(160).skip(156).map(|x| *x).collect();
+            assert_eq!(first_part, colors(vec![0, 1, 2, 3]));
+            assert_eq!(last_part, colors(vec![3, 2, 1, 0]));
+        }
+
+        test("Move the screen position will move what is displayed on screen") {
+            let mut gb = Gameboy::new(vec![0x00, 0x18, 0xFD]);
+
+            // Turn the screen on & set the palette
+            gb.set_memory_at(Labels::V_BLANK, 0x80);
+            gb.set_memory_at(Labels::BG_PALETTE, DEFAULT_PALLETE);
+
+            // Move the screen down and right
+            gb.set_memory_at(Labels::SCROLL_Y, 1);
+            gb.set_memory_at(Labels::SCROLL_X, 1);
+
+            let sprite = [
+                0x0, 0x0, 0x50, 0x30, 0x0, 0x0, 0x0, 0x0,
+                0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
+            ];
+            add_sprite_to_vram(&mut gb, 1, &sprite);
+            gb.set_memory_at(Labels::BG_MAP_DATA_1_START, 1);
+
+            // Loop through a line
+            for _ in 0..29 {
+                gb.step_once();
+                gb.step_once();
+            }
+
+            // Get the screen data
+            let screen_data = gb.get_screen_data();
+            let first_part: Vec<ScreenColor> = screen_data
+                .iter()
+                .take(4)
+                .map(|x| *x)
+                .collect();
+            assert_eq!(first_part, colors(vec![1, 2, 3, 0]));
+        }
     }
 
     fn colors(cols: Vec<i32>) -> Vec<ScreenColor> {
@@ -202,5 +281,11 @@ mod ret_test {
                 _ => ScreenColor::White,
             })
             .collect::<Vec<ScreenColor>>()
+    }
+
+    fn add_sprite_to_vram(gb: &mut Gameboy, tile_index: u16, sprite_data: &[u8]) {
+        for (index, val) in sprite_data.iter().enumerate() {
+            gb.set_memory_at(Labels::CHARACTER_RAM_START + tile_index * 16 + index as u16, *val);
+        }
     }
 }
