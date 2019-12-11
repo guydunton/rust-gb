@@ -44,7 +44,7 @@ http://bgb.bircd.org/pandocs.htm
 - [x] Support palette correctly
 - [x] Remove cowboy breakpoint code
 - [x] Add proper debug breakpoints
-- [ ] Get screen colors working
+- [x] Get screen scrolling working
 - [ ] Benchmark each opcode to make sure they take less time than they would on a real GB
 - [ ] Fix callback system within opcodes
 - [ ] Continue adding support for bootloader commands.
