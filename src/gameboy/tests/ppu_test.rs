@@ -261,6 +261,8 @@ mod ret_test {
 
             let screen_data = gb.get_screen_data();
 
+            print_screen_data(&screen_data);
+
             // The image will be at 0, 0 of the screen
             let mut first_pixels = vec![ScreenColor::White; 4];
             first_pixels.copy_from_slice(&screen_data[0..4]);
