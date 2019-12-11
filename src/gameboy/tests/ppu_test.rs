@@ -136,13 +136,7 @@ mod ret_test {
 
         test("The PPU should set the LY register every 456 clocks when screen on") {
 
-            // Each loop will be 16 clocks & take 2 steps
-            // NOP
-            // JR -3
-            let mut gb = Gameboy::new(vec![0x00, 0x18, 0xFD]);
-
-            // Turn the screen on
-            gb.set_memory_at(Labels::V_BLANK, 0x80);
+            let mut gb = infinite_loop_gb();
 
             // Run an infinite loop
             for _ in 0..28 {
@@ -162,10 +156,7 @@ mod ret_test {
             gb.set_memory_at(Labels::LCDC_Y, 153);
 
             // Flip over the scan line
-            for _ in 0..29 {
-                gb.step_once();
-                gb.step_once();
-            }
+            render_line(&mut gb);
 
             assert_eq!(gb.get_memory_at(Labels::LCDC_Y), 0);
 
@@ -174,15 +165,9 @@ mod ret_test {
         }
 
         test("Turning off the LCD screen resets LY register to 0") {
-            let mut gb = Gameboy::new(vec![0x00, 0x18, 0xFD]);
+            let mut gb = infinite_loop_gb();
 
-            // Turn the screen on
-            gb.set_memory_at(Labels::V_BLANK, 0x80);
-
-            for _ in 0..29 {
-                gb.step_once();
-                gb.step_once();
-            }
+            render_line(&mut gb);
 
             // set the screen to off
             gb.set_memory_at(Labels::V_BLANK, 0);
@@ -192,11 +177,7 @@ mod ret_test {
         }
 
         test("Retrieving the screen colors gets the top left of the VRAM") {
-            let mut gb = Gameboy::new(vec![0x00, 0x18, 0xFD]);
-
-            // Turn the screen on & set the palette
-            gb.set_memory_at(Labels::V_BLANK, 0x80);
-            gb.set_memory_at(Labels::BG_PALETTE, DEFAULT_PALLETE);
+            let mut gb = infinite_loop_gb();
 
             // Add a sprite to the top let corner of vram 
             let sprite1 = [
@@ -220,12 +201,8 @@ mod ret_test {
             let screen_data_pre = gb.get_screen_data();
             assert_eq!(screen_data_pre.len(), 144 * 160);
 
-            // Tick the gb for 456 clocks at which point the
-            // first line of the screen will have been rendered
-            for _ in 0..29 {
-                gb.step_once();
-                gb.step_once();
-            }
+            
+            render_line(&mut gb);
 
             // The first line of the screen will have been drawn
             // starting with: 0, 1, 2, 3 & finishing with 3, 2, 1, 0
@@ -237,11 +214,7 @@ mod ret_test {
         }
 
         test("Move the screen position will move what is displayed on screen") {
-            let mut gb = Gameboy::new(vec![0x00, 0x18, 0xFD]);
-
-            // Turn the screen on & set the palette
-            gb.set_memory_at(Labels::V_BLANK, 0x80);
-            gb.set_memory_at(Labels::BG_PALETTE, DEFAULT_PALLETE);
+            let mut gb = infinite_loop_gb();
 
             // Move the screen down and right
             gb.set_memory_at(Labels::SCROLL_Y, 1);
@@ -254,11 +227,7 @@ mod ret_test {
             add_sprite_to_vram(&mut gb, 1, &sprite);
             gb.set_memory_at(Labels::BG_MAP_DATA_1_START, 1);
 
-            // Loop through a line
-            for _ in 0..29 {
-                gb.step_once();
-                gb.step_once();
-            }
+            render_line(&mut gb);
 
             // Get the screen data
             let screen_data = gb.get_screen_data();
@@ -268,6 +237,58 @@ mod ret_test {
                 .map(|x| *x)
                 .collect();
             assert_eq!(first_part, colors(vec![1, 2, 3, 0]));
+        }
+
+        test("screen draws correctly when it wraps around the side and bottom") {
+            let mut gb = infinite_loop_gb();
+
+            // Put a sprite in the top left corner of vram
+            let sprite = vec![
+                0x50, 0x30, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
+                0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0
+            ];
+            add_sprite_to_vram(&mut gb, 1, &sprite);
+            gb.set_memory_at(Labels::BG_MAP_DATA_1_START, 1);
+
+            // Put the screen at the bottom-right corner of vram (255,255)
+            gb.set_memory_at(Labels::SCROLL_X, 255);
+            gb.set_memory_at(Labels::SCROLL_Y, 255);
+
+            // Render the whole screen
+            for _ in 0..144 {
+                render_line(&mut gb);
+            }
+
+            let screen_data = gb.get_screen_data();
+
+            // The image will be at 0, 0 of the screen
+            let mut first_pixels = vec![ScreenColor::White; 4];
+            first_pixels.copy_from_slice(&screen_data[0..4]);
+
+            assert_eq!(first_pixels, colors(vec![0, 1, 2, 3]));
+        }
+    }
+
+    fn infinite_loop_gb() -> Gameboy {
+        // Each loop will be 16 clocks & take 2 steps
+        // NOP
+        // JR -3
+        let mut gb = Gameboy::new(vec![0x00, 0x18, 0xFD]);
+
+        // Turn the screen on & set the palette
+        gb.set_memory_at(Labels::V_BLANK, 0x80);
+        gb.set_memory_at(Labels::BG_PALETTE, DEFAULT_PALLETE);
+
+        gb
+    }
+
+    fn render_line(gb: &mut Gameboy) {
+        // Tick the gb for 456 clocks at which point the
+        // first line of the screen will have been rendered
+        // Loop through a line
+        for _ in 0..29 {
+            gb.step_once();
+            gb.step_once();
         }
     }
 
@@ -287,5 +308,27 @@ mod ret_test {
         for (index, val) in sprite_data.iter().enumerate() {
             gb.set_memory_at(Labels::CHARACTER_RAM_START + tile_index * 16 + index as u16, *val);
         }
+    }
+
+    fn print_screen_data(screen_data: &[ScreenColor]) {
+
+        let color_to_number = |col| {
+            match col {
+                ScreenColor::White => 0,
+                ScreenColor::Light => 1,
+                ScreenColor::Dark => 2,
+                _ => 3
+            }
+        };
+
+        println!("[");
+        screen_data
+            .chunks(160)
+            .for_each(|colors| {
+                let numbers : Vec<i32> = colors.iter().map(|color| color_to_number(*color)).collect();
+                numbers.iter().for_each(|num| print!("{}", *num));
+                println!("");
+            });
+        println!("]");
     }
 }

@@ -137,24 +137,24 @@ impl PPU {
                     // This would be where we pick which pixels we want from VRAM
 
                     // Find the screen x & screen y
-                    let screen_origin_x = memory[Labels::SCROLL_X as usize];
-                    let screen_origin_y = memory[Labels::SCROLL_Y as usize];
+                    let screen_origin_x = memory[Labels::SCROLL_X as usize] as u16;
+                    let screen_origin_y = memory[Labels::SCROLL_Y as usize] as u16;
 
                     // for each pixel in line
                     for pixel in 0..160 {
                         // Find the coord in the screen data we are writing
-                        let pixel_index = pixel + drawing_line * 160;
+                        let pixel_index = pixel + drawing_line as u32 * 160;
 
                         // Find the pixel in vram
-                        let vram_x = screen_origin_x + pixel;
-                        let vram_y = screen_origin_y + drawing_line;
+                        let vram_x = ((screen_origin_x + pixel as u16) % 255) as u32;
+                        let vram_y = ((screen_origin_y + drawing_line as u16) % 255) as u32;
 
                         let tile_index = find_tile_index(vram_x, vram_y);
                         let tile_bytes = get_tile_data(tile_index, memory);
 
                         // Find the pixel within the tile that the screen is looking at
-                        let inside_tile_x = vram_x % 8;
-                        let inside_tile_y = vram_y % 8;
+                        let inside_tile_x = (vram_x % 8) as u8;
+                        let inside_tile_y = (vram_y % 8) as u8;
 
                         let pixel_value = get_pixel_value_from_sprite(inside_tile_x, inside_tile_y, &tile_bytes);
                         let pixel_color = self.bg_palette[pixel_value as usize];
@@ -171,7 +171,7 @@ impl PPU {
     }
 }
 
-fn find_tile_index(vram_x: u8, vram_y: u8) -> u16 {
+fn find_tile_index(vram_x: u32, vram_y: u32) -> u16 {
     // Find which tile it is
     let tile_x = vram_x / 8;
     let tile_y = vram_y / 8;
