@@ -52,23 +52,19 @@ pub fn decode_instruction(program_counter: u16, program_code: &[u8]) -> Result<O
         }
     };
 
-    let opcode = || -> Result<OpCode, String> {
-        let category = category_from_str(parts[0]);
+    let category = category_from_str(parts[0]);
 
-        let args = parts[1..]
-            .iter()
-            .map(|arg| arg_from_str(arg, program_counter, program_code));
+    let args = parts[1..]
+        .iter()
+        .map(|arg| arg_from_str(arg, program_counter, program_code));
 
-        let mut clean_args = Vec::new();
-        clean_args.reserve(2);
-        for arg in args {
-            clean_args.push(arg?);
-        }
+    let mut clean_args = Vec::new();
+    clean_args.reserve(2);
+    for arg in args {
+        clean_args.push(arg?);
+    }
 
-        Ok(OpCode::new(category, clean_args))
-    };
-
-    opcode()
+    Ok(OpCode::new(category, clean_args))
 }
 
 pub struct OpCode {
