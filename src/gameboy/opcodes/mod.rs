@@ -60,6 +60,8 @@ pub fn decode_instruction(program_counter: u16, program_code: &[u8]) -> Result<O
 
     let mut clean_args = Vec::new();
     clean_args.reserve(2);
+
+    // Loop through all the arguments and return any errors
     for arg in args {
         clean_args.push(arg?);
     }
