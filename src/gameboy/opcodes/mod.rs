@@ -24,14 +24,35 @@ use super::read_write_register::ReadWriteRegister;
 use super::{RegisterLabel16, RegisterLabel8};
 use argument::{arg_from_str, size_in_bytes, Argument};
 use category::{category_from_str, category_size, Category};
-use opcodes::code_to_opcode;
+use cb_opcodes::CB_DICTIONARY;
+use opcodes::DICTIONARY;
 use std::fmt;
 
 pub fn decode_instruction(program_counter: u16, program_code: &[u8]) -> Result<OpCode, String> {
     let code = program_code[program_counter as usize];
+    let parts = match code {
+        0xCB => {
+            // Get the next code
+            let cb_code = program_code[program_counter as usize + 1];
+            CB_DICTIONARY
+                .iter()
+                .find(|(c, _)| *c == cb_code)
+                .ok_or("Failed to find CB code".to_owned())
+                .map(|(_, parts)| parts)?
+        }
+        _ => {
+            // Try to get the value from the dictionary
+            DICTIONARY
+                .iter()
+                .find(|(c, _)| *c == code)
+                .ok_or("Failed".to_owned())
+                .map(|(_, parts)| parts)?
 
-    let opcode = |text: &str| -> Result<OpCode, String> {
-        let parts = text.split(' ').collect::<Vec<&str>>();
+            // If failed then return an Error
+        }
+    };
+
+    let opcode = || -> Result<OpCode, String> {
         let category = category_from_str(parts[0]);
 
         let args = parts[1..]
@@ -39,6 +60,7 @@ pub fn decode_instruction(program_counter: u16, program_code: &[u8]) -> Result<O
             .map(|arg| arg_from_str(arg, program_counter, program_code));
 
         let mut clean_args = Vec::new();
+        clean_args.reserve(2);
         for arg in args {
             clean_args.push(arg?);
         }
@@ -46,8 +68,7 @@ pub fn decode_instruction(program_counter: u16, program_code: &[u8]) -> Result<O
         Ok(OpCode::new(category, clean_args))
     };
 
-    let code_result = code_to_opcode(code, program_counter, program_code);
-    opcode(code_result?)
+    opcode()
 }
 
 pub struct OpCode {

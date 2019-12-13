@@ -6,8 +6,8 @@
 
 # Pull out all the opcodes from the file
 SUPPORTED_CODES=$(cat ../src/gameboy/opcodes/opcodes.rs \
-    | grep -E '0x[0-9A-F][0-9A-F] =>' \
-    | sed 's/[[:space:]]*\(0x[0-9A-F][0-9A-F]\).*/"\1",/g')
+    | grep -E '0x[0-9A-F][0-9A-F]' \
+    | sed 's/[[:space:]]*(\(0x[0-9A-F][0-9A-F]\).*/"\1",/g')
 
 # Remove the last ,
 SUPPORTED_CODES="${SUPPORTED_CODES%?}"
@@ -17,8 +17,8 @@ SUPPORTED_CODES=$(echo $SUPPORTED_CODES)
 
 # Repeat for the CB opcodes
 CB_CODES=$(cat ../src/gameboy/opcodes/cb_opcodes.rs \
-    | grep -E '0x[0-9A-F][0-9A-F] =>' \
-    | sed 's/[[:space:]]*\(0x[0-9A-F][0-9A-F]\).*/"\1",/g')
+    | grep -E '0x[0-9A-F][0-9A-F]' \
+    | sed 's/[[:space:]]*(\(0x[0-9A-F][0-9A-F]\).*/"\1",/g')
 CB_CODES="${CB_CODES%?}"
 CB_CODES=$(echo $CB_CODES)
 
