@@ -1,7 +1,11 @@
-pub fn cb_code_to_opcode(code: u8) -> Result<&'static str, String> {
-    match code {
-        0x11 => Ok("RL C"),
-        0x7C => Ok("BIT 7 H"),
-        _ => Err(format!("Unknown command 0xCB {:#X}", code)),
-    }
+lazy_static! {
+    //#[rustfmt_skip]
+    pub static ref CB_DICTIONARY: Vec<(u8, Vec<&'static str>)> =
+        vec![
+            (0x11, "RL C"),
+            (0x7C, "BIT 7 H"),
+        ]
+            .iter()
+            .map(|(i, s)| (*i, s.split(' ').collect::<Vec<&'static str>>()))
+            .collect();
 }

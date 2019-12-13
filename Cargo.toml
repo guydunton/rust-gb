@@ -8,6 +8,7 @@ edition = "2018"
 piston_window = "0.105.0"
 rand = "0.6.0"
 image = "0.22.3"
+lazy_static = "1.4.0"
 rust-catch = { git = "https://github.com/gdunton/rust-catch", rev = "HEAD" }
 
 [profile.release]

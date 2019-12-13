@@ -3,6 +3,9 @@ use std::env;
 
 extern crate image as img;
 
+#[macro_use]
+extern crate lazy_static;
+
 mod debug_cli;
 mod gameboy;
 use crate::debug_cli::{update, DebugControls};
