@@ -256,12 +256,12 @@ impl Gameboy {
         }
     }
 
-    fn get_opcode(&self) -> Result<OpCode, String> {
+    fn get_opcode(&self) -> Result<OpCode, &str> {
         let counter = self.cpu.read_16_bits(RegisterLabel16::ProgramCounter);
         self.get_opcode_at(counter)
     }
 
-    fn get_opcode_at(&self, address: u16) -> Result<OpCode, String> {
+    fn get_opcode_at(&self, address: u16) -> Result<OpCode, &str> {
         decode_instruction(address, &self.memory)
     }
 }

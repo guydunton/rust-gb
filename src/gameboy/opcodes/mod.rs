@@ -28,7 +28,7 @@ use cb_opcodes::CB_DICTIONARY;
 use opcodes::DICTIONARY;
 use std::fmt;
 
-pub fn decode_instruction(program_counter: u16, program_code: &[u8]) -> Result<OpCode, String> {
+pub fn decode_instruction(program_counter: u16, program_code: &[u8]) -> Result<OpCode, &str> {
     let code = program_code[program_counter as usize];
     let parts = match code {
         0xCB => {
@@ -37,7 +37,7 @@ pub fn decode_instruction(program_counter: u16, program_code: &[u8]) -> Result<O
             CB_DICTIONARY
                 .iter()
                 .find(|(c, _)| *c == cb_code)
-                .ok_or("Failed to find CB code".to_owned())
+                .ok_or("Failed to find CB code")
                 .map(|(_, parts)| parts)?
         }
         _ => {
@@ -45,7 +45,7 @@ pub fn decode_instruction(program_counter: u16, program_code: &[u8]) -> Result<O
             DICTIONARY
                 .iter()
                 .find(|(c, _)| *c == code)
-                .ok_or("Failed".to_owned())
+                .ok_or("Failed")
                 .map(|(_, parts)| parts)?
 
             // If failed then return an Error
@@ -58,12 +58,11 @@ pub fn decode_instruction(program_counter: u16, program_code: &[u8]) -> Result<O
         .iter()
         .map(|arg| arg_from_str(arg, program_counter, program_code));
 
-    let mut clean_args = Vec::new();
-    clean_args.reserve(2);
+    let mut clean_args = [Argument::None; 2];
 
     // Loop through all the arguments and return any errors
-    for arg in args {
-        clean_args.push(arg?);
+    for (i, arg) in args.enumerate() {
+        clean_args[i] = arg?;
     }
 
     Ok(OpCode::new(category, clean_args))
@@ -71,7 +70,7 @@ pub fn decode_instruction(program_counter: u16, program_code: &[u8]) -> Result<O
 
 pub struct OpCode {
     category: Category,
-    args: Vec<Argument>,
+    args: [Argument; 2],
 }
 
 impl OpCode {
@@ -144,7 +143,7 @@ impl OpCode {
         cycles
     }
 
-    pub fn new(category: Category, args: Vec<Argument>) -> OpCode {
+    pub fn new(category: Category, args: [Argument; 2]) -> OpCode {
         OpCode { category, args }
     }
 

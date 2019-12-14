@@ -9,7 +9,6 @@ impl OpCode {
         _memory: &mut Vec<u8>,
     ) -> u32 {
         let mut cycles = 0;
-        assert_eq!(self.args.len(), 1);
 
         match self.args[0] {
             Argument::Register8Constant(register) => {

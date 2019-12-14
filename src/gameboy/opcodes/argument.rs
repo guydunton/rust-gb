@@ -17,6 +17,7 @@ pub enum Argument {
     JumpArgument(JumpCondition),
     Label(u16),
     AddressIndirect(u16),
+    None,
 }
 
 pub fn size_in_bytes(argument: Argument) -> u16 {
@@ -35,6 +36,7 @@ pub fn size_in_bytes(argument: Argument) -> u16 {
         Argument::Bit(_) => 0,
         Argument::Label(_) => 2,
         Argument::AddressIndirect(_) => 2,
+        Argument::None => 0,
     }
 }
 
@@ -61,11 +63,12 @@ impl fmt::Display for Argument {
             Argument::JumpArgument(val) => write!(f, "{:?}", val),
             Argument::Label(val) => write!(f, "{:#X}", val),
             Argument::AddressIndirect(val) => write!(f, "({:#X})", val),
+            Argument::None => write!(f, ""),
         }
     }
 }
 
-pub fn arg_from_str(arg: &str, index: u16, memory: &[u8]) -> Result<Argument, String> {
+pub fn arg_from_str(arg: &str, index: u16, memory: &[u8]) -> Result<Argument, &'static str> {
     let result = match arg {
         "DE" => Argument::Register16Constant(RegisterLabel16::DE),
         "HL" => Argument::Register16Constant(RegisterLabel16::HL),
@@ -101,7 +104,7 @@ pub fn arg_from_str(arg: &str, index: u16, memory: &[u8]) -> Result<Argument, St
         "Z" => Argument::JumpArgument(JumpCondition::Zero),
         "r8" => Argument::JumpDistance(memory[(index + 1) as usize] as i8),
         "7" => Argument::Bit(7),
-        _ => return Err(format!("Unknown argument: {}", arg)),
+        _ => return Err("Unknown argument"),
     };
     Ok(result)
 }
