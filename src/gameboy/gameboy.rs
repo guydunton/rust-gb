@@ -94,7 +94,7 @@ impl Gameboy {
 
     #[allow(dead_code)]
     pub fn tick(&mut self, dt: f64, breakpoints: &Vec<u16>) -> TickResult {
-        let cycles_to_use = (dt * 1000000f64) as u32;
+        let cycles_to_use = (dt * 4000000f64) as u32;
         let mut total_cycles_used = 0;
 
         loop {
