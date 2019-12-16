@@ -28,27 +28,49 @@ use cb_opcodes::CB_DICTIONARY;
 use opcodes::DICTIONARY;
 use std::fmt;
 
+enum DecodingError {
+    CBFailure,
+    DefaultCodeFailure,
+}
+
 pub fn decode_instruction(program_counter: u16, program_code: &[u8]) -> Result<OpCode, &str> {
     let code = program_code[program_counter as usize];
-    let parts = match code {
+    let parts_or_error = match code {
         0xCB => {
             // Get the next code
             let cb_code = program_code[program_counter as usize + 1];
             CB_DICTIONARY
                 .iter()
                 .find(|(c, _)| *c == cb_code)
-                .ok_or("Failed to find CB code")
-                .map(|(_, parts)| parts)?
+                .ok_or(DecodingError::CBFailure)
+                .map(|(_, parts)| parts)
         }
         _ => {
             // Try to get the value from the dictionary
             DICTIONARY
                 .iter()
                 .find(|(c, _)| *c == code)
-                .ok_or("Failed")
-                .map(|(_, parts)| parts)?
+                .ok_or(DecodingError::DefaultCodeFailure)
+                .map(|(_, parts)| parts)
 
             // If failed then return an Error
+        }
+    };
+
+    let parts = match parts_or_error {
+        Ok(p) => p,
+        Err(err_type) => {
+            match err_type {
+                DecodingError::DefaultCodeFailure => {
+                    panic!(format!(
+                        "Unknown command {:#X} at address: {:#X}",
+                        code, program_counter
+                    ));
+                }
+                DecodingError::CBFailure => {
+                    panic!("Unknown command 0xCB {:#X}", code);
+                }
+            };
         }
     };
 
