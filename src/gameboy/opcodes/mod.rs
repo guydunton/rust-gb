@@ -33,27 +33,29 @@ enum DecodingError {
     DefaultCodeFailure,
 }
 
+fn parts_from_dictionary(
+    code: u8,
+    dictionary: &'static Vec<(u8, Vec<&'static str>)>,
+    error: DecodingError,
+) -> Result<&std::vec::Vec<&str>, DecodingError> {
+    dictionary
+        .iter()
+        .find(|(c, _)| *c == code)
+        .ok_or(error)
+        .map(|(_, parts)| parts)
+}
+
 pub fn decode_instruction(program_counter: u16, program_code: &[u8]) -> Result<OpCode, &str> {
     let code = program_code[program_counter as usize];
     let parts_or_error = match code {
         0xCB => {
             // Get the next code
             let cb_code = program_code[program_counter as usize + 1];
-            CB_DICTIONARY
-                .iter()
-                .find(|(c, _)| *c == cb_code)
-                .ok_or(DecodingError::CBFailure)
-                .map(|(_, parts)| parts)
+            parts_from_dictionary(cb_code, &CB_DICTIONARY, DecodingError::CBFailure)
         }
         _ => {
             // Try to get the value from the dictionary
-            DICTIONARY
-                .iter()
-                .find(|(c, _)| *c == code)
-                .ok_or(DecodingError::DefaultCodeFailure)
-                .map(|(_, parts)| parts)
-
-            // If failed then return an Error
+            parts_from_dictionary(code, &DICTIONARY, DecodingError::DefaultCodeFailure)
         }
     };
 
