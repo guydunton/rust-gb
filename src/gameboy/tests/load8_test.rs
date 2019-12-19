@@ -29,6 +29,9 @@ mod load8_test {
         // LD C d8
         ld8_test(0x0E, RegisterLabel8::C);
 
+        // LD D d8
+        ld8_test(0x16, RegisterLabel8::D);
+
         // LD L d8
         ld8_test(0x2E, RegisterLabel8::L);
 

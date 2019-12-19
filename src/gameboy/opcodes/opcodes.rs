@@ -10,6 +10,7 @@ lazy_static! {
         (0x11, "LD16 DE d16"),
         (0x13, "INC DE"),
         (0x15, "DEC D"),
+        (0x16, "LD8 D d8"),
         (0x17, "RLA"),
         (0x18, "JR r8"),
         (0x1A, "LD8 A (DE)"),
