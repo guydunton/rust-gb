@@ -29,7 +29,7 @@ impl OpCode {
             write_flag::<T>(cpu, Flags::N, true);
 
             // Reduce and write back to register
-            cpu.write_8_bits(register, b - 1);
+            cpu.write_8_bits(register, b.wrapping_sub(1));
         } else {
             panic!("Unknown argument found in DEC opcode");
         }

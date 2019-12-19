@@ -64,5 +64,13 @@ mod dec_test {
 
             assert_eq!(gb.get_flag(Flags::Z), false);
         }
+
+        test("DEC should underflow") {
+            let mut gb = Gameboy::new(vec![0x15]);
+            gb.set_register_8(RegisterLabel8::D, 0);
+            let _ = gb.step_once();
+
+            assert_eq!(gb.get_register_8(RegisterLabel8::D), 0xFF);
+        }
     }
 }
