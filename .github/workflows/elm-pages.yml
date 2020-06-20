@@ -6,7 +6,7 @@ name: elm-gh-pages
 # events but only for the master branch
 on:
   push:
-    branches: [ master ]
+    branches: [master]
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -14,20 +14,27 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
+      - uses: actions/checkout@v2
 
-    - name: Setup Elm environment
-      uses: JorelAli/setup-elm@v2
-      with:
-        elm-version: 0.19.1
-        
-    - run: |
-        cd docs
-        ./update-supported.sh
-        elm make --optimize --output=../build/js/elm.js src/Main.elm
-        cp index.html ../build/index.html
-        
-    - name: GitHub Pages
-      uses: crazy-max/ghaction-github-pages@v2.0.1
-      with:
-        build_dir: build
+      # Install elm
+      - name: Setup Elm environment
+        uses: JorelAli/setup-elm@v2
+        with:
+          elm-version: 0.19.1
+
+      # Install node & elm-format
+      - uses: actions/setup-node@v1
+      - run: npm install -g elm-format
+
+      # Build the elm docs and move everything to build directory
+      - run: |
+          cd docs
+          ./update-supported.sh
+          elm make --optimize --output=../build/js/elm.js src/Main.elm
+          cp index.html ../build/index.html
+
+      # Deploy to github pages
+      - name: GitHub Pages
+        uses: crazy-max/ghaction-github-pages@v2.0.1
+        with:
+          build_dir: build
