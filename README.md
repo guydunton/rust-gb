@@ -1,6 +1,7 @@
 # RustGB
 
 [![Build Status](https://travis-ci.org/guydunton/rust-gb.svg?branch=master)](https://travis-ci.org/guydunton/rust-gb)
+![Rust](https://github.com/guydunton/rust-gb/workflows/Rust/badge.svg)
 
 RustGB is yet another gameboy emulator written in Rust. The goal of the project is to learn as much as possible about Gameboy emulation while also learning Rust.
 
@@ -45,6 +46,7 @@ http://bgb.bircd.org/pandocs.htm
 - [x] Remove cowboy breakpoint code
 - [x] Add proper debug breakpoints
 - [x] Get screen scrolling working
+- [ ] Basic sound support
 - [ ] Benchmark each opcode to make sure they take less time than they would on a real GB
 - [ ] Fix callback system within opcodes
 - [ ] Continue adding support for bootloader commands.
