@@ -13,7 +13,7 @@ impl<'a> MemoryView<'a> {
 
     pub fn get_memory_slice_at(&self, address: u16, size: u16) -> &'a [u8] {
         let start = address as usize;
-        let end = (address + size) as usize;
+        let end = address.saturating_add(size) as usize;
         &self.memory[start..end]
     }
 }

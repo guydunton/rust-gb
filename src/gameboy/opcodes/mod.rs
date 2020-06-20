@@ -45,7 +45,7 @@ fn parts_from_dictionary(
         .map(|(_, parts)| parts)
 }
 
-pub fn decode_instruction(program_counter: u16, program_code: &[u8]) -> Result<OpCode, &str> {
+pub fn decode_instruction(program_counter: u16, program_code: &[u8]) -> Result<OpCode, String> {
     let code = program_code[program_counter as usize];
     let parts_or_error = match code {
         0xCB => {
@@ -59,22 +59,13 @@ pub fn decode_instruction(program_counter: u16, program_code: &[u8]) -> Result<O
         }
     };
 
-    let parts = match parts_or_error {
-        Ok(p) => p,
-        Err(err_type) => {
-            match err_type {
-                DecodingError::DefaultCodeFailure => {
-                    panic!(format!(
-                        "Unknown command {:#X} at address: {:#X}",
-                        code, program_counter
-                    ));
-                }
-                DecodingError::CBFailure => {
-                    panic!("Unknown command 0xCB {:#X}", code);
-                }
-            };
-        }
-    };
+    let parts = parts_or_error.map_err(|err_type| match err_type {
+        DecodingError::DefaultCodeFailure => format!(
+            "Unknown command {:#X} at address: {:#X}",
+            code, program_counter
+        ),
+        DecodingError::CBFailure => format!("Unknown command 0xCB {:#X}", code),
+    })?;
 
     let category = category_from_str(parts[0]);
 
