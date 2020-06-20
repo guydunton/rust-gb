@@ -1,6 +1,5 @@
 # RustGB
 
-[![Build Status](https://travis-ci.org/guydunton/rust-gb.svg?branch=master)](https://travis-ci.org/guydunton/rust-gb)
 ![Rust](https://github.com/guydunton/rust-gb/workflows/Rust/badge.svg)
 
 RustGB is yet another gameboy emulator written in Rust. The goal of the project is to learn as much as possible about Gameboy emulation while also learning Rust.
