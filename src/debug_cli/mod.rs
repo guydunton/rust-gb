@@ -17,16 +17,7 @@ pub fn update(gb: &Gameboy, breakpoints: &mut Vec<u16>) -> DebugControls {
     // Clear the screen
     print!("{}[2J", 27 as char);
 
-    {
-        let opcodes = OpCodeWidget::new(&gb);
-        let registers = RegistersWidget::new(&gb);
-        let flags = FlagsWidget::new(&gb);
-        let mut layout = Layout::new();
-        layout.add_widget(Box::new(opcodes), 0);
-        layout.add_widget(Box::new(registers), 1);
-        layout.add_widget(Box::new(flags), 1);
-        layout.draw();
-    }
+    default_view(gb);
 
     loop {
         println!("Step? (h for help) [s]");
@@ -41,9 +32,21 @@ pub fn update(gb: &Gameboy, breakpoints: &mut Vec<u16>) -> DebugControls {
             "b" => breakpoint_menu(breakpoints),
             "h" => print_help(),
             "m" => request_address(gb),
+            "o" => default_view(gb),
             _ => return DebugControls::Tick,
         }
     }
+}
+
+fn default_view(gb: &Gameboy) {
+    let opcodes = OpCodeWidget::new(&gb);
+    let registers = RegistersWidget::new(&gb);
+    let flags = FlagsWidget::new(&gb);
+    let mut layout = Layout::new();
+    layout.add_widget(Box::new(opcodes), 0);
+    layout.add_widget(Box::new(registers), 1);
+    layout.add_widget(Box::new(flags), 1);
+    layout.draw();
 }
 
 fn breakpoint_menu(breakpoints: &mut Vec<u16>) {
@@ -103,5 +106,6 @@ fn print_help() {
     println!("m => show memory");
     println!("c => continue");
     println!("b => breakpoint menu");
+    println!("o => re-print opcodes");
     println!("h => help");
 }
