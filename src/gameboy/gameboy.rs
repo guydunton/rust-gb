@@ -1,3 +1,4 @@
+use super::alu::ALU;
 use super::cpu::CPU;
 use super::memory_adapter::MemoryAdapter;
 use super::memory_labels::Labels;
@@ -20,6 +21,7 @@ pub enum TickResult {
 pub struct Gameboy {
     cpu: CPU,
     ppu: PPU,
+    alu: ALU,
     memory: Vec<u8>,
 }
 
@@ -88,13 +90,14 @@ impl Gameboy {
         Gameboy {
             cpu: CPU::new(),
             ppu: PPU::new(),
+            alu: ALU::new(),
             memory,
         }
     }
 
     #[allow(dead_code)]
     pub fn tick(&mut self, dt: f64, breakpoints: &Vec<u16>) -> TickResult {
-        let cycles_to_use = (dt * 4000000f64) as u32;
+        let cycles_to_use = (dt * 4194304f64) as u32;
         let mut total_cycles_used = 0;
 
         loop {
@@ -131,6 +134,9 @@ impl Gameboy {
 
                 // Now run the PPU by the same amount of cycles
                 self.ppu.tick(cycles, &mut self.memory);
+
+                // Run the ALU by the same amount of cycles
+                self.alu.tick(cycles, &mut self.memory);
 
                 return cycles;
             }
@@ -263,5 +269,13 @@ impl Gameboy {
 
     fn get_opcode_at(&self, address: u16) -> Result<OpCode, String> {
         decode_instruction(address, &self.memory)
+    }
+
+    /// Get a frame's worth of audio
+    ///
+    /// 60 fps with 48000 sample rate means 800 samples per frame
+    #[allow(dead_code)]
+    pub fn get_sample(&self) -> Vec<i16> {
+        self.alu.get_sample()
     }
 }

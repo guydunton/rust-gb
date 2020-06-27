@@ -1,3 +1,4 @@
+mod alu;
 mod cpu;
 mod flags_register;
 mod gameboy;

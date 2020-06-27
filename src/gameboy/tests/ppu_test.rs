@@ -1,5 +1,6 @@
 #[cfg(test)]
 mod ret_test {
+    use super::super::tests::infinite_loop_gb;
     use crate::gameboy::{Gameboy, Labels, RegisterLabel16, RegisterLabel8, ScreenColor};
     use rust_catch::tests;
 
@@ -9,6 +10,16 @@ mod ret_test {
     // 2 => Dark
     // 3 => Black
     const DEFAULT_PALLETE: u8 = 0b1110_0100;
+
+    fn ppu_infinite_loop_gb() -> Gameboy {
+        let mut gb = infinite_loop_gb();
+
+        // Turn the screen on & set the palette
+        gb.set_memory_at(Labels::V_BLANK, 0x80);
+        gb.set_memory_at(Labels::BG_PALETTE, DEFAULT_PALLETE);
+
+        gb
+    }
 
     tests! {
         test("A default gameboy will have a white screen") {
@@ -136,7 +147,7 @@ mod ret_test {
 
         test("The PPU should set the LY register every 456 clocks when screen on") {
 
-            let mut gb = infinite_loop_gb();
+            let mut gb = ppu_infinite_loop_gb();
 
             // Run an infinite loop
             for _ in 0..28 {
@@ -165,7 +176,7 @@ mod ret_test {
         }
 
         test("Turning off the LCD screen resets LY register to 0") {
-            let mut gb = infinite_loop_gb();
+            let mut gb = ppu_infinite_loop_gb();
 
             render_line(&mut gb);
 
@@ -177,9 +188,9 @@ mod ret_test {
         }
 
         test("Retrieving the screen colors gets the top left of the VRAM") {
-            let mut gb = infinite_loop_gb();
+            let mut gb = ppu_infinite_loop_gb();
 
-            // Add a sprite to the top let corner of vram 
+            // Add a sprite to the top let corner of vram
             let sprite1 = [
                 0x50, 0x30, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
                 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0
@@ -201,7 +212,7 @@ mod ret_test {
             let screen_data_pre = gb.get_screen_data();
             assert_eq!(screen_data_pre.len(), 144 * 160);
 
-            
+
             render_line(&mut gb);
 
             // The first line of the screen will have been drawn
@@ -214,7 +225,7 @@ mod ret_test {
         }
 
         test("Move the screen position will move what is displayed on screen") {
-            let mut gb = infinite_loop_gb();
+            let mut gb = ppu_infinite_loop_gb();
 
             // Move the screen down and right
             gb.set_memory_at(Labels::SCROLL_Y, 1);
@@ -240,7 +251,7 @@ mod ret_test {
         }
 
         test("screen draws correctly when it wraps around the side and bottom") {
-            let mut gb = infinite_loop_gb();
+            let mut gb = ppu_infinite_loop_gb();
 
             // Put a sprite in the top left corner of vram
             let sprite = vec![
@@ -271,19 +282,6 @@ mod ret_test {
         }
     }
 
-    fn infinite_loop_gb() -> Gameboy {
-        // Each loop will be 16 clocks & take 2 steps
-        // NOP
-        // JR -3
-        let mut gb = Gameboy::new(vec![0x00, 0x18, 0xFD]);
-
-        // Turn the screen on & set the palette
-        gb.set_memory_at(Labels::V_BLANK, 0x80);
-        gb.set_memory_at(Labels::BG_PALETTE, DEFAULT_PALLETE);
-
-        gb
-    }
-
     fn render_line(gb: &mut Gameboy) {
         // Tick the gb for 456 clocks at which point the
         // first line of the screen will have been rendered
@@ -308,29 +306,27 @@ mod ret_test {
 
     fn add_sprite_to_vram(gb: &mut Gameboy, tile_index: u16, sprite_data: &[u8]) {
         for (index, val) in sprite_data.iter().enumerate() {
-            gb.set_memory_at(Labels::CHARACTER_RAM_START + tile_index * 16 + index as u16, *val);
+            gb.set_memory_at(
+                Labels::CHARACTER_RAM_START + tile_index * 16 + index as u16,
+                *val,
+            );
         }
     }
 
     fn print_screen_data(screen_data: &[ScreenColor]) {
-
-        let color_to_number = |col| {
-            match col {
-                ScreenColor::White => 0,
-                ScreenColor::Light => 1,
-                ScreenColor::Dark => 2,
-                _ => 3
-            }
+        let color_to_number = |col| match col {
+            ScreenColor::White => 0,
+            ScreenColor::Light => 1,
+            ScreenColor::Dark => 2,
+            _ => 3,
         };
 
         println!("[");
-        screen_data
-            .chunks(160)
-            .for_each(|colors| {
-                let numbers : Vec<i32> = colors.iter().map(|color| color_to_number(*color)).collect();
-                numbers.iter().for_each(|num| print!("{}", *num));
-                println!("");
-            });
+        screen_data.chunks(160).for_each(|colors| {
+            let numbers: Vec<i32> = colors.iter().map(|color| color_to_number(*color)).collect();
+            numbers.iter().for_each(|num| print!("{}", *num));
+            println!("");
+        });
         println!("]");
     }
 }
