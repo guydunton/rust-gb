@@ -1,3 +1,4 @@
+mod alu_test;
 mod cp_test;
 mod dec_test;
 mod inc_test;
@@ -10,6 +11,19 @@ mod ppu_test;
 mod ret_test;
 mod sub_test;
 mod timing;
+
+#[cfg(test)]
+mod tests {
+    use crate::gameboy::Gameboy;
+
+    pub fn infinite_loop_gb() -> Gameboy {
+        // Each loop will be 16 clocks & take 2 steps
+        // NOP
+        // JR -3
+        let gb = Gameboy::new(vec![0x00, 0x18, 0xFD]);
+        gb
+    }
+}
 
 #[cfg(test)]
 mod opcode_tests {
