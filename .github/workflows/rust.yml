@@ -9,8 +9,8 @@ jobs:
     steps:
       - name: Update dependencies
         run: |
-          sudo yum update -y
-          yum install -y alsa-lib-devel
+          sudo apt update -y
+          apt install -y libasound2-dev libudev-dev pkg-config
 
       - uses: actions/checkout@v1
 
