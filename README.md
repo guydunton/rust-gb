@@ -8,6 +8,26 @@ RustGB is yet another gameboy emulator written in Rust. The goal of the project 
 
 The project connect yet run any games. I am currently working through the opcode that form the bootloader while I experiment with Rust and emulator design.
 
+## Build
+
+The code builds using cargo so you only need to run `cargo build` for a debug build.
+
+### Linux Pre-requisites
+
+To build on Linux (tested on ubuntu) you must install some extra dependencies for the sound library. To install the dependencies run the following command for your distro:
+
+#### Debian
+
+```bash
+apt install -y libasound2-dev libudev-dev pkg-config
+```
+
+#### Redhat
+
+```bash
+yum install alsa-lib-devel
+```
+
 ## Run with debug
 
 To run with debugging tools:
