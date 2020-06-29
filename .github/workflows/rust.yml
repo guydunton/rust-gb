@@ -11,7 +11,7 @@ jobs:
 
     steps:
       - name: Update dependencies
-        if: ${{ runner.os == Linux }}
+        if: ${{ runner.os == 'Linux' }}
         run: |
           sudo apt update -y
           sudo apt install -y libasound2-dev libudev-dev pkg-config
