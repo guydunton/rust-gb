@@ -4,7 +4,7 @@ mod load16_test {
     use crate::gameboy::RegisterLabel16;
     use rust_catch::tests;
 
-    fn load16_instructions(byte_code: u8) -> (Gameboy, u32) {
+    fn load16_instructions(byte_code: u8) -> (Gameboy<'static>, u32) {
         let mut gb = Gameboy::new(vec![byte_code, 0xFE, 0xFF]);
         let cycles = gb.step_once();
         (gb, cycles)

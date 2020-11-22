@@ -18,15 +18,18 @@ pub enum TickResult {
     FrameComplete,
 }
 
-pub struct Gameboy {
+pub struct Gameboy<'a> {
     cpu: CPU,
     ppu: PPU,
-    alu: ALU,
+    alu: ALU<'a>,
     memory: Vec<u8>,
 }
 
-impl Gameboy {
-    pub fn new_with_bootloader() -> Gameboy {
+impl<'a> Gameboy<'a> {
+    pub fn new_with_bootloader<F>(audio_callback: F) -> Gameboy<'a>
+    where
+        F: FnMut(i16) + 'a,
+    {
         let bootloader = vec![
             0x31, 0xFE, 0xFF, 0xAF, 0x21, 0xFF, 0x9F, 0x32, 0xCB, 0x7C, 0x20, 0xFB, 0x21, 0x26,
             0xFF, 0x0E, // 0x10
@@ -74,7 +77,7 @@ impl Gameboy {
         data[bootloader.len()..(bootloader.len() + fake_header_data.len())]
             .clone_from_slice(&fake_header_data[..]);
 
-        Gameboy::new(data)
+        Gameboy::new_with_audio(data, audio_callback)
     }
 
     /// Construct a new Gameboy.
@@ -83,14 +86,30 @@ impl Gameboy {
     /// starting at 0x0000. All other parts of memory will be
     /// set to zero.
     #[allow(dead_code)]
-    pub fn new(data: Vec<u8>) -> Gameboy {
+    pub fn new(data: Vec<u8>) -> Gameboy<'a> {
         let mut memory = vec![0; 0xFFFF];
         memory[..data.len()].clone_from_slice(&data[..]);
 
         Gameboy {
             cpu: CPU::new(),
             ppu: PPU::new(),
-            alu: ALU::new(),
+            alu: ALU::new(|_| {}),
+            memory,
+        }
+    }
+
+    #[allow(dead_code)]
+    pub fn new_with_audio<'b, F>(data: Vec<u8>, audio_callback: F) -> Gameboy<'b>
+    where
+        F: FnMut(i16) + 'b,
+    {
+        let mut memory = vec![0; 0xFFFF];
+        memory[..data.len()].clone_from_slice(&data[..]);
+
+        Gameboy {
+            cpu: CPU::new(),
+            ppu: PPU::new(),
+            alu: ALU::new(audio_callback),
             memory,
         }
     }
@@ -269,13 +288,5 @@ impl Gameboy {
 
     fn get_opcode_at(&self, address: u16) -> Result<OpCode, String> {
         decode_instruction(address, &self.memory)
-    }
-
-    /// Get a frame's worth of audio
-    ///
-    /// 60 fps with 48000 sample rate means 800 samples per frame
-    #[allow(dead_code)]
-    pub fn get_sample(&self) -> Vec<i16> {
-        self.alu.get_sample()
     }
 }

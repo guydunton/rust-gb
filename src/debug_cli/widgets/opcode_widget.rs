@@ -4,11 +4,11 @@ use crate::gameboy::Gameboy;
 use crate::gameboy::RegisterLabel16;
 
 pub struct OpCodeWidget<'a> {
-    gb: &'a Gameboy,
+    gb: &'a Gameboy<'a>,
 }
 
 impl<'a> OpCodeWidget<'a> {
-    pub fn new(gb: &'a Gameboy) -> OpCodeWidget {
+    pub fn new(gb: &'a Gameboy) -> OpCodeWidget<'a> {
         OpCodeWidget { gb }
     }
 

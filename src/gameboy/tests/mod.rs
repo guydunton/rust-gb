@@ -16,7 +16,7 @@ mod timing;
 mod tests {
     use crate::gameboy::Gameboy;
 
-    pub fn infinite_loop_gb() -> Gameboy {
+    pub fn infinite_loop_gb() -> Gameboy<'static> {
         // Each loop will be 16 clocks & take 2 steps
         // NOP
         // JR -3

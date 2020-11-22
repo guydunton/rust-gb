@@ -2,12 +2,12 @@ use super::super::layout::Print;
 use crate::gameboy::Gameboy;
 
 pub struct MemoryWidget<'a> {
-    gb: &'a Gameboy,
+    gb: &'a Gameboy<'a>,
     start: u16,
 }
 
 impl<'a> MemoryWidget<'a> {
-    pub fn new(gb: &'a Gameboy, start: u16) -> MemoryWidget {
+    pub fn new(gb: &'a Gameboy, start: u16) -> MemoryWidget<'a> {
         MemoryWidget { gb, start }
     }
 }

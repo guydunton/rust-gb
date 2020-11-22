@@ -1,36 +1,32 @@
-#[cfg(test)]
-mod alu_test {
-    use super::super::tests::infinite_loop_gb;
-    use rust_catch::tests;
+use crate::gameboy::Gameboy;
 
-    tests! {
-        test("Run the gameboy for a frame and get a frame of audio") {
-            let mut gb = infinite_loop_gb();
+#[allow(dead_code)]
+pub fn infinite_loop_gb<'a, F>(callback: F) -> Gameboy<'a>
+where
+    F: FnMut(i16) + 'a,
+{
+    // Each loop will be 16 clocks & take 2 steps
+    // NOP
+    // JR -3
+    let gb = Gameboy::new_with_audio(vec![0x00, 0x18, 0xFD], callback);
+    gb
+}
 
-            // Run the gameboy for a frame
-            let breakpoints = vec![];
-            gb.tick(1.0 / 60.0, &breakpoints);
+#[test]
+fn can_construct_gb_with_alu() {
+    let mut audio_data: Vec<i16> = Vec::new();
 
-            let sample = gb.get_sample();
-            assert!(sample.iter().all(|val| *val == 0));
+    {
+        // Put everything in scope to allow us to query audio_data
+        let callback = |val| {
+            audio_data.push(val);
+        };
 
-            assert_eq!(sample.len(), 800);
-        }
+        let mut gb = infinite_loop_gb(callback);
 
-        test("Run into the next frame and the buffer is cleared") {
-            let mut gb = infinite_loop_gb();
-
-            let breakpoints = vec![];
-            gb.tick(1.0 / 60.0, &breakpoints);
-
-            // This should put us onto the next frame
-            for _ in 0..6 { // Run through at least 87 frames
-                gb.step_once();
-                gb.step_once();
-            }
-
-            let sample = gb.get_sample();
-            assert_eq!(sample.len(), 1);
-        }
+        let breakpoints = vec![];
+        gb.tick(1.0 / 60.0, &breakpoints);
     }
+
+    assert_ne!(audio_data.len(), 0);
 }

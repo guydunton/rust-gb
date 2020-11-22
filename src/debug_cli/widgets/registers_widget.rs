@@ -5,11 +5,11 @@ use crate::gameboy::{RegisterLabel16, RegisterLabel8};
 use std::collections::HashMap;
 
 pub struct RegistersWidget<'a> {
-    gb: &'a Gameboy,
+    gb: &'a Gameboy<'a>,
 }
 
 impl<'a> RegistersWidget<'a> {
-    pub fn new(gb: &'a Gameboy) -> RegistersWidget {
+    pub fn new(gb: &'a Gameboy) -> RegistersWidget<'a> {
         RegistersWidget { gb }
     }
 

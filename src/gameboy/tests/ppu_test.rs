@@ -11,7 +11,7 @@ mod ret_test {
     // 3 => Black
     const DEFAULT_PALLETE: u8 = 0b1110_0100;
 
-    fn ppu_infinite_loop_gb() -> Gameboy {
+    fn ppu_infinite_loop_gb() -> Gameboy<'static> {
         let mut gb = infinite_loop_gb();
 
         // Turn the screen on & set the palette

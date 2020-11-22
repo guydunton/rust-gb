@@ -2,11 +2,11 @@ use super::super::layout::Print;
 use crate::gameboy::Gameboy;
 
 pub struct FlagsWidget<'a> {
-    gb: &'a Gameboy,
+    gb: &'a Gameboy<'a>,
 }
 
 impl<'a> FlagsWidget<'a> {
-    pub fn new(gb: &'a Gameboy) -> FlagsWidget {
+    pub fn new(gb: &'a Gameboy) -> FlagsWidget<'a> {
         FlagsWidget { gb }
     }
 
