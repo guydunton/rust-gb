@@ -1,6 +1,6 @@
+use super::MemoryAdapter;
 use super::ReadWriteRegister;
 use super::{Argument, OpCode};
-use super::MemoryAdapter;
 
 impl OpCode {
     pub fn run_ld8<T: ReadWriteRegister>(
@@ -12,7 +12,9 @@ impl OpCode {
         {
             let source = match self.args[1] {
                 Argument::Register8Constant(register) => cpu.read_8_bits(register),
-                Argument::RegisterIndirect(register) => memory.get_memory_at(cpu.read_16_bits(register)),
+                Argument::RegisterIndirect(register) => {
+                    memory.get_memory_at(cpu.read_16_bits(register))
+                }
                 Argument::HighOffsetConstant(offset) => {
                     memory.get_memory_at(0xFF00 + offset as u16)
                 }
