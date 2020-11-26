@@ -128,7 +128,7 @@ fn main() {
                     buffer: UnknownTypeOutputBuffer::F32(mut buffer),
                 } => {
                     for elem in buffer.iter_mut() {
-                        // Kepp pulling values until no more are left. Then add 0s
+                        // Keep pulling values until no more are left. Then add 0s
                         match receiver.recv() {
                             Ok(data) => {
                                 *elem = data as f32 / 100.0;

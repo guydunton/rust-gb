@@ -5,13 +5,12 @@ authors = ["Guy Dunton PC <guy.dunton@gmail.com>"]
 edition = "2018"
 
 [dependencies]
-piston_window = "0.109.0"
+piston_window = "0.116"
 rand = "0.7.3"
-image = "0.23.6"
+image = "0.23.10"
 lazy_static = "1.4.0"
 rust-catch = { git = "https://github.com/gdunton/rust-catch", rev = "HEAD" }
-cpal = "0.11.0"
-blip_buf = "0.1.4"
+cpal = "0.11"
 
 [profile.release]
 debug = true
