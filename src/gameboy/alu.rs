@@ -11,7 +11,7 @@ fn get_duty(duty: DutyCycle, pos: u8) -> u8 {
     match duty {
         DutyCycle::Zero => [0, 0, 0, 0, 0, 0, 0, 1][index],
         DutyCycle::One => [1, 0, 0, 0, 0, 0, 0, 1][index],
-        DutyCycle::Two => [0, 0, 0, 0, 0, 1, 1, 1][index],
+        DutyCycle::Two => [1, 0, 0, 0, 0, 1, 1, 1][index],
         DutyCycle::Three => [0, 1, 1, 1, 1, 1, 1, 0][index],
     }
 }
