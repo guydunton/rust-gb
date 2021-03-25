@@ -95,7 +95,7 @@ fn build_audio_event_loop() -> impl EventLoopTrait {
     let device = host.default_output_device().unwrap();
     let format_base = device.default_output_format().unwrap();
     let format = cpal::Format {
-        channels: 2,
+        channels: 1,
         sample_rate: format_base.sample_rate,
         data_type: cpal::SampleFormat::F32,
     };
@@ -116,9 +116,6 @@ where
     thread::spawn(move || {
         // Thread runs the event loop which pulls from the channel
         event_loop.run(move |stream_id2, stream_result| {
-            let mut successes = 0;
-            let mut failures = 0;
-
             let stream_data = match stream_result {
                 Ok(data) => data,
                 Err(err) => {
@@ -137,20 +134,15 @@ where
                         match receiver.recv() {
                             Ok(data) => {
                                 *elem = data as f32 / 100.0;
-                                successes += 1;
                             }
                             Err(_) => {
                                 *elem = 0.0;
-                                failures += 1
                             }
                         }
                     }
                 }
                 _ => (),
             }
-
-            let total = successes + failures;
-            println!("{}/{}", successes / total * 100, failures / total * 100);
         });
     })
 }

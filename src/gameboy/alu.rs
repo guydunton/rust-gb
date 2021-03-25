@@ -29,7 +29,7 @@ pub struct ALU<'a> {
     enabled: bool,
 }
 
-const SAMPLE_RATE: i32 = 48000; // Hz
+const SAMPLE_RATE: i32 = 44100; // Hz
 const CYCLES_PER_SECOND: i32 = 4194304;
 const CYCLES_PER_SAMPLE: i32 = CYCLES_PER_SECOND / SAMPLE_RATE;
 const CYCLES_PER_PERIOD: i32 = CYCLES_PER_SECOND / 64;
@@ -59,7 +59,7 @@ impl<'a> ALU<'a> {
         self.cycles_to_next_sample = self.cycles_to_next_sample - tick as i32;
 
         // Set enabled from mem and do other stuff (if enabled already false)
-        if (memory[0xFF14] | 0b1000_000) != 0 && !self.enabled {
+        if (memory[0xFF14] & 0b1000_0000) != 0 {
             // Set the frequency from mem
             let freq_lsb = (memory[0xFF13]) as i32;
             let freq_msb = (memory[0xFF14] & 0b0000_0111) as i32;
@@ -80,6 +80,17 @@ impl<'a> ALU<'a> {
 
                 // Set the channel timer from the frequency
                 self.channel_timer = (2048 - self.frequency) * 4;
+
+                // Set the duty
+                self.duty = match (memory[0xFF11] & 0b1100_0000) >> 6 {
+                    0 => DutyCycle::Zero,
+                    1 => DutyCycle::One,
+                    2 => DutyCycle::Two,
+                    3 => DutyCycle::Three,
+                    other => {
+                        panic!("Could not set duty cycle from value {}", other)
+                    }
+                };
 
                 // TODO: Set length bits
 
