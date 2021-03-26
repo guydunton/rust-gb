@@ -79,7 +79,7 @@ impl<'a> App<'a> {
         if self.is_debug {
             self.gb.step_once();
         } else {
-            let stop_reason = self.gb.tick(args.dt, &self.breakpoints);
+            let stop_reason = self.gb.tick_with_breaks(args.dt, &self.breakpoints);
 
             if stop_reason == TickResult::HitBreakpoint {
                 self.is_debug = true;

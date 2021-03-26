@@ -9,7 +9,7 @@ mod ret_test {
 
             let dt = 1.0/60.0;
             let breakpoints = vec![0x05];
-            let stop_reason = gb.tick(dt, &breakpoints);
+            let stop_reason = gb.tick_with_breaks(dt, &breakpoints);
 
             assert_eq!(stop_reason, TickResult::HitBreakpoint);
             assert_eq!(gb.get_register_16(RegisterLabel16::ProgramCounter), 0x05);
@@ -23,7 +23,7 @@ mod ret_test {
 
             let dt = 1.0/60.0;
             let breakpoints = vec![0x05];
-            let stop_reason = gb.tick(dt, &breakpoints);
+            let stop_reason = gb.tick_with_breaks(dt, &breakpoints);
 
             assert_eq!(stop_reason, TickResult::FrameComplete);
             assert!(gb.get_register_16(RegisterLabel16::ProgramCounter) < 0x02);
@@ -35,8 +35,8 @@ mod ret_test {
             let dt = 1.0 / 60.0;
             let breakpoints = vec![0x01, 0x03];
 
-            gb.tick(dt, &breakpoints);
-            gb.tick(dt, &breakpoints);
+            gb.tick_with_breaks(dt, &breakpoints);
+            gb.tick_with_breaks(dt, &breakpoints);
 
             assert_eq!(gb.get_register_16(RegisterLabel16::ProgramCounter), 0x03);
         }

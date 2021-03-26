@@ -23,7 +23,7 @@ pub struct ALU<'a> {
     period_timer: i32, // 64Hz timer which reduces the period counter once hits 0. Actually the frame sequencer
     period_counter: i32,
     frequency: i32, // Defines how quickly we move through the duty cycle
-    volume: i32,    // The colume is reduced by 1 every time period counter hits 0
+    volume: i32,    // The volume is reduced by 1 every time period counter hits 0
     duty: DutyCycle,
     duty_position: u8,
     enabled: bool,
@@ -33,7 +33,7 @@ const SAMPLE_RATE: i32 = 44100; // Hz
 const CYCLES_PER_SECOND: i32 = 4194304;
 const CYCLES_PER_SAMPLE: i32 = CYCLES_PER_SECOND / SAMPLE_RATE;
 const CYCLES_PER_PERIOD: i32 = CYCLES_PER_SECOND / 64;
-const CYCLES_PER_LENGTH: i32 = CYCLES_PER_SECOND / 256;
+// const CYCLES_PER_LENGTH: i32 = CYCLES_PER_SECOND / 256;
 
 impl<'a> ALU<'a> {
     pub fn new<F>(audio_callback: F) -> ALU<'a>
@@ -49,7 +49,7 @@ impl<'a> ALU<'a> {
             frequency: 0,
             volume: 0,
             enabled: false,
-            duty: DutyCycle::One,
+            duty: DutyCycle::Zero,
             duty_position: 0,
         }
     }
@@ -68,7 +68,7 @@ impl<'a> ALU<'a> {
             // Get the volume
             let volume = (memory[0xFF12] & 0b1111_0000) >> 4;
 
-            if frequency > 0 && volume > 0 {
+            if volume > 0 {
                 self.frequency = frequency;
                 self.volume = volume as i32;
 
@@ -76,7 +76,7 @@ impl<'a> ALU<'a> {
                 self.period_timer = CYCLES_PER_PERIOD;
 
                 // Set the period counter
-                self.period_timer = (memory[0xFF12] & 0b0000_0111) as i32;
+                self.period_counter = (memory[0xFF12] & 0b0000_0111) as i32;
 
                 // Set the channel timer from the frequency
                 self.channel_timer = (2048 - self.frequency) * 4;
@@ -96,10 +96,9 @@ impl<'a> ALU<'a> {
 
                 // Turn the channel on
                 self.enabled = true;
-
-                // Reset the trigger
-                memory[0xFF14] = memory[0xFF14] & 0b0111_1111;
             }
+            // Reset the trigger
+            memory[0xFF14] = memory[0xFF14] & 0b0111_1111;
         }
 
         // If enabled start counting the timers
@@ -134,6 +133,9 @@ impl<'a> ALU<'a> {
             }
 
             if self.volume == 0 {
+                // This doesn't seem to make a difference but means there is less
+                // processing going on when no sound is playing.
+                // Unable to unit test
                 self.enabled = false;
             }
         }
