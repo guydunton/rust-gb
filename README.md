@@ -4,13 +4,13 @@
 
 RustGB is a gameboy emulator written in Rust. The goal of the project is to learn how the Gameboy works while learning Rust.
 
-![Rust-GB screenshot](docs/images/gameboy.png)
+<img src="docs/images/gameboy.png" width="400" alt="RustGB screenshot" />
 
-## Current State
+## Current State :warning:
 
 The project connect yet run any games. I am currently working through the opcode that form the bootloader while I experiment with Rust and emulator design.
 
-## Build
+## Build :hammer:
 
 The project uses standard Rust tools so to build run the following command:
 
@@ -24,7 +24,7 @@ cargo build --release
 
 If the build fails on Linux due to missing dependencies see [below](#Building-on-Linux)
 
-## Run
+## Run :running:
 
 Run the following commands to start the emulator:
 
@@ -36,7 +36,7 @@ cargo run
 cargo run --release
 ```
 
-## Debugger
+## Debugger :mag_right:
 
 The emulator also contains a partial debugger with features such as:
 
@@ -57,11 +57,11 @@ cargo run -- -d
 
 The emulator will start and pause on the first instruction. Additionally, audio output is disabled when running under the debugger.
 
-## Resources
+## Resources :books:
 
 For helpful resources I've used while developing click [here](docs/Resources.md)
 
-## Building on Linux
+## Building on Linux :penguin:
 
 To build on Linux (tested on ubuntu) you must install some extra dependencies for the sound library. To install the dependencies run the following command for your distro:
 
@@ -71,7 +71,7 @@ To build on Linux (tested on ubuntu) you must install some extra dependencies fo
 | Redhat | `yum install alsa-lib-devel` |
 
 
-## Todo
+## Todo :clipboard:
 
 - [x] Clean up debug cli
 - [x] Clean up opcodes directory
