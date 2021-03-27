@@ -47,7 +47,7 @@ The emulator also contains a partial debugger with features such as:
 - Show Registers & Flags
 - Show audio registers
 
-![Debugger default view](docs/images/debugger.png)
+<img src="docs/images/debugger.png" width="600" alt="Debugger default view"/>
 
 To start the emulator with the debugger on run the following command:
 
