@@ -2,7 +2,9 @@
 
 ![Rust](https://github.com/guydunton/rust-gb/workflows/Rust/badge.svg)
 
-RustGB is yet another gameboy emulator written in Rust. The goal of the project is to learn as much as possible about Gameboy emulation while also learning Rust.
+RustGB is a gameboy emulator written in Rust. The goal of the project is to learn how the Gameboy works while learning Rust.
+
+![Rust-GB screenshot](docs/images/gameboy.png)
 
 ## Current State
 
@@ -10,55 +12,64 @@ The project connect yet run any games. I am currently working through the opcode
 
 ## Build
 
-The code builds using cargo so you only need to run `cargo build` for a debug build.
-
-### Linux Pre-requisites
-
-To build on Linux (tested on ubuntu) you must install some extra dependencies for the sound library. To install the dependencies run the following command for your distro:
-
-#### Debian
+The project uses standard Rust tools so to build run the following command:
 
 ```bash
-apt install -y libasound2-dev libudev-dev pkg-config
+# Builds a debug build
+cargo build
+
+# To build in release mode (recommended for audio)
+cargo build --release
 ```
 
-#### Redhat
+If the build fails on Linux due to missing dependencies see [below](#Building-on-Linux)
+
+## Run
+
+Run the following commands to start the emulator:
 
 ```bash
-yum install alsa-lib-devel
+# Run in debug mode
+cargo run
+
+# Run in release mode (recommended for audio)
+cargo run --release
 ```
 
-## Run with debug
+## Debugger
 
-To run with debugging tools:
+The emulator also contains a partial debugger with features such as:
+
+- Step to next instruction
+- Continue
+- Breakpoints
+- Inspect memory
+- Show Registers & Flags
+- Show audio registers
+
+![Debugger default view](docs/images/debugger.png)
+
+To start the emulator with the debugger on run the following command:
 
 ```bash
 cargo run -- -d
 ```
 
-To stop debugging press `Ctrl+c`
+The emulator will start and pause on the first instruction. Additionally, audio output is disabled when running under the debugger.
 
 ## Resources
 
-### OpCode page
+For helpful resources I've used while developing click [here](docs/Resources.md)
 
-There were a couple of errors in the main GBZ80 opcode table so I'm hosting a modified version. Almost all the work for it was done by [pastraiser](http://www.pastraiser.com/) rather than myself with the original being found [here](http://www.pastraiser.com/cpu/gameboy/gameboy_opcodes.html)
+## Building on Linux
 
-The link to my modified version can be found here: [Opcodes](https://www.guydunton.com/rust-gb/).
+To build on Linux (tested on ubuntu) you must install some extra dependencies for the sound library. To install the dependencies run the following command for your distro:
 
-### Bootstrap explanation
+| Distribution | Command |
+| ---- | ---- |
+| Debian | `apt install -y libasound2-dev libudev-dev pkg-config` |
+| Redhat | `yum install alsa-lib-devel` |
 
-https://realboyemulator.wordpress.com/2013/01/03/a-look-at-the-game-boy-bootstrap-let-the-fun-begin/
-
-### Hardware interrupts
-
-http://bgb.bircd.org/pandocs.htm
-
-### Sound emulation
-
-https://gbdev.gg8.se/wiki/articles/Gameboy_sound_hardware
-https://www.reddit.com/r/EmuDev/comments/5gkwi5/gb_apu_sound_emulation/
-https://aselker.github.io/gameboy-sound-chip/
 
 ## Todo
 
@@ -72,6 +83,6 @@ https://aselker.github.io/gameboy-sound-chip/
 - [x] Add proper debug breakpoints
 - [x] Get screen scrolling working
 - [x] Basic sound support
+- [ ] Continue adding support for bootloader commands.
 - [ ] Benchmark each opcode to make sure they take less time than they would on a real GB
 - [ ] Fix callback system within opcodes
-- [ ] Continue adding support for bootloader commands.

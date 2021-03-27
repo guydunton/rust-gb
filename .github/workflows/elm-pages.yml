@@ -28,10 +28,10 @@ jobs:
 
       # Build the elm docs and move everything to build directory
       - run: |
-          cd docs
+          cd docs/opcodes
           ./update-supported.sh
-          elm make --optimize --output=../build/js/elm.js src/Main.elm
-          cp index.html ../build/index.html
+          elm make --optimize --output=../../build/js/elm.js src/Main.elm
+          cp index.html ../../build/index.html
 
       # Deploy to github pages
       - name: GitHub Pages

@@ -123,4 +123,5 @@ fn print_help() {
     println!("o => re-print opcodes");
     println!("a => audio");
     println!("h => help");
+    println!("Ctrl+c => quit");
 }
