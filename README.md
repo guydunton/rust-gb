@@ -71,7 +71,7 @@ https://aselker.github.io/gameboy-sound-chip/
 - [x] Remove cowboy breakpoint code
 - [x] Add proper debug breakpoints
 - [x] Get screen scrolling working
-- [ ] Basic sound support
+- [x] Basic sound support
 - [ ] Benchmark each opcode to make sure they take less time than they would on a real GB
 - [ ] Fix callback system within opcodes
 - [ ] Continue adding support for bootloader commands.

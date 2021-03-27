@@ -1,4 +1,4 @@
-mod alu;
+mod audio;
 mod cpu;
 mod flags_register;
 mod gameboy;

@@ -43,7 +43,6 @@ fn trigger_bit_is_reset_after_frame() {
     assert_eq!(gb.get_memory_at(0xFF14) & 0b1000_0000, 0b0000_0000);
 }
 
-// - No sound is produced if volume
 #[test]
 fn no_sound_if_volume_0() {
     let mut audio_data: Vec<i16> = Vec::new();
@@ -108,7 +107,6 @@ fn run_gb_with_settings(vol: u8, freq: u16, duty: u8, period: u8) -> Vec<i16> {
     audio_data
 }
 
-// - the volume affects how load the signals are
 #[test]
 fn increase_volume_increases_output() {
     let sound1 = run_gb_with_settings(0b1111, u8::MAX as u16, 0, 0);
@@ -123,7 +121,6 @@ fn increase_volume_increases_output() {
     assert!(total1 > total2);
 }
 
-// - The frequency affects the size of the waves (inversely)
 #[test]
 fn increase_the_frequency_decrease_number_peaks() {
     let sound1 = run_gb_with_settings(1, 1, 0, 0);
