@@ -1,4 +1,4 @@
-use super::alu::ALU;
+use super::audio::ALU;
 use super::cpu::CPU;
 use super::memory_adapter::MemoryAdapter;
 use super::memory_labels::Labels;
@@ -115,7 +115,12 @@ impl<'a> Gameboy<'a> {
     }
 
     #[allow(dead_code)]
-    pub fn tick(&mut self, dt: f64, breakpoints: &Vec<u16>) -> TickResult {
+    pub fn tick(&mut self, dt: f64) -> TickResult {
+        self.tick_with_breaks(dt, &vec![])
+    }
+
+    #[allow(dead_code)]
+    pub fn tick_with_breaks(&mut self, dt: f64, breakpoints: &Vec<u16>) -> TickResult {
         let cycles_to_use = (dt * 4194304f64) as u32;
         let mut total_cycles_used = 0;
 

@@ -54,6 +54,12 @@ https://realboyemulator.wordpress.com/2013/01/03/a-look-at-the-game-boy-bootstra
 
 http://bgb.bircd.org/pandocs.htm
 
+### Sound emulation
+
+https://gbdev.gg8.se/wiki/articles/Gameboy_sound_hardware
+https://www.reddit.com/r/EmuDev/comments/5gkwi5/gb_apu_sound_emulation/
+https://aselker.github.io/gameboy-sound-chip/
+
 ## Todo
 
 - [x] Clean up debug cli
@@ -65,7 +71,7 @@ http://bgb.bircd.org/pandocs.htm
 - [x] Remove cowboy breakpoint code
 - [x] Add proper debug breakpoints
 - [x] Get screen scrolling working
-- [ ] Basic sound support
+- [x] Basic sound support
 - [ ] Benchmark each opcode to make sure they take less time than they would on a real GB
 - [ ] Fix callback system within opcodes
 - [ ] Continue adding support for bootloader commands.

@@ -1,8 +1,9 @@
 use cpal::traits::{DeviceTrait, EventLoopTrait, HostTrait};
 use piston_window::*;
-use std::env;
 use std::sync::mpsc::channel;
 use std::thread;
+use std::{env, sync::mpsc::Receiver};
+use thread::JoinHandle;
 
 extern crate image as img;
 
@@ -78,7 +79,7 @@ impl<'a> App<'a> {
         if self.is_debug {
             self.gb.step_once();
         } else {
-            let stop_reason = self.gb.tick(args.dt, &self.breakpoints);
+            let stop_reason = self.gb.tick_with_breaks(args.dt, &self.breakpoints);
 
             if stop_reason == TickResult::HitBreakpoint {
                 self.is_debug = true;
@@ -87,17 +88,14 @@ impl<'a> App<'a> {
     }
 }
 
-fn main() {
-    let gb_screen_height = SCREEN_HEIGHT;
-    let gb_screen_width = SCREEN_WIDTH;
-
+fn build_audio_event_loop() -> impl EventLoopTrait {
     // Create an audio device & event loop
     let host = cpal::default_host();
     let event_loop = host.event_loop();
     let device = host.default_output_device().unwrap();
     let format_base = device.default_output_format().unwrap();
     let format = cpal::Format {
-        channels: 2,
+        channels: 1,
         sample_rate: format_base.sample_rate,
         data_type: cpal::SampleFormat::F32,
     };
@@ -107,9 +105,13 @@ fn main() {
         .play_stream(stream_id)
         .expect("failed to play_stream");
 
-    // Create a channel which takes audio data
-    let (sender, receiver) = channel::<i16>();
+    event_loop
+}
 
+fn create_audio_thread<T>(event_loop: T, receiver: Receiver<i16>) -> JoinHandle<()>
+where
+    T: EventLoopTrait + Send + Sync + 'static,
+{
     // Create thread containing channel receiver and event loop.
     thread::spawn(move || {
         // Thread runs the event loop which pulls from the channel
@@ -142,7 +144,15 @@ fn main() {
                 _ => (),
             }
         });
-    });
+    })
+}
+
+fn main() {
+    let gb_screen_height = SCREEN_HEIGHT;
+    let gb_screen_width = SCREEN_WIDTH;
+
+    // Create a channel which takes audio data
+    let (sender, receiver) = channel::<i16>();
 
     let audio_callback = move |val| {
         sender.send(val).unwrap();
@@ -157,12 +167,21 @@ fn main() {
 
     let args: Vec<String> = env::args().collect();
 
+    let is_debug = args.contains(&String::from("-d"));
+
     let mut app = App {
         texture_context: window.create_texture_context(),
         gb: Gameboy::new_with_bootloader(audio_callback),
-        is_debug: args.contains(&String::from("-d")),
+        is_debug,
         breakpoints: vec![],
     };
+
+    let _join_handle: JoinHandle<()>;
+
+    if !is_debug {
+        let event_loop = build_audio_event_loop();
+        _join_handle = create_audio_thread(event_loop, receiver);
+    }
 
     let mut events = Events::new(EventSettings::new());
     while let Some(e) = events.next(&mut window) {

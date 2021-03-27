@@ -6,7 +6,7 @@ mod widgets;
 use crate::Gameboy;
 use layout::Layout;
 use std::io;
-use widgets::{FlagsWidget, MemoryWidget, OpCodeWidget, RegistersWidget};
+use widgets::{AudioWidget, Channel, FlagsWidget, MemoryWidget, OpCodeWidget, RegistersWidget};
 
 pub enum DebugControls {
     Tick,
@@ -33,6 +33,7 @@ pub fn update(gb: &Gameboy, breakpoints: &mut Vec<u16>) -> DebugControls {
             "h" => print_help(),
             "m" => request_address(gb),
             "o" => default_view(gb),
+            "a" => audio_view(gb),
             _ => return DebugControls::Tick,
         }
     }
@@ -46,6 +47,19 @@ fn default_view(gb: &Gameboy) {
     layout.add_widget(Box::new(opcodes), 0);
     layout.add_widget(Box::new(registers), 1);
     layout.add_widget(Box::new(flags), 1);
+    layout.draw();
+}
+
+fn audio_view(gb: &Gameboy) {
+    let channel1 = AudioWidget::new(&gb, Channel::One);
+    let channel2 = AudioWidget::new(&gb, Channel::Two);
+    let channel3 = AudioWidget::new(&gb, Channel::Three);
+    let channel4 = AudioWidget::new(&gb, Channel::Four);
+    let mut layout = Layout::new();
+    layout.add_widget(Box::new(channel1), 0);
+    layout.add_widget(Box::new(channel2), 1);
+    layout.add_widget(Box::new(channel3), 0);
+    layout.add_widget(Box::new(channel4), 1);
     layout.draw();
 }
 
@@ -107,5 +121,6 @@ fn print_help() {
     println!("c => continue");
     println!("b => breakpoint menu");
     println!("o => re-print opcodes");
+    println!("a => audio");
     println!("h => help");
 }
