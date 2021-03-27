@@ -4,6 +4,7 @@
 /.idea
 *.GB
 
+build
 elm-stuff
-docs/js
-docs/src/SupportedCodes.elm
+docs/opcodes/js
+docs/opcodes/src/SupportedCodes.elm
