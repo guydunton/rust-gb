@@ -22,7 +22,7 @@ cargo build
 cargo build --release
 ```
 
-If the build fails on Linux due to missing dependencies see [below](#Building-on-Linux)
+If the build fails on Linux due to missing dependencies see [below](#Building-on-Linux-penguin)
 
 ## Run :running:
 
@@ -65,11 +65,10 @@ For helpful resources I've used while developing click [here](docs/Resources.md)
 
 To build on Linux (tested on ubuntu) you must install some extra dependencies for the sound library. To install the dependencies run the following command for your distro:
 
-| Distribution | Command |
-| ---- | ---- |
-| Debian | `apt install -y libasound2-dev libudev-dev pkg-config` |
-| Redhat | `yum install alsa-lib-devel` |
-
+| Distribution | Command                                                |
+| ------------ | ------------------------------------------------------ |
+| Debian       | `apt install -y libasound2-dev libudev-dev pkg-config` |
+| Redhat       | `yum install alsa-lib-devel`                           |
 
 ## Todo :clipboard:
 
