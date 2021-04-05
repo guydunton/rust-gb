@@ -2,7 +2,6 @@
 mod load8_test {
     use crate::gameboy::Gameboy;
     use crate::gameboy::{RegisterLabel16, RegisterLabel8};
-    use rust_catch::tests;
 
     #[test]
     fn load8_instructions() {
@@ -77,78 +76,79 @@ mod load8_test {
         }
     }
 
-    tests! {
-        test("LD8 HL plus A") {
-            // LD (HL+), A
-            let mut gb = Gameboy::new(vec![0x22, 0x00]);
-            gb.set_register_16(RegisterLabel16::HL, 0x0001);
-            gb.set_register_8(RegisterLabel8::A, 0x12);
+    #[test]
+    fn ld8_hl_plus_a() {
+        // LD (HL+), A
+        let mut gb = Gameboy::new(vec![0x22, 0x00]);
+        gb.set_register_16(RegisterLabel16::HL, 0x0001);
+        gb.set_register_8(RegisterLabel8::A, 0x12);
 
-            let cycles = gb.step_once();
+        let cycles = gb.step_once();
 
-            assert_eq!(cycles, 8);
-            assert_eq!(gb.get_register_16(RegisterLabel16::HL), 0x02);
-            assert_eq!(gb.get_memory_at(0x01), 0x12);
-            assert_eq!(gb.get_register_16(RegisterLabel16::ProgramCounter), 0x01);
+        assert_eq!(cycles, 8);
+        assert_eq!(gb.get_register_16(RegisterLabel16::HL), 0x02);
+        assert_eq!(gb.get_memory_at(0x01), 0x12);
+        assert_eq!(gb.get_register_16(RegisterLabel16::ProgramCounter), 0x01);
+    }
+
+    #[test]
+    fn ldh_a8_a() {
+        // LDH (a8) A
+        let mut gb = Gameboy::new(vec![0xE0, 0x01]);
+        gb.set_register_8(RegisterLabel8::A, 0x02);
+
+        let cycles = gb.step_once();
+
+        assert_eq!(gb.get_memory_at(0xFF01) as usize, 0x02);
+        assert_eq!(cycles, 12);
+        assert_eq!(gb.get_register_16(RegisterLabel16::ProgramCounter), 0x02);
+    }
+
+    #[test]
+    fn ldh_a_a8() {
+        let mut gb = Gameboy::new(vec![0xF0, 0x02]);
+        gb.set_memory_at(0xFF02, 0x34);
+
+        let cycles = gb.step_once();
+
+        println!("A register: {:?}", gb.get_register_8(RegisterLabel8::A));
+
+        assert_eq!(gb.get_register_8(RegisterLabel8::A), 0x34);
+        assert_eq!(cycles, 12);
+        assert_eq!(gb.get_register_16(RegisterLabel16::ProgramCounter), 0x02);
+    }
+
+    #[test]
+    fn generic_ld8_r8_r8_test() {
+        let instructions = vec![
+            (0x7B, RegisterLabel8::A, RegisterLabel8::E),
+            (0x67, RegisterLabel8::H, RegisterLabel8::A),
+            (0x57, RegisterLabel8::D, RegisterLabel8::A),
+            (0x7C, RegisterLabel8::A, RegisterLabel8::H),
+        ];
+
+        for &(code, dest, src) in instructions.iter() {
+            let mut gb = Gameboy::new(vec![code]);
+
+            gb.set_register_8(src, 0x04);
+            gb.set_register_8(dest, 0x01);
+
+            let _ = gb.step_once();
+
+            assert_eq!(gb.get_register_8(RegisterLabel8::A), 0x04);
         }
+    }
 
-        test("LDH a8 A") {
+    #[test]
+    fn ld8_into_address_address() {
+        let mut gb = Gameboy::new(vec![0xEA, 0x10, 0x99]); // LD8 ($9910), A
 
-            // LDH (a8) A
-            let mut gb = Gameboy::new(vec![0xE0, 0x01]);
-            gb.set_register_8(RegisterLabel8::A, 0x02);
+        gb.set_register_8(RegisterLabel8::A, 0xFF);
 
-            let cycles = gb.step_once();
+        let cycles = gb.step_once();
 
-            assert_eq!(gb.get_memory_at(0xFF01) as usize, 0x02);
-            assert_eq!(cycles, 12);
-            assert_eq!(gb.get_register_16(RegisterLabel16::ProgramCounter), 0x02);
-        }
-
-        test("LDH A a8") {
-            let mut gb = Gameboy::new(vec![0xF0, 0x02]);
-            gb.set_memory_at(0xFF02, 0x34);
-
-            let cycles = gb.step_once();
-
-            println!("A register: {:?}", gb.get_register_8(RegisterLabel8::A));
-
-            assert_eq!(gb.get_register_8(RegisterLabel8::A), 0x34);
-            assert_eq!(cycles, 12);
-            assert_eq!(gb.get_register_16(RegisterLabel16::ProgramCounter), 0x02);
-        }
-
-        test("Generic LD8 r8 r8 test") {
-
-            let instructions = vec![
-                (0x7B, RegisterLabel8::A, RegisterLabel8::E),
-                (0x67, RegisterLabel8::H, RegisterLabel8::A),
-                (0x57, RegisterLabel8::D, RegisterLabel8::A),
-                (0x7C, RegisterLabel8::A, RegisterLabel8::H)
-            ];
-
-            for &(code, dest, src) in instructions.iter() {
-                let mut gb= Gameboy::new(vec![code]);
-
-                gb.set_register_8(src, 0x04);
-                gb.set_register_8(dest, 0x01);
-
-                let _ = gb.step_once();
-
-                assert_eq!(gb.get_register_8(RegisterLabel8::A), 0x04);
-            }
-        }
-
-        test("LD8 into address address") {
-            let mut gb = Gameboy::new(vec![0xEA, 0x10, 0x99]); // LD8 ($9910), A
-
-            gb.set_register_8(RegisterLabel8::A, 0xFF);
-
-            let cycles = gb.step_once();
-
-            assert_eq!(cycles, 16);
-            assert_eq!(gb.get_register_16(RegisterLabel16::ProgramCounter), 0x03);
-            assert_eq!(gb.get_memory_at(0x9910), 0xFF);
-        }
+        assert_eq!(cycles, 16);
+        assert_eq!(gb.get_register_16(RegisterLabel16::ProgramCounter), 0x03);
+        assert_eq!(gb.get_memory_at(0x9910), 0xFF);
     }
 }
