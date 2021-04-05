@@ -1,4 +1,7 @@
-use cpal::traits::{DeviceTrait, EventLoopTrait, HostTrait};
+use cpal::{
+    traits::{DeviceTrait, HostTrait, StreamTrait},
+    SampleRate, StreamConfig,
+};
 use piston_window::*;
 use std::sync::mpsc::channel;
 use std::thread;
@@ -88,63 +91,44 @@ impl<'a> App<'a> {
     }
 }
 
-fn build_audio_event_loop() -> impl EventLoopTrait {
+fn build_audio_event_loop() -> impl DeviceTrait {
     // Create an audio device & event loop
     let host = cpal::default_host();
-    let event_loop = host.event_loop();
     let device = host.default_output_device().unwrap();
-    let format_base = device.default_output_format().unwrap();
-    let format = cpal::Format {
-        channels: 1,
-        sample_rate: format_base.sample_rate,
-        data_type: cpal::SampleFormat::F32,
-    };
 
-    let stream_id = event_loop.build_output_stream(&device, &format).unwrap();
-    event_loop
-        .play_stream(stream_id)
-        .expect("failed to play_stream");
-
-    event_loop
+    device
 }
 
-fn create_audio_thread<T>(event_loop: T, receiver: Receiver<i16>) -> JoinHandle<()>
+fn create_audio_thread<T>(device: T, receiver: Receiver<i16>) -> impl StreamTrait
 where
-    T: EventLoopTrait + Send + Sync + 'static,
+    T: DeviceTrait + Send + Sync + 'static,
 {
     // Create thread containing channel receiver and event loop.
-    thread::spawn(move || {
-        // Thread runs the event loop which pulls from the channel
-        event_loop.run(move |stream_id2, stream_result| {
-            let stream_data = match stream_result {
-                Ok(data) => data,
-                Err(err) => {
-                    eprintln!("an error occurred on stream {:?}: {}", stream_id2, err);
-                    return;
-                }
-            };
-
-            use cpal::{StreamData, UnknownTypeOutputBuffer};
-            match stream_data {
-                StreamData::Output {
-                    buffer: UnknownTypeOutputBuffer::F32(mut buffer),
-                } => {
-                    for elem in buffer.iter_mut() {
-                        // Keep pulling values until no more are left. Then add 0s
-                        match receiver.recv() {
-                            Ok(data) => {
-                                *elem = data as f32 / 100.0;
-                            }
-                            Err(_) => {
-                                *elem = 0.0;
-                            }
+    let my_config = StreamConfig {
+        channels: 1,
+        buffer_size: cpal::BufferSize::Default,
+        sample_rate: SampleRate { 0: 44100 },
+    };
+    let stream = device
+        .build_output_stream(
+            &my_config,
+            move |data, _| {
+                for elem in data.iter_mut() {
+                    // Keep pulling values until no more are left. Then add 0s
+                    match receiver.recv() {
+                        Ok(data) => {
+                            *elem = data as f32 / 100.0;
+                        }
+                        Err(_) => {
+                            *elem = 0.0;
                         }
                     }
                 }
-                _ => (),
-            }
-        });
-    })
+            },
+            move |_err| {},
+        )
+        .unwrap();
+    stream
 }
 
 fn main() {
@@ -154,8 +138,12 @@ fn main() {
     // Create a channel which takes audio data
     let (sender, receiver) = channel::<i16>();
 
-    let audio_callback = move |val| {
-        sender.send(val).unwrap();
+    let audio_callback = move |val| match sender.send(val) {
+        Ok(_) => {}
+        Err(err) => {
+            println!("Error occurred {}", err);
+            panic!("Something went wrong");
+        }
     };
 
     let mut window: PistonWindow =
@@ -178,9 +166,10 @@ fn main() {
 
     let _join_handle: JoinHandle<()>;
 
+    let _stream;
     if !is_debug {
-        let event_loop = build_audio_event_loop();
-        _join_handle = create_audio_thread(event_loop, receiver);
+        let device = build_audio_event_loop();
+        _stream = create_audio_thread(device, receiver);
     }
 
     let mut events = Events::new(EventSettings::new());
