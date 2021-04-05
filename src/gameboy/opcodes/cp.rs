@@ -5,7 +5,7 @@ impl OpCode {
     pub fn run_cp<T: ReadWriteRegister>(
         &self,
         cpu: &mut dyn ReadWriteRegister,
-        _memory: &mut Vec<u8>,
+        memory: &mut Vec<u8>,
     ) -> u32 {
         // Clear all the flags
         cpu.write_8_bits(RegisterLabel8::F, 0);
@@ -16,6 +16,10 @@ impl OpCode {
         // Get the argument
         let arg_val = match self.args[0] {
             Argument::SmallValue(val) => val,
+            Argument::RegisterIndirect(register) => {
+                let addr = cpu.read_16_bits(register);
+                memory[addr as usize]
+            }
             _ => {
                 panic!("Unknown argument in CP instruction");
             }

@@ -35,6 +35,7 @@ lazy_static! {
         (0x7C, "LD8 A H"),
         (0x90, "SUB B"),
         (0xAF, "XOR A"),
+        (0xBE, "CP (HL)"),
         (0xC1, "POP BC"),
         (0xC5, "PUSH BC"),
         (0xC9, "RET"),
