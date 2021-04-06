@@ -4,9 +4,7 @@ use cpal::{
 };
 use piston_window::*;
 use std::sync::mpsc::channel;
-use std::thread;
 use std::{env, sync::mpsc::Receiver};
-use thread::JoinHandle;
 
 extern crate image as img;
 
@@ -103,7 +101,6 @@ fn create_audio_thread<T>(device: T, receiver: Receiver<i16>) -> impl StreamTrai
 where
     T: DeviceTrait + Send + Sync + 'static,
 {
-    // Create thread containing channel receiver and event loop.
     let my_config = StreamConfig {
         channels: 1,
         buffer_size: cpal::BufferSize::Default,
@@ -164,12 +161,11 @@ fn main() {
         breakpoints: vec![],
     };
 
-    let _join_handle: JoinHandle<()>;
-
-    let _stream;
+    let stream;
     if !is_debug {
         let device = build_audio_event_loop();
-        _stream = create_audio_thread(device, receiver);
+        stream = create_audio_thread(device, receiver);
+        stream.play().unwrap();
     }
 
     let mut events = Events::new(EventSettings::new());

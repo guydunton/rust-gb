@@ -1,4 +1,5 @@
 lazy_static! {
+    // This comment won't be needed once the vector gets long enough
     //#[rustfmt_skip]
     pub static ref CB_DICTIONARY: Vec<(u8, Vec<&'static str>)> =
         vec![

@@ -6,10 +6,10 @@ edition = "2018"
 
 [dependencies]
 piston_window = "0.118"
-rand = "0.8"
 image = "0.23.10"
-lazy_static = "1.4.0"
 cpal = "0.13"
+lazy_static = "1.4.0"
+rand = "0.8"
 
 [profile.release]
 debug = true
