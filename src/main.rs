@@ -1,10 +1,10 @@
+use clap::Arg;
 use cpal::{
     traits::{DeviceTrait, HostTrait, StreamTrait},
     SampleRate, StreamConfig,
 };
 use piston_window::*;
-use std::sync::mpsc::channel;
-use std::{env, sync::mpsc::Receiver};
+use std::sync::mpsc::{channel, Receiver};
 
 extern crate image as img;
 
@@ -132,6 +132,16 @@ fn main() {
     let gb_screen_height = SCREEN_HEIGHT;
     let gb_screen_width = SCREEN_WIDTH;
 
+    let matches = clap::App::new("RustGB")
+        .arg(
+            Arg::with_name("debug")
+                .short("d")
+                .long("debug")
+                .help("Start in debug mode")
+                .required(false),
+        )
+        .get_matches();
+
     // Create a channel which takes audio data
     let (sender, receiver) = channel::<i16>();
 
@@ -150,9 +160,7 @@ fn main() {
             .build()
             .unwrap();
 
-    let args: Vec<String> = env::args().collect();
-
-    let is_debug = args.contains(&String::from("-d"));
+    let is_debug = matches.is_present("debug");
 
     let mut app = App {
         texture_context: window.create_texture_context(),

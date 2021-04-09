@@ -10,6 +10,7 @@ image = "0.23.10"
 cpal = "0.13"
 lazy_static = "1.4.0"
 rand = "0.8"
+clap = "2.33.3"
 
 [profile.release]
 debug = true
