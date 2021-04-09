@@ -1,3 +1,4 @@
+mod add;
 mod argument;
 mod bit;
 mod call;
@@ -134,6 +135,9 @@ impl OpCode {
             }
             Category::POP => {
                 cycles += self.run_pop::<T>(cpu, memory.get_memory());
+            }
+            Category::ADD => {
+                cycles += self.run_add::<T>(cpu, memory.get_memory());
             }
             Category::INC => {
                 cycles += self.run_inc::<T>(cpu, memory.get_memory());

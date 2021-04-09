@@ -12,6 +12,7 @@ mod register;
 mod screen;
 
 // Include the gameboy test suite
+#[cfg(test)]
 mod tests;
 
 // Expose Gameboy, flags, opcodes and registers
