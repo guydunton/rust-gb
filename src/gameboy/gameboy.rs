@@ -7,10 +7,7 @@ use super::opcodes::decode_instruction;
 use super::ppu::PPU;
 use super::read_write_register::ReadWriteRegister;
 use super::screen::ScreenColor;
-use super::OpCode;
-use super::RegisterLabel16;
-use super::RegisterLabel8;
-use super::{read_flag, write_flag, Flags};
+use super::{read_flag, write_flag, Flags, OpCode, RegisterLabel16, RegisterLabel8};
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum TickResult {
@@ -23,10 +20,11 @@ pub struct Gameboy<'a> {
     ppu: PPU,
     alu: ALU<'a>,
     memory: Vec<u8>,
+    rom_header_data: Vec<u8>,
 }
 
 impl<'a> Gameboy<'a> {
-    pub fn new_with_bootloader<F>(audio_callback: F) -> Gameboy<'a>
+    pub fn new_with_bootloader<F>(audio_callback: F, game_data: &[u8]) -> Gameboy<'a>
     where
         F: FnMut(i16) + 'a,
     {
@@ -65,19 +63,24 @@ impl<'a> Gameboy<'a> {
             0xE0, 0x50,
         ];
 
-        let fake_header_data = vec![
-            0x00, 0x00, 0x00, 0x00, 0xCE, 0xED, 0x66, 0x66, 0xCC, 0x0D, 0x00, 0x0B, 0x03, 0x73,
-            0x00, 0x83, 0x00, 0x0C, 0x00, 0x0D, 0x00, 0x08, 0x11, 0x1F, 0x88, 0x89, 0x00, 0x0E,
-            0xDC, 0xCC, 0x6E, 0xE6, 0xDD, 0xDD, 0xD9, 0x99, 0xBB, 0xBB, 0x67, 0x63, 0x6E, 0x0E,
-            0xEC, 0xCC, 0xDD, 0xDC, 0x99, 0x9F, 0xBB, 0xB9, 0x33, 0x3E,
-        ];
+        if game_data.len() <= bootloader.len() {
+            panic!("Game code not larger than bootloader");
+        }
 
-        let mut data = vec![0x0; bootloader.len() + fake_header_data.len()];
-        data[..bootloader.len()].clone_from_slice(&bootloader[..]);
-        data[bootloader.len()..(bootloader.len() + fake_header_data.len())]
-            .clone_from_slice(&fake_header_data[..]);
+        let mut memory = vec![0x0; 0xFFFF];
+        memory[..game_data.len()].clone_from_slice(&game_data[..]);
+        memory[..bootloader.len()].clone_from_slice(&bootloader[..]);
 
-        Gameboy::new_with_audio(data, audio_callback)
+        let mut rom_header_data = vec![0x0u8; bootloader.len()];
+        rom_header_data[..0xFF].clone_from_slice(&game_data[..0xFF]);
+
+        Gameboy {
+            cpu: CPU::new(),
+            ppu: PPU::new(),
+            alu: ALU::new(audio_callback),
+            memory,
+            rom_header_data,
+        }
     }
 
     /// Construct a new Gameboy.
@@ -95,6 +98,7 @@ impl<'a> Gameboy<'a> {
             ppu: PPU::new(),
             alu: ALU::new(|_| {}),
             memory,
+            rom_header_data: vec![],
         }
     }
 
@@ -111,6 +115,7 @@ impl<'a> Gameboy<'a> {
             ppu: PPU::new(),
             alu: ALU::new(audio_callback),
             memory,
+            rom_header_data: vec![],
         }
     }
 
@@ -206,6 +211,10 @@ impl<'a> Gameboy<'a> {
 
         if address == Labels::BG_PALETTE {
             self.ppu.reset_bg_palette(value);
+        }
+        if address == Labels::BOOTLOADER_DISABLE {
+            // Restore the Cart memory in place of the bootloader
+            self.memory[..0xFF].copy_from_slice(&self.rom_header_data[..0xFF]);
         }
 
         // This hack resets any values in the case of the display being switched off

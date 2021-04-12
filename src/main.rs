@@ -1,11 +1,3 @@
-use clap::Arg;
-use cpal::{
-    traits::{DeviceTrait, HostTrait, StreamTrait},
-    SampleRate, StreamConfig,
-};
-use piston_window::*;
-use std::sync::mpsc::{channel, Receiver};
-
 extern crate image as img;
 
 #[macro_use]
@@ -13,8 +5,16 @@ extern crate lazy_static;
 
 mod debug_cli;
 mod gameboy;
+
 use crate::debug_cli::{update, DebugControls};
 use crate::gameboy::{Gameboy, ScreenColor, TickResult};
+use clap::Arg;
+use cpal::traits::{DeviceTrait, HostTrait, StreamTrait};
+use cpal::{SampleRate, StreamConfig};
+use fs::File;
+use piston_window::*;
+use std::sync::mpsc::{channel, Receiver};
+use std::{fs, io::Read};
 
 fn screen_color_to_color(c: ScreenColor) -> [u8; 4] {
     match c {
@@ -128,6 +128,13 @@ where
     stream
 }
 
+fn load_rom(file_name: &str) -> std::io::Result<Vec<u8>> {
+    let mut rom_file = File::open(file_name)?;
+    let mut rom_data = Vec::new();
+    rom_file.read_to_end(&mut rom_data)?;
+    Ok(rom_data)
+}
+
 fn main() {
     let gb_screen_height = SCREEN_HEIGHT;
     let gb_screen_width = SCREEN_WIDTH;
@@ -139,6 +146,12 @@ fn main() {
                 .long("debug")
                 .help("Start in debug mode")
                 .required(false),
+        )
+        .arg(
+            Arg::with_name("ROM")
+                .required(true)
+                .help("Start with rom")
+                .takes_value(true),
         )
         .get_matches();
 
@@ -162,9 +175,21 @@ fn main() {
 
     let is_debug = matches.is_present("debug");
 
+    // Load the ROM
+    let rom_file_name = matches.value_of("ROM").unwrap();
+    let rom_data = load_rom(rom_file_name);
+
+    let rom_bytes = match rom_data {
+        Ok(data) => data,
+        Err(err) => {
+            println!("Failed to load ROM with error {}", err);
+            return;
+        }
+    };
+
     let mut app = App {
         texture_context: window.create_texture_context(),
-        gb: Gameboy::new_with_bootloader(audio_callback),
+        gb: Gameboy::new_with_bootloader(audio_callback, &rom_bytes),
         is_debug,
         breakpoints: vec![],
     };

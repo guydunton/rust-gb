@@ -257,3 +257,13 @@ fn get_memory_slice_at_works() {
 
     assert_eq!(gb.get_memory_slice_at(0x00, 0x02), [0x01, 0x02]);
 }
+
+#[test]
+fn set_ff50_to_disable_bootloader() {
+    let audio = |_| {};
+    let mut gb = Gameboy::new_with_bootloader(audio, &vec![0x01; 32_000]);
+
+    assert_ne!(gb.get_memory_at(0x00), 0x01);
+    gb.set_memory_at(0xFF50, 1);
+    assert_eq!(gb.get_memory_at(0x00), 0x01);
+}
