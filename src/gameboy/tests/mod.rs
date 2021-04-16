@@ -3,6 +3,7 @@ mod alu_test;
 mod cp_test;
 mod dec_test;
 mod inc_test;
+mod interrupts;
 mod jump_test;
 mod load16_test;
 mod load8_test;

@@ -20,9 +20,11 @@ This site explains how the bootloader works.
 
 https://realboyemulator.wordpress.com/2013/01/03/a-look-at-the-game-boy-bootstrap-let-the-fun-begin/
 
-## Hardware interrupts
+## Hardware specs
 
 http://bgb.bircd.org/pandocs.htm
+https://gbdev.gg8.se/wiki/articles/The_Cartridge_Header
+
 
 ## Sound emulation
 
@@ -33,5 +35,7 @@ The following pages go some way to explaining it.
 - https://gbdev.gg8.se/wiki/articles/Gameboy_sound_hardware
 - https://www.reddit.com/r/EmuDev/comments/5gkwi5/gb_apu_sound_emulation/
 - https://aselker.github.io/gameboy-sound-chip/
+
+I wrote up how I implemented the bootstrap sounds on my website: https://www.guydunton.com/articles/gameboy-first-sounds/
 
 
