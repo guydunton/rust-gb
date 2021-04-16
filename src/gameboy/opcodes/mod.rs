@@ -121,7 +121,7 @@ impl OpCode {
             Category::BIT => {
                 cycles += self.run_bit::<T>(cpu, memory.get_memory());
             }
-            Category::JR => {
+            Category::JP => {
                 cycles += self.run_jmp::<T>(cpu, memory.get_memory());
             }
             Category::CALL => {

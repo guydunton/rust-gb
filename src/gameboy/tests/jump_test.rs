@@ -7,8 +7,7 @@ mod jump_test {
         let instructions = vec![(0x20, false), (0x28, true)];
 
         for (opcode, condition_val) in instructions {
-            // JR NZ -5
-            let mut gb = Gameboy::new(vec![0x00, 0x00, 0x00, opcode, 0xFB]);
+            let mut gb = Gameboy::new(vec![0x00, 0x00, 0x00, opcode, 0xFB]); // JR NZ -5
 
             {
                 gb.set_register_16(RegisterLabel16::ProgramCounter, 0x0003);
@@ -72,5 +71,14 @@ mod jump_test {
 
         assert_eq!(cycles, 12);
         assert_eq!(gb.get_register_16(RegisterLabel16::ProgramCounter), 0x07);
+    }
+
+    #[test]
+    fn jp_a16_instruction_jumps_to_location() {
+        let mut gb = Gameboy::new(vec![0xC3, 0x01, 0x05]); // JP $0501
+        let cycles = gb.step_once();
+
+        assert_eq!(gb.get_register_16(RegisterLabel16::ProgramCounter), 0x501);
+        assert_eq!(cycles, 16);
     }
 }

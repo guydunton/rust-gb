@@ -43,16 +43,20 @@ impl OpCode {
 
                     cycles += 4;
                 }
-                return cycles;
             }
             Argument::JumpDistance(distance) => {
                 move_program_counter::<T>(cpu, distance);
                 cycles += 4;
-                return cycles;
+            }
+            Argument::Label(location) => {
+                cpu.write_16_bits(RegisterLabel16::ProgramCounter, location);
+                cycles += 8;
             }
             _ => {
                 panic!("Invalid argument for jump statement {:?}", self.args[0]);
             }
         };
+
+        cycles
     }
 }
