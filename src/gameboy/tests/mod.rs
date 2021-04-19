@@ -28,6 +28,17 @@ use crate::gameboy::flags_register::*;
 use crate::gameboy::register::{RegisterLabel16, RegisterLabel8};
 
 #[test]
+fn i_can_access_all_parts_of_memory() {
+    let mut gb = Gameboy::new(vec![]);
+
+    gb.set_memory_at(0x00, 1);
+    gb.set_memory_at(0xFFFF, 2);
+
+    assert_eq!(gb.get_memory_at(0x00), 1);
+    assert_eq!(gb.get_memory_at(0xFFFF), 2);
+}
+
+#[test]
 fn xor_instruction() {
     let mut gb = Gameboy::new(vec![0xAF]);
 

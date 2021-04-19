@@ -67,7 +67,7 @@ impl<'a> Gameboy<'a> {
             panic!("Game code not larger than bootloader");
         }
 
-        let mut memory = vec![0x0; 0xFFFF];
+        let mut memory = vec![0x0; 0xFFFF + 1];
         memory[..game_data.len()].clone_from_slice(&game_data[..]);
         memory[..bootloader.len()].clone_from_slice(&bootloader[..]);
 
@@ -90,7 +90,7 @@ impl<'a> Gameboy<'a> {
     /// set to zero.
     #[allow(dead_code)]
     pub fn new(data: Vec<u8>) -> Gameboy<'a> {
-        let mut memory = vec![0; 0xFFFF];
+        let mut memory = vec![0; 0xFFFF + 1];
         memory[..data.len()].clone_from_slice(&data[..]);
 
         Gameboy {
@@ -107,7 +107,7 @@ impl<'a> Gameboy<'a> {
     where
         F: FnMut(i16) + 'b,
     {
-        let mut memory = vec![0; 0xFFFF];
+        let mut memory = vec![0; 0xFFFF + 1];
         memory[..data.len()].clone_from_slice(&data[..]);
 
         Gameboy {

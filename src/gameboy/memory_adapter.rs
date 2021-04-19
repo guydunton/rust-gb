@@ -9,7 +9,7 @@ impl<'a> MemoryAdapter<'a> {
     pub fn new(memory: &mut Vec<u8>) -> MemoryAdapter {
         MemoryAdapter {
             memory,
-            callback_conditions: vec![]
+            callback_conditions: vec![],
         }
     }
 
@@ -44,8 +44,10 @@ fn we_can_subscribe_to_memory_change_events() {
 
     {
         let mut adapter = MemoryAdapter::new(&mut memory);
-        adapter.add_callback(0x01, |_new_val| { add_01_changed = true; });
-        adapter.add_callback(0x02, |_new_val| { add_02_changed = true });
+        adapter.add_callback(0x01, |_new_val| {
+            add_01_changed = true;
+        });
+        adapter.add_callback(0x02, |_new_val| add_02_changed = true);
         adapter.set_memory_at(0x01, 0);
     }
 
