@@ -19,6 +19,9 @@ impl OpCode {
                     memory.get_memory_at(0xFF00 + offset as u16)
                 }
                 Argument::SmallValue(val) => val,
+                Argument::RegisterIndirectInc(register) => {
+                    memory.get_memory_at(cpu.read_16_bits(register))
+                }
                 _ => panic!(
                     "Command does not support source argument {:?}",
                     self.args[1]
@@ -56,16 +59,18 @@ impl OpCode {
             dest(source);
         }
 
-        match self.args[0] {
-            Argument::RegisterIndirectDec(register) => {
-                let new_val = cpu.read_16_bits(register) - 1;
-                cpu.write_16_bits(register, new_val);
+        for arg in self.args {
+            match arg {
+                Argument::RegisterIndirectDec(register) => {
+                    let new_val = cpu.read_16_bits(register) - 1;
+                    cpu.write_16_bits(register, new_val);
+                }
+                Argument::RegisterIndirectInc(register) => {
+                    let new_val = cpu.read_16_bits(register) + 1;
+                    cpu.write_16_bits(register, new_val);
+                }
+                _ => {} // Do nothing
             }
-            Argument::RegisterIndirectInc(register) => {
-                let new_val = cpu.read_16_bits(register) + 1;
-                cpu.write_16_bits(register, new_val);
-            }
-            _ => {} // Do nothing
         }
 
         // Get the cycle cost of each argument + the base for the command
