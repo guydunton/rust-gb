@@ -176,4 +176,15 @@ mod load8_test {
         assert_eq!(gb.get_register_16(RegisterLabel16::ProgramCounter), 0x01);
         assert_eq!(gb.get_register_8(RegisterLabel8::A), 0x18);
     }
+
+    #[test]
+    fn ld8_hl_d8() {
+        let mut gb = Gameboy::new(vec![0x36, 0x12]);
+        gb.set_register_16(RegisterLabel16::HL, 0xFF15);
+        let cycles = gb.step_once();
+
+        assert_eq!(cycles, 12);
+        assert_eq!(gb.get_register_16(RegisterLabel16::ProgramCounter), 0x02);
+        assert_eq!(gb.get_memory_at(0xFF15), 0x12);
+    }
 }

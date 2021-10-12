@@ -25,6 +25,7 @@ lazy_static! {
         (0x2E, "LD8 L d8"),
         (0x31, "LD16 SP d16"),
         (0x32, "LD8 (HL-) A"),
+        (0x36, "LD8 (HL) d8"),
         (0x3D, "DEC A"),
         (0x3E, "LD8 A d8"),
         (0x4F, "LD8 C A"),
