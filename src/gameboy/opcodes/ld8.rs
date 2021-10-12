@@ -81,6 +81,7 @@ fn get_argument_cycles(argument: Argument) -> u32 {
         Argument::RegisterIndirectInc(_) => 4,
         Argument::HighOffsetConstant(_) => 8,
         Argument::HighOffsetRegister(_) => 4,
+        Argument::SmallValue(_) => 4,
         _ => 0,
     }
 }
