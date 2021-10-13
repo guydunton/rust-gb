@@ -74,4 +74,23 @@ mod dec_test {
 
         assert_eq!(gb.get_register_8(RegisterLabel8::D), 0xFF);
     }
+
+    #[test]
+    fn dec_also_works_with_16_bit_registers() {
+        let instructions = vec![(0x0Bu8, RegisterLabel16::BC)];
+
+        for (opcode, register) in instructions {
+            let mut gb = Gameboy::new(vec![opcode]);
+            gb.set_register_16(register, 6);
+
+            let cycles = gb.step_once();
+
+            // The opcode needs to be 1 byte & take 4 cycles
+            assert_eq!(gb.get_register_16(RegisterLabel16::ProgramCounter), 0x1);
+            assert_eq!(cycles, 8);
+
+            // The register needs to be decremented
+            assert_eq!(gb.get_register_16(register), 5);
+        }
+    }
 }

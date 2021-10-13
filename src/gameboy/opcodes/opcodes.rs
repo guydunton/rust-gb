@@ -1,9 +1,11 @@
 lazy_static! {
     pub static ref DICTIONARY: Vec<(u8, Vec<&'static str>)> = vec![
         (0x00, "NOP"),
+        (0x01, "LD16 BC d16"),
         (0x04, "INC B"),
         (0x05, "DEC B"),
         (0x06, "LD8 B d8"),
+        (0x0B, "DEC BC"),
         (0x0C, "INC C"),
         (0x0D, "DEC C"),
         (0x0E, "LD8 C d8"),
