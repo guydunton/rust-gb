@@ -32,4 +32,12 @@ mod load16_test {
         assert_eq!(gb.get_register_16(RegisterLabel16::ProgramCounter), 0x0003);
         assert_eq!(cycles, 12);
     }
+
+    #[test]
+    fn ld_bc_d16() {
+        let (gb, cycles) = load16_instructions(0x01);
+        assert_eq!(gb.get_register_16(RegisterLabel16::BC), 0xFFFE);
+        assert_eq!(gb.get_register_16(RegisterLabel16::ProgramCounter), 0x0003);
+        assert_eq!(cycles, 12);
+    }
 }
