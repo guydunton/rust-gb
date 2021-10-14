@@ -1,3 +1,7 @@
+use flags_register::Flags;
+
+use crate::gameboy::flags_register;
+
 use super::super::RegisterLabel8;
 use super::ReadWriteRegister;
 use super::{Argument, OpCode};
@@ -15,6 +19,10 @@ impl OpCode {
                 let new_val = cpu.read_8_bits(RegisterLabel8::A) ^ cpu.read_8_bits(register);
                 cpu.write_8_bits(RegisterLabel8::A, new_val);
                 cpu.write_8_bits(RegisterLabel8::F, 0);
+
+                if new_val == 0 {
+                    flags_register::write_flag::<T>(cpu, Flags::Z, true);
+                }
             }
             _ => panic!("Argument not supported: {:?}", self.args[0]),
         }

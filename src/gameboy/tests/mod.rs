@@ -50,7 +50,10 @@ fn xor_instruction() {
     assert_eq!(gb.get_register_8(RegisterLabel8::A), 0x00);
     assert_eq!(gb.get_register_16(RegisterLabel16::ProgramCounter), 0x01);
 
-    assert_eq!(gb.get_register_8(RegisterLabel8::F), 0x00);
+    assert_eq!(gb.get_flag(Flags::Z), true);
+    assert_eq!(gb.get_flag(Flags::C), false);
+    assert_eq!(gb.get_flag(Flags::H), false);
+    assert_eq!(gb.get_flag(Flags::N), false);
     assert_eq!(cycles, 4);
 }
 
