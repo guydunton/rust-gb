@@ -42,6 +42,7 @@ lazy_static! {
         (0x86, "ADD A (HL)"),
         (0x90, "SUB B"),
         (0xAF, "XOR A"),
+        (0xB1, "OR C"),
         (0xBE, "CP (HL)"),
         (0xC1, "POP BC"),
         (0xC3, "JP a16"),

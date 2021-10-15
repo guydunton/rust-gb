@@ -8,6 +8,7 @@ mod jump_test;
 mod load16_test;
 mod load8_test;
 mod opcode_printer_test;
+mod or;
 mod pop_test;
 mod ppu_test;
 mod ret_test;
