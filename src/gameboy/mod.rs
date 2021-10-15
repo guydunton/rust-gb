@@ -7,7 +7,6 @@ mod memory_labels;
 mod memory_view;
 mod opcodes;
 mod ppu;
-mod read_write_register;
 mod register;
 mod screen;
 

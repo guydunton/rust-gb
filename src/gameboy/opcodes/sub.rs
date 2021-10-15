@@ -1,12 +1,10 @@
+use crate::gameboy::cpu::CPU;
+
 use super::super::{write_flag, Flags, OpCode};
-use super::{Argument, ReadWriteRegister, RegisterLabel8};
+use super::{Argument, RegisterLabel8};
 
 impl OpCode {
-    pub fn run_sub<T: ReadWriteRegister>(
-        &self,
-        cpu: &mut dyn ReadWriteRegister,
-        _memory: &mut Vec<u8>,
-    ) -> u32 {
+    pub fn run_sub(&self, cpu: &mut CPU, _memory: &mut Vec<u8>) -> u32 {
         let cycles = 4;
 
         // Clear all the flags
@@ -25,20 +23,20 @@ impl OpCode {
             cpu.write_8_bits(RegisterLabel8::A, result);
 
             if reg_value == a_reg_value {
-                write_flag::<T>(cpu, Flags::Z, true);
+                write_flag(cpu, Flags::Z, true);
             }
 
             if reg_value > a_reg_value {
-                write_flag::<T>(cpu, Flags::C, true);
+                write_flag(cpu, Flags::C, true);
             }
 
             if a_reg_value >= 0b0001_0000 && result < 0b0001_0000 {
-                write_flag::<T>(cpu, Flags::H, true);
+                write_flag(cpu, Flags::H, true);
             }
         }
 
         // Set the N flag
-        write_flag::<T>(cpu, Flags::N, true);
+        write_flag(cpu, Flags::N, true);
 
         cycles
     }

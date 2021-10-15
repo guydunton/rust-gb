@@ -5,7 +5,6 @@ use super::memory_labels::Labels;
 use super::memory_view::MemoryView;
 use super::opcodes::decode_instruction;
 use super::ppu::PPU;
-use super::read_write_register::ReadWriteRegister;
 use super::screen::ScreenColor;
 use super::{read_flag, write_flag, Flags, OpCode, RegisterLabel16, RegisterLabel8};
 
@@ -158,7 +157,7 @@ impl<'a> Gameboy<'a> {
                     mem_adapter.add_callback(Labels::BG_PALETTE, |new_palette| {
                         ppu_ref.reset_bg_palette(new_palette);
                     });
-                    cycles = op.run::<CPU>(&mut self.cpu, mem_adapter);
+                    cycles = op.run(&mut self.cpu, mem_adapter);
                 }
 
                 // Now run the PPU by the same amount of cycles
@@ -197,12 +196,12 @@ impl<'a> Gameboy<'a> {
 
     #[allow(dead_code)]
     pub fn set_flag(&mut self, flag: Flags, set: bool) {
-        write_flag::<CPU>(&mut self.cpu, flag, set);
+        write_flag(&mut self.cpu, flag, set);
     }
 
     #[allow(dead_code)]
     pub fn get_flag(&self, flag: Flags) -> bool {
-        read_flag::<CPU>(&self.cpu, flag)
+        read_flag(&self.cpu, flag)
     }
 
     #[allow(dead_code)]

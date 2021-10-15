@@ -21,8 +21,8 @@ mod rotate_method;
 mod sub;
 mod xor;
 
+use super::cpu::CPU;
 use super::memory_adapter::MemoryAdapter;
-use super::read_write_register::ReadWriteRegister;
 use super::{RegisterLabel16, RegisterLabel8};
 use argument::{arg_from_str, size_in_bytes, Argument};
 use category::{category_from_str, category_size, Category};
@@ -91,11 +91,7 @@ pub struct OpCode {
 }
 
 impl OpCode {
-    pub fn run<T: ReadWriteRegister>(
-        &self,
-        cpu: &mut dyn ReadWriteRegister,
-        mut memory: MemoryAdapter,
-    ) -> u32 {
+    pub fn run(&self, cpu: &mut CPU, mut memory: MemoryAdapter) -> u32 {
         // Update the program counter
         let program_counter = cpu.read_16_bits(RegisterLabel16::ProgramCounter);
         cpu.write_16_bits(
@@ -107,59 +103,63 @@ impl OpCode {
 
         match self.category {
             Category::LD16 => {
-                cycles += self.run_ld16::<T>(cpu, memory.get_memory());
+                cycles += self.run_ld16(cpu, memory.get_memory());
             }
             Category::LD8 => {
-                cycles += self.run_ld8::<T>(cpu, &mut memory);
+                cycles += self.run_ld8(cpu, &mut memory);
             }
             Category::NOP => {
                 // Do nothing
                 cycles += 4;
             }
             Category::XOR => {
-                cycles += self.run_xor::<T>(cpu, memory.get_memory());
+                cycles += self.run_xor(cpu, memory.get_memory());
             }
             Category::BIT => {
-                cycles += self.run_bit::<T>(cpu, memory.get_memory());
+                cycles += self.run_bit(cpu, memory.get_memory());
             }
             Category::JP => {
-                cycles += self.run_jmp::<T>(cpu, memory.get_memory());
+                cycles += self.run_jmp(cpu, memory.get_memory());
             }
             Category::CALL => {
-                cycles += self.run_call::<T>(cpu, memory.get_memory());
+                cycles += self.run_call(cpu, memory.get_memory());
             }
             Category::RET => {
-                cycles += self.run_ret::<T>(cpu, memory.get_memory());
+                cycles += self.run_ret(cpu, memory.get_memory());
             }
             Category::PUSH => {
-                cycles += self.run_push::<T>(cpu, memory.get_memory());
+                cycles += self.run_push(cpu, memory.get_memory());
             }
             Category::POP => {
-                cycles += self.run_pop::<T>(cpu, memory.get_memory());
+                cycles += self.run_pop(cpu, memory.get_memory());
             }
             Category::ADD => {
-                cycles += self.run_add::<T>(cpu, memory.get_memory());
+                cycles += self.run_add(cpu, memory.get_memory());
             }
             Category::INC => {
-                cycles += self.run_inc::<T>(cpu, memory.get_memory());
+                cycles += self.run_inc(cpu, memory.get_memory());
             }
             Category::DEC => {
-                cycles += self.run_dec::<T>(cpu, memory.get_memory());
+                cycles += self.run_dec(cpu, memory.get_memory());
             }
             Category::RL => {
-                cycles += self.run_rl::<T>(cpu, memory.get_memory());
+                cycles += self.run_rl(cpu, memory.get_memory());
             }
             Category::RLA => {
-                cycles += self.run_rla::<T>(cpu, memory.get_memory());
+                cycles += self.run_rla(cpu, memory.get_memory());
             }
             Category::SUB => {
-                cycles += self.run_sub::<T>(cpu, memory.get_memory());
+                cycles += self.run_sub(cpu, memory.get_memory());
             }
             Category::CP => {
-                cycles += self.run_cp::<T>(cpu, memory.get_memory());
+                cycles += self.run_cp(cpu, memory.get_memory());
             }
             Category::OR => {
-                cycles += self.run_or::<T>(cpu, memory.get_memory());
+                cycles += self.run_or(cpu, memory.get_memory());
+            }
+            Category::EI => {
+                // TODO: Implement interrupts
+                cycles += 4;
             }
         };
 

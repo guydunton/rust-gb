@@ -1,4 +1,4 @@
-use super::read_write_register::ReadWriteRegister;
+use super::cpu::CPU;
 use super::register::RegisterLabel8;
 
 #[derive(Copy, Clone, Debug)]
@@ -33,11 +33,11 @@ fn set_flag(register: u8, flag: Flags, on: bool) -> u8 {
     }
 }
 
-pub fn read_flag<T: ReadWriteRegister>(cpu: &dyn ReadWriteRegister, flag: Flags) -> bool {
+pub fn read_flag(cpu: &CPU, flag: Flags) -> bool {
     get_flag(cpu.read_8_bits(RegisterLabel8::F), flag)
 }
 
-pub fn write_flag<T: ReadWriteRegister>(cpu: &mut dyn ReadWriteRegister, flag: Flags, on: bool) {
+pub fn write_flag(cpu: &mut CPU, flag: Flags, on: bool) {
     let flags = cpu.read_8_bits(RegisterLabel8::F);
     cpu.write_8_bits(RegisterLabel8::F, set_flag(flags, flag, on));
 }

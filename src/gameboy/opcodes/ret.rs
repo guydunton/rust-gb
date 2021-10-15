@@ -1,13 +1,10 @@
+use crate::gameboy::cpu::CPU;
+
 use super::OpCode;
-use super::ReadWriteRegister;
 use super::RegisterLabel16;
 
 impl OpCode {
-    pub fn run_ret<T: ReadWriteRegister>(
-        &self,
-        cpu: &mut dyn ReadWriteRegister,
-        memory: &mut Vec<u8>,
-    ) -> u32 {
+    pub fn run_ret(&self, cpu: &mut CPU, memory: &mut Vec<u8>) -> u32 {
         let stack_pointer = cpu.read_16_bits(RegisterLabel16::StackPointer);
 
         // Get the top 2 bytes of the stack
