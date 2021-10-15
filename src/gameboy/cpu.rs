@@ -1,4 +1,3 @@
-use super::read_write_register::ReadWriteRegister;
 use super::register::{RegisterLabel16, RegisterLabel8, RegisterPair};
 
 #[derive(Clone)]
@@ -31,10 +30,8 @@ impl CPU {
 
         CPU { registers }
     }
-}
 
-impl ReadWriteRegister for CPU {
-    fn write_16_bits(&mut self, label: RegisterLabel16, value: u16) {
+    pub fn write_16_bits(&mut self, label: RegisterLabel16, value: u16) {
         self.registers
             .iter_mut()
             .find(|register| register.contains_16_bit_register(label))
@@ -42,7 +39,7 @@ impl ReadWriteRegister for CPU {
             .perform_16_bit_write(value);
     }
 
-    fn write_8_bits(&mut self, label: RegisterLabel8, value: u8) {
+    pub fn write_8_bits(&mut self, label: RegisterLabel8, value: u8) {
         self.registers
             .iter_mut()
             .find(|register| register.contains_8_bit_register(label))
@@ -50,7 +47,7 @@ impl ReadWriteRegister for CPU {
             .expect("Couldn't find specified 8 bit register");
     }
 
-    fn read_16_bits(&self, label: RegisterLabel16) -> u16 {
+    pub fn read_16_bits(&self, label: RegisterLabel16) -> u16 {
         self.registers
             .iter()
             .find(|register| register.contains_16_bit_register(label))
@@ -58,7 +55,7 @@ impl ReadWriteRegister for CPU {
             .perform_16_bit_read()
     }
 
-    fn read_8_bits(&self, label: RegisterLabel8) -> u8 {
+    pub fn read_8_bits(&self, label: RegisterLabel8) -> u8 {
         self.registers
             .iter()
             .find(|register| register.contains_8_bit_register(label))

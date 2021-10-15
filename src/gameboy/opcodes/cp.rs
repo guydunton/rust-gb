@@ -1,12 +1,10 @@
+use crate::gameboy::cpu::CPU;
+
 use super::super::{write_flag, Flags};
-use super::{Argument, OpCode, ReadWriteRegister, RegisterLabel8};
+use super::{Argument, OpCode, RegisterLabel8};
 
 impl OpCode {
-    pub fn run_cp<T: ReadWriteRegister>(
-        &self,
-        cpu: &mut dyn ReadWriteRegister,
-        memory: &mut Vec<u8>,
-    ) -> u32 {
+    pub fn run_cp(&self, cpu: &mut CPU, memory: &mut Vec<u8>) -> u32 {
         // Clear all the flags
         cpu.write_8_bits(RegisterLabel8::F, 0);
 
@@ -31,20 +29,20 @@ impl OpCode {
         if let Some(r) = result {
             if a >= 0b0001_0000 && r <= 0b0000_1111 {
                 // Set the H flag
-                write_flag::<T>(cpu, Flags::H, true);
+                write_flag(cpu, Flags::H, true);
             }
         }
 
         if arg_val == a {
             // If the values are the same set the zero flag
-            write_flag::<T>(cpu, Flags::Z, true);
+            write_flag(cpu, Flags::Z, true);
         } else if arg_val > a {
             // Set the C flag
-            write_flag::<T>(cpu, Flags::C, true);
+            write_flag(cpu, Flags::C, true);
         }
 
         // Set the N flag to 1
-        write_flag::<T>(cpu, Flags::N, true);
+        write_flag(cpu, Flags::N, true);
 
         8
     }

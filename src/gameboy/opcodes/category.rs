@@ -18,6 +18,7 @@ pub enum Category {
     SUB,
     CP,
     OR,
+    EI,
 }
 
 fn is_cb_category(category: Category) -> bool {
@@ -48,6 +49,7 @@ pub fn category_from_str(cat: &str) -> Category {
         "SUB" => Category::SUB,
         "CP" => Category::CP,
         "OR" => Category::OR,
+        "EI" => Category::EI,
         _ => {
             panic!("Failed to create category {:?}", cat);
         }

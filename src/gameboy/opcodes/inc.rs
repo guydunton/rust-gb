@@ -1,12 +1,10 @@
+use crate::gameboy::cpu::CPU;
+
 use super::super::{write_flag, Flags};
-use super::{Argument, OpCode, ReadWriteRegister};
+use super::{Argument, OpCode};
 
 impl OpCode {
-    pub fn run_inc<T: ReadWriteRegister>(
-        &self,
-        cpu: &mut dyn ReadWriteRegister,
-        _memory: &mut Vec<u8>,
-    ) -> u32 {
+    pub fn run_inc(&self, cpu: &mut CPU, _memory: &mut Vec<u8>) -> u32 {
         match self.args[0] {
             Argument::Register8Constant(reg) => {
                 let reg_value = cpu.read_8_bits(reg);
@@ -14,13 +12,13 @@ impl OpCode {
                 let (new_val, overflow) = reg_value.overflowing_add(1);
 
                 if overflow {
-                    write_flag::<T>(cpu, Flags::Z, true);
+                    write_flag(cpu, Flags::Z, true);
                 }
 
-                write_flag::<T>(cpu, Flags::N, false);
+                write_flag(cpu, Flags::N, false);
 
                 if new_val == (0x0F + 1) {
-                    write_flag::<T>(cpu, Flags::H, true);
+                    write_flag(cpu, Flags::H, true);
                 }
 
                 cpu.write_8_bits(reg, new_val);
