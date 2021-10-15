@@ -11,6 +11,7 @@ mod jmp;
 mod ld16;
 mod ld8;
 mod opcodes;
+mod or;
 mod pop;
 mod push;
 mod ret;
@@ -156,6 +157,9 @@ impl OpCode {
             }
             Category::CP => {
                 cycles += self.run_cp::<T>(cpu, memory.get_memory());
+            }
+            Category::OR => {
+                cycles += self.run_or::<T>(cpu, memory.get_memory());
             }
         };
 
