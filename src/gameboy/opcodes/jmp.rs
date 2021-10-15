@@ -1,8 +1,10 @@
+use crate::gameboy::cpu::CPU;
+
 use super::super::{read_flag, Flags};
 use super::argument::JumpCondition;
-use super::{Argument, OpCode, ReadWriteRegister, RegisterLabel16};
+use super::{Argument, OpCode, RegisterLabel16};
 
-fn move_program_counter<T: ReadWriteRegister>(cpu: &mut dyn ReadWriteRegister, distance: i8) {
+fn move_program_counter(cpu: &mut CPU, distance: i8) {
     let program_counter = cpu.read_16_bits(RegisterLabel16::ProgramCounter);
     cpu.write_16_bits(
         RegisterLabel16::ProgramCounter,
@@ -11,11 +13,7 @@ fn move_program_counter<T: ReadWriteRegister>(cpu: &mut dyn ReadWriteRegister, d
 }
 
 impl OpCode {
-    pub fn run_jmp<T: ReadWriteRegister>(
-        &self,
-        cpu: &mut dyn ReadWriteRegister,
-        _memory: &mut Vec<u8>,
-    ) -> u32 {
+    pub fn run_jmp(&self, cpu: &mut CPU, _memory: &mut Vec<u8>) -> u32 {
         assert!(self.args.len() <= 2);
 
         // 8 cycles by default
@@ -26,8 +24,8 @@ impl OpCode {
                 // Arg 1 is the condition
                 let condition_checker = || -> bool {
                     match condition {
-                        JumpCondition::NotZero => read_flag::<T>(cpu, Flags::Z) == false,
-                        JumpCondition::Zero => read_flag::<T>(cpu, Flags::Z) == true,
+                        JumpCondition::NotZero => read_flag(cpu, Flags::Z) == false,
+                        JumpCondition::Zero => read_flag(cpu, Flags::Z) == true,
                     }
                 };
 
@@ -39,13 +37,13 @@ impl OpCode {
                         _ => panic!("Invalid argument"),
                     };
 
-                    move_program_counter::<T>(cpu, distance);
+                    move_program_counter(cpu, distance);
 
                     cycles += 4;
                 }
             }
             Argument::JumpDistance(distance) => {
-                move_program_counter::<T>(cpu, distance);
+                move_program_counter(cpu, distance);
                 cycles += 4;
             }
             Argument::Label(location) => {

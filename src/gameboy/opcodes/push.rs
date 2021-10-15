@@ -1,11 +1,9 @@
-use super::{Argument, OpCode, ReadWriteRegister, RegisterLabel16};
+use crate::gameboy::cpu::CPU;
+
+use super::{Argument, OpCode, RegisterLabel16};
 
 impl OpCode {
-    pub fn run_push<T: ReadWriteRegister>(
-        &self,
-        cpu: &mut dyn ReadWriteRegister,
-        memory: &mut Vec<u8>,
-    ) -> u32 {
+    pub fn run_push(&self, cpu: &mut CPU, memory: &mut Vec<u8>) -> u32 {
         let mut cycles = 0;
         if let Argument::Register16Constant(reg) = self.args[0] {
             let value = cpu.read_16_bits(reg);

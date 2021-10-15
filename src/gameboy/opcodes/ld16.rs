@@ -1,12 +1,9 @@
-use super::ReadWriteRegister;
+use crate::gameboy::cpu::CPU;
+
 use super::{Argument, OpCode};
 
 impl OpCode {
-    pub fn run_ld16<T: ReadWriteRegister>(
-        &self,
-        cpu: &mut dyn ReadWriteRegister,
-        _: &mut Vec<u8>,
-    ) -> u32 {
+    pub fn run_ld16(&self, cpu: &mut CPU, _: &mut Vec<u8>) -> u32 {
         assert_eq!(self.args.len(), 2);
 
         let mut dest = |val: u16| match self.args[0] {

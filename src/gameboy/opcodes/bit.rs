@@ -1,14 +1,11 @@
+use crate::gameboy::cpu::CPU;
+
 use super::super::flags_register::{write_flag, Flags};
 use super::argument::Argument;
 use super::OpCode;
-use super::ReadWriteRegister;
 
 impl OpCode {
-    pub fn run_bit<T: ReadWriteRegister>(
-        &self,
-        cpu: &mut dyn ReadWriteRegister,
-        _memory: &mut Vec<u8>,
-    ) -> u32 {
+    pub fn run_bit(&self, cpu: &mut CPU, _memory: &mut Vec<u8>) -> u32 {
         let mut cycles = 0;
         assert_eq!(self.args.len(), 2);
 
@@ -17,9 +14,9 @@ impl OpCode {
                 let register = cpu.read_8_bits(register);
 
                 let result = (((0x1 << bit) ^ register) >> bit) == 1;
-                write_flag::<T>(cpu, Flags::Z, result);
-                write_flag::<T>(cpu, Flags::N, false);
-                write_flag::<T>(cpu, Flags::H, true);
+                write_flag(cpu, Flags::Z, result);
+                write_flag(cpu, Flags::N, false);
+                write_flag(cpu, Flags::H, true);
             }
             _ => panic!("Invalid arguments"),
         }

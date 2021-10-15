@@ -3,14 +3,9 @@ use crate::gameboy::{cpu::CPU, RegisterLabel8};
 use super::super::flags_register::{write_flag, Flags};
 use super::argument::Argument;
 use super::OpCode;
-use super::ReadWriteRegister;
 
 impl OpCode {
-    pub fn run_add<T: ReadWriteRegister>(
-        &self,
-        cpu: &mut dyn ReadWriteRegister,
-        memory: &mut Vec<u8>,
-    ) -> u32 {
+    pub fn run_add(&self, cpu: &mut CPU, memory: &mut Vec<u8>) -> u32 {
         // Reset flags
         cpu.write_8_bits(RegisterLabel8::F, 0);
 
@@ -40,16 +35,16 @@ impl OpCode {
 
         // If result is 0 set the z flag
         if result == 0 {
-            write_flag::<CPU>(cpu, Flags::Z, true);
+            write_flag(cpu, Flags::Z, true);
         }
 
         // If overflowed
         if overflowed {
-            write_flag::<CPU>(cpu, Flags::C, true);
+            write_flag(cpu, Flags::C, true);
         }
 
         if result > 0b0000_1111 && target_value < 0b0001_0000 {
-            write_flag::<CPU>(cpu, Flags::H, true);
+            write_flag(cpu, Flags::H, true);
         }
 
         cpu.write_8_bits(target, result);

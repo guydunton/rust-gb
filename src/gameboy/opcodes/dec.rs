@@ -1,15 +1,13 @@
+use crate::gameboy::cpu::CPU;
+
 use super::super::{write_flag, Flags};
-use super::{Argument, OpCode, ReadWriteRegister};
+use super::{Argument, OpCode};
 
 impl OpCode {
-    pub fn run_dec<T: ReadWriteRegister>(
-        &self,
-        cpu: &mut dyn ReadWriteRegister,
-        _memory: &mut Vec<u8>,
-    ) -> u32 {
+    pub fn run_dec(&self, cpu: &mut CPU, _memory: &mut Vec<u8>) -> u32 {
         // Reset Z & H flags flags. Ignore N because it's always set to 1
-        write_flag::<T>(cpu, Flags::Z, false);
-        write_flag::<T>(cpu, Flags::H, false);
+        write_flag(cpu, Flags::Z, false);
+        write_flag(cpu, Flags::H, false);
 
         match self.args[0] {
             Argument::Register8Constant(register) => {
@@ -18,16 +16,16 @@ impl OpCode {
 
                 // If the result will be 0 then set the Z flag
                 if b == 1 {
-                    write_flag::<T>(cpu, Flags::Z, true);
+                    write_flag(cpu, Flags::Z, true);
                 }
 
                 // If result borrows from top half of byte set H flag
                 if b == 0b1_000 {
-                    write_flag::<T>(cpu, Flags::H, true);
+                    write_flag(cpu, Flags::H, true);
                 }
 
                 // Always set the N flag to 1
-                write_flag::<T>(cpu, Flags::N, true);
+                write_flag(cpu, Flags::N, true);
 
                 // Reduce and write back to register
                 cpu.write_8_bits(register, b.wrapping_sub(1));

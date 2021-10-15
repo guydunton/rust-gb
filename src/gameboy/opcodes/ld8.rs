@@ -1,13 +1,10 @@
+use crate::gameboy::cpu::CPU;
+
 use super::MemoryAdapter;
-use super::ReadWriteRegister;
 use super::{Argument, OpCode};
 
 impl OpCode {
-    pub fn run_ld8<T: ReadWriteRegister>(
-        &self,
-        cpu: &mut dyn ReadWriteRegister,
-        memory: &mut MemoryAdapter,
-    ) -> u32 {
+    pub fn run_ld8(&self, cpu: &mut CPU, memory: &mut MemoryAdapter) -> u32 {
         assert_eq!(self.args.len(), 2);
         {
             let source = match self.args[1] {

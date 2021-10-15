@@ -1,11 +1,9 @@
-use super::{Argument, OpCode, ReadWriteRegister, RegisterLabel16};
+use crate::gameboy::cpu::CPU;
+
+use super::{Argument, OpCode, RegisterLabel16};
 
 impl OpCode {
-    pub fn run_pop<T: ReadWriteRegister>(
-        &self,
-        cpu: &mut dyn ReadWriteRegister,
-        memory: &mut Vec<u8>,
-    ) -> u32 {
+    pub fn run_pop(&self, cpu: &mut CPU, memory: &mut Vec<u8>) -> u32 {
         if let Argument::Register16Constant(_) = self.args[0] {
             // Read the stack pointer
             let sp = cpu.read_16_bits(RegisterLabel16::StackPointer);
