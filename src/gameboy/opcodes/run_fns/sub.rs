@@ -1,7 +1,8 @@
 use crate::gameboy::cpu::CPU;
 
 use super::super::super::{write_flag, Flags};
-use super::super::{Argument, RegisterLabel8};
+use super::super::Argument;
+use crate::gameboy::RegisterLabel8;
 
 pub fn run_sub(args: &[Argument], cpu: &mut CPU, _memory: &mut Vec<u8>) -> u32 {
     let cycles = 4;

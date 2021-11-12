@@ -1,6 +1,7 @@
 use crate::gameboy::cpu::CPU;
 
-use super::super::{Argument, RegisterLabel16};
+use super::super::Argument;
+use crate::gameboy::RegisterLabel16;
 
 pub fn run_push(args: &[Argument], cpu: &mut CPU, memory: &mut Vec<u8>) -> u32 {
     let mut cycles = 0;

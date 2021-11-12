@@ -3,7 +3,7 @@ use super::super::memory_adapter::MemoryAdapter;
 use super::argument::{size_in_bytes, Argument};
 use super::category::{category_size, Category};
 use super::run_fns::*;
-use super::RegisterLabel16;
+use crate::gameboy::RegisterLabel16;
 use std::fmt;
 
 pub struct OpCode {

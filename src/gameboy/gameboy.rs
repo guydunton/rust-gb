@@ -3,7 +3,7 @@ use super::cpu::CPU;
 use super::memory_adapter::MemoryAdapter;
 use super::memory_labels::Labels;
 use super::memory_view::MemoryView;
-use super::opcodes::decode_instruction;
+use super::opcodes::Decoder;
 use super::ppu::PPU;
 use super::screen::ScreenColor;
 use super::{read_flag, write_flag, Flags, OpCode, RegisterLabel16, RegisterLabel8};
@@ -300,6 +300,6 @@ impl<'a> Gameboy<'a> {
     }
 
     fn get_opcode_at(&self, address: u16) -> Result<OpCode, String> {
-        decode_instruction(address, &self.memory)
+        Decoder::decode_instruction(address, &self.memory)
     }
 }

@@ -33,9 +33,9 @@ mod ret_test {
         // I'm not happy with this use of decode_instruction but
         // I cannot see another way of checking the size of the RET
         // instruction.
-        use super::super::super::opcodes::decode_instruction;
+        use super::super::super::opcodes::Decoder;
         let instructions = vec![0xC9];
-        let opcode = decode_instruction(0x00, &instructions).unwrap();
+        let opcode = Decoder::decode_instruction(0x00, &instructions).unwrap();
         assert_eq!(opcode.size(), 1);
     }
 }

@@ -1,7 +1,6 @@
-use crate::gameboy::cpu::CPU;
-
 use super::super::Argument;
-use super::super::MemoryAdapter;
+use crate::gameboy::cpu::CPU;
+use crate::gameboy::memory_adapter::MemoryAdapter;
 
 pub fn run_ld8(args: &[Argument], cpu: &mut CPU, memory: &mut MemoryAdapter) -> u32 {
     assert_eq!(args.len(), 2);

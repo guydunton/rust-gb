@@ -1,6 +1,6 @@
 use crate::gameboy::cpu::CPU;
 
-use super::super::RegisterLabel16;
+use crate::gameboy::RegisterLabel16;
 
 pub fn run_ret(cpu: &mut CPU, memory: &mut Vec<u8>) -> u32 {
     let stack_pointer = cpu.read_16_bits(RegisterLabel16::StackPointer);

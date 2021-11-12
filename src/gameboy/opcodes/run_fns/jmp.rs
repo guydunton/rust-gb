@@ -2,7 +2,8 @@ use crate::gameboy::cpu::CPU;
 
 use super::super::super::{read_flag, Flags};
 use super::super::argument::JumpCondition;
-use super::super::{Argument, RegisterLabel16};
+use super::super::Argument;
+use crate::gameboy::RegisterLabel16;
 
 fn move_program_counter(cpu: &mut CPU, distance: i8) {
     let program_counter = cpu.read_16_bits(RegisterLabel16::ProgramCounter);
