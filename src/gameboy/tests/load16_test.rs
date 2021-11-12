@@ -40,4 +40,16 @@ mod load16_test {
         assert_eq!(gb.get_register_16(RegisterLabel16::ProgramCounter), 0x0003);
         assert_eq!(cycles, 12);
     }
+
+    #[test]
+    fn ld16_test() {
+        // Create a LD16 opcode
+
+        // Given memory & a CPU check the opcode works
+    }
+
+    #[test]
+    fn ld_decoding_test() {
+        //
+    }
 }

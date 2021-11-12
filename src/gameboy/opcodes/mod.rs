@@ -1,34 +1,18 @@
-mod add;
 mod argument;
-mod bit;
-mod call;
 mod category;
 mod cb_opcodes;
-mod cp;
-mod dec;
-mod inc;
-mod jmp;
-mod ld16;
-mod ld8;
+mod opcode;
 mod opcodes;
-mod or;
-mod pop;
-mod push;
-mod ret;
-mod rotate_left;
-mod rotate_left_a;
-mod rotate_method;
-mod sub;
-mod xor;
+mod run_fns;
 
-use super::cpu::CPU;
 use super::memory_adapter::MemoryAdapter;
 use super::{RegisterLabel16, RegisterLabel8};
-use argument::{arg_from_str, size_in_bytes, Argument};
-use category::{category_from_str, category_size, Category};
+use argument::{arg_from_str, Argument};
+use category::category_from_str;
 use cb_opcodes::CB_DICTIONARY;
 use opcodes::DICTIONARY;
-use std::fmt;
+
+pub use self::opcode::OpCode;
 
 enum DecodingError {
     CBFailure,
@@ -83,110 +67,4 @@ pub fn decode_instruction(program_counter: u16, program_code: &[u8]) -> Result<O
     }
 
     Ok(OpCode::new(category, clean_args))
-}
-
-pub struct OpCode {
-    category: Category,
-    args: [Argument; 2],
-}
-
-impl OpCode {
-    pub fn run(&self, cpu: &mut CPU, mut memory: MemoryAdapter) -> u32 {
-        // Update the program counter
-        let program_counter = cpu.read_16_bits(RegisterLabel16::ProgramCounter);
-        cpu.write_16_bits(
-            RegisterLabel16::ProgramCounter,
-            program_counter + self.size(),
-        );
-
-        let mut cycles = 0;
-
-        match self.category {
-            Category::LD16 => {
-                cycles += self.run_ld16(cpu, memory.get_memory());
-            }
-            Category::LD8 => {
-                cycles += self.run_ld8(cpu, &mut memory);
-            }
-            Category::NOP => {
-                // Do nothing
-                cycles += 4;
-            }
-            Category::XOR => {
-                cycles += self.run_xor(cpu, memory.get_memory());
-            }
-            Category::BIT => {
-                cycles += self.run_bit(cpu, memory.get_memory());
-            }
-            Category::JP => {
-                cycles += self.run_jmp(cpu, memory.get_memory());
-            }
-            Category::CALL => {
-                cycles += self.run_call(cpu, memory.get_memory());
-            }
-            Category::RET => {
-                cycles += self.run_ret(cpu, memory.get_memory());
-            }
-            Category::PUSH => {
-                cycles += self.run_push(cpu, memory.get_memory());
-            }
-            Category::POP => {
-                cycles += self.run_pop(cpu, memory.get_memory());
-            }
-            Category::ADD => {
-                cycles += self.run_add(cpu, memory.get_memory());
-            }
-            Category::INC => {
-                cycles += self.run_inc(cpu, memory.get_memory());
-            }
-            Category::DEC => {
-                cycles += self.run_dec(cpu, memory.get_memory());
-            }
-            Category::RL => {
-                cycles += self.run_rl(cpu, memory.get_memory());
-            }
-            Category::RLA => {
-                cycles += self.run_rla(cpu, memory.get_memory());
-            }
-            Category::SUB => {
-                cycles += self.run_sub(cpu, memory.get_memory());
-            }
-            Category::CP => {
-                cycles += self.run_cp(cpu, memory.get_memory());
-            }
-            Category::OR => {
-                cycles += self.run_or(cpu, memory.get_memory());
-            }
-            Category::EI => {
-                // TODO: Implement interrupts
-                cycles += 4;
-            }
-        };
-
-        cycles
-    }
-
-    pub fn new(category: Category, args: [Argument; 2]) -> OpCode {
-        OpCode { category, args }
-    }
-
-    pub fn size(&self) -> u16 {
-        let type_size = category_size(self.category);
-        self.args.iter().map(|arg| size_in_bytes(*arg)).sum::<u16>() + type_size
-    }
-}
-
-impl fmt::Display for OpCode {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let category = format!("{:?}", self.category);
-
-        let args = self
-            .args
-            .iter()
-            .map(|arg| format!("{}", arg))
-            .collect::<Vec<String>>()
-            .join(" ");
-
-        write!(f, "{} {}", category, args)
-    }
 }
