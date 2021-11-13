@@ -1,4 +1,4 @@
-#[derive(Debug, Copy, Clone)]
+#[derive(PartialEq, Debug, Copy, Clone)]
 pub enum Category {
     NOP,
     LD16,

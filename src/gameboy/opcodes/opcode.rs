@@ -6,12 +6,17 @@ use super::run_fns::*;
 use crate::gameboy::RegisterLabel16;
 use std::fmt;
 
+#[derive(PartialEq, Clone, Copy, Debug)]
 pub struct OpCode {
     category: Category,
     args: [Argument; 2],
 }
 
 impl OpCode {
+    pub fn new(category: Category, args: [Argument; 2]) -> OpCode {
+        OpCode { category, args }
+    }
+
     pub fn run(&self, cpu: &mut CPU, mut memory: MemoryAdapter) -> u32 {
         // Update the program counter
         let program_counter = cpu.read_16_bits(RegisterLabel16::ProgramCounter);
@@ -85,10 +90,6 @@ impl OpCode {
         };
 
         cycles
-    }
-
-    pub fn new(category: Category, args: [Argument; 2]) -> OpCode {
-        OpCode { category, args }
     }
 
     pub fn size(&self) -> u16 {

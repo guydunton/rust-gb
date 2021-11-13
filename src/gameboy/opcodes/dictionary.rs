@@ -5,6 +5,7 @@ lazy_static! {
         (0x04, "INC B"),
         (0x05, "DEC B"),
         (0x06, "LD8 B d8"),
+        (0x08, "LD16 (a16) SP"),
         (0x0B, "DEC BC"),
         (0x0C, "INC C"),
         (0x0D, "DEC C"),
@@ -53,6 +54,7 @@ lazy_static! {
         (0xE2, "LD8 (C) A"),
         (0xEA, "LD8 (a16) A"),
         (0xF0, "LD8 A (a8)"),
+        (0xF9, "LD16 SP HL"),
         (0xF3, "NOP"),
         (0xFE, "CP d8"),
     ]

@@ -1,7 +1,7 @@
 use super::argument::{arg_from_str, Argument};
 use super::category::category_from_str;
 use super::cb_opcodes::CB_DICTIONARY;
-use super::opcodes::DICTIONARY;
+use super::dictionary::DICTIONARY;
 use super::OpCode;
 
 pub enum DecodingError {
