@@ -1,7 +1,7 @@
 use super::super::{RegisterLabel16, RegisterLabel8};
 use std::fmt;
 
-#[derive(Copy, Clone, Debug)]
+#[derive(PartialEq, Copy, Clone, Debug)]
 pub enum Argument {
     Register8Constant(RegisterLabel8),
     Register16Constant(RegisterLabel16),
@@ -40,7 +40,7 @@ pub fn size_in_bytes(argument: Argument) -> u16 {
     }
 }
 
-#[derive(Copy, Clone, Debug)]
+#[derive(PartialEq, Copy, Clone, Debug)]
 pub enum JumpCondition {
     NotZero,
     Zero,
