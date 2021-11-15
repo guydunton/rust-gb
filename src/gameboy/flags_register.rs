@@ -3,10 +3,20 @@ use super::register::RegisterLabel8;
 
 #[derive(Copy, Clone, Debug)]
 pub enum Flags {
-    Z, // Zero
-    N, // Subtract
-    H, // Half carry
-    C, // Carry
+    /// Zero Flag
+    ///
+    /// Set if result of operation is 0
+    Z,
+    /// Subtract Flag
+    N,
+    /// Half-carry Flag
+    ///
+    /// Set if operation overflows the first lower 4 bits. e.g. 0000 1111 + 0000 0001 = 0001 0000
+    H,
+    /// Carry Flag
+    ///
+    /// Set if operation overflows the byte
+    C,
 }
 
 #[allow(dead_code)]

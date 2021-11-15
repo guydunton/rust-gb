@@ -17,6 +17,7 @@ pub enum Argument {
     JumpArgument(JumpCondition),
     Label(u16),
     AddressIndirect(u16),
+    SPOffset(i8),
     None,
 }
 
@@ -36,6 +37,7 @@ pub fn size_in_bytes(argument: Argument) -> u16 {
         Argument::Bit(_) => 0,
         Argument::Label(_) => 2,
         Argument::AddressIndirect(_) => 2,
+        Argument::SPOffset(_) => 1,
         Argument::None => 0,
     }
 }
@@ -63,6 +65,7 @@ impl fmt::Display for Argument {
             Argument::JumpArgument(val) => write!(f, "{:?}", val),
             Argument::Label(val) => write!(f, "{:#X}", val),
             Argument::AddressIndirect(val) => write!(f, "({:#X})", val),
+            Argument::SPOffset(val) => write!(f, "SP+{:#X}", val),
             Argument::None => write!(f, ""),
         }
     }
@@ -103,6 +106,7 @@ pub fn arg_from_str(arg: &str, index: u16, memory: &[u8]) -> Result<Argument, &'
         "NZ" => Argument::JumpArgument(JumpCondition::NotZero),
         "Z" => Argument::JumpArgument(JumpCondition::Zero),
         "r8" => Argument::JumpDistance(memory[(index + 1) as usize] as i8),
+        "SP+r8" => Argument::SPOffset(memory[(index + 1) as usize] as i8),
         "7" => Argument::Bit(7),
         _ => return Err("Unknown argument"),
     };

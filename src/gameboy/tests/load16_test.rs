@@ -3,8 +3,8 @@ mod load16_test {
     use crate::gameboy::cpu::CPU;
     use crate::gameboy::memory_adapter::MemoryAdapter;
     use crate::gameboy::opcodes::{Argument, Category, Decoder};
-    use crate::gameboy::OpCode;
-    use crate::gameboy::RegisterLabel16;
+    use crate::gameboy::{read_flag, Flags, OpCode};
+    use crate::gameboy::{RegisterLabel16, RegisterLabel8};
 
     #[test]
     fn fixed_value_ld16_test() {
@@ -73,6 +73,70 @@ mod load16_test {
         assert_eq!(cpu.read_16_bits(RegisterLabel16::ProgramCounter), 0x01);
     }
 
+    fn create_ld16_sp_offset_opcode(offset: i8) -> OpCode {
+        OpCode::new(
+            Category::LD16,
+            [
+                Argument::Register16Constant(RegisterLabel16::HL),
+                Argument::SPOffset(offset),
+            ],
+        )
+    }
+
+    #[test]
+    fn test_ld16_hl_spr8() {
+        let mut memory = vec![0; 0xFFFF];
+        let mut cpu = CPU::new();
+
+        let opcode = create_ld16_sp_offset_opcode(2);
+
+        cpu.write_16_bits(RegisterLabel16::StackPointer, 0x2);
+        // Make sure the flags are reset
+        cpu.write_8_bits(RegisterLabel8::F, 0xFF);
+
+        let cycles = opcode.run(&mut cpu, MemoryAdapter::new(&mut memory));
+
+        assert_eq!(cpu.read_16_bits(RegisterLabel16::HL), 0x4);
+        assert_eq!(cycles, 12);
+        assert_eq!(cpu.read_16_bits(RegisterLabel16::ProgramCounter), 0x02);
+        assert_eq!(cpu.read_8_bits(RegisterLabel8::F), 0);
+
+        // Check that negative values work
+        let opcode = create_ld16_sp_offset_opcode(-5);
+
+        cpu.write_16_bits(RegisterLabel16::StackPointer, 0x10);
+
+        let _ = opcode.run(&mut cpu, MemoryAdapter::new(&mut memory));
+
+        assert_eq!(cpu.read_16_bits(RegisterLabel16::HL), 0xB);
+    }
+
+    #[test]
+    fn test_spr8_flags() {
+        let mut memory = vec![0; 0xFFFF];
+        let mut cpu = CPU::new();
+
+        // Make sure the carry works
+        let opcode = create_ld16_sp_offset_opcode(4);
+
+        cpu.write_16_bits(RegisterLabel16::StackPointer, 0b1111_1111);
+
+        let _ = opcode.run(&mut cpu, MemoryAdapter::new(&mut memory));
+
+        assert_eq!(read_flag(&cpu, Flags::C), true);
+        assert_eq!(read_flag(&cpu, Flags::H), false);
+        assert_eq!(cpu.read_16_bits(RegisterLabel16::HL), 0x0103);
+
+        // Make sure half carry works
+        let opcode = create_ld16_sp_offset_opcode(1);
+        cpu.write_16_bits(RegisterLabel16::StackPointer, 0b0000_1111);
+
+        let _ = opcode.run(&mut cpu, MemoryAdapter::new(&mut memory));
+
+        assert_eq!(read_flag(&cpu, Flags::H), true);
+        assert_eq!(read_flag(&cpu, Flags::C), false);
+    }
+
     fn ld_opcode(dest: RegisterLabel16, val: u16) -> OpCode {
         OpCode::new(
             Category::LD16,
@@ -123,6 +187,19 @@ mod load16_test {
                 [
                     Argument::Register16Constant(RegisterLabel16::StackPointer),
                     Argument::Register16Constant(RegisterLabel16::HL)
+                ]
+            )
+        );
+
+        // 0xF8: LD HL,SP+r8
+        let opcode = Decoder::decode_instruction(0x0000, &vec![0xF8, 0xFC]).unwrap();
+        assert_eq!(
+            opcode,
+            OpCode::new(
+                Category::LD16,
+                [
+                    Argument::Register16Constant(RegisterLabel16::HL),
+                    Argument::SPOffset(-4)
                 ]
             )
         );

@@ -56,6 +56,7 @@ lazy_static! {
         (0xF0, "LD8 A (a8)"),
         (0xF9, "LD16 SP HL"),
         (0xF3, "NOP"),
+        (0xF8, "LD16 HL SP+r8"),
         (0xFE, "CP d8"),
     ]
     .iter()
