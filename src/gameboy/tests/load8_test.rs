@@ -1,6 +1,10 @@
 #[cfg(test)]
 mod load8_test {
-    use crate::gameboy::Gameboy;
+
+    use crate::gameboy::cpu::CPU;
+    use crate::gameboy::memory_adapter::MemoryAdapter;
+    use crate::gameboy::opcodes::{Argument, Category, Decoder};
+    use crate::gameboy::{Gameboy, OpCode};
     use crate::gameboy::{RegisterLabel16, RegisterLabel8};
 
     #[test]
@@ -199,5 +203,102 @@ mod load8_test {
         assert_eq!(gb.get_register_16(RegisterLabel16::ProgramCounter), 0x01);
         assert_eq!(gb.get_register_16(RegisterLabel16::HL), 0xFF01);
         assert_eq!(gb.get_register_8(RegisterLabel8::A), 0x12);
+    }
+
+    #[test]
+    fn ld8_can_move_between_registers() {
+        let mut cpu = CPU::new();
+        let mut memory = vec![0x0; 0xFFFF];
+
+        let opcode = OpCode::new(
+            Category::LD8,
+            [
+                Argument::Register8Constant(RegisterLabel8::A),
+                Argument::Register8Constant(RegisterLabel8::B),
+            ],
+        );
+
+        cpu.write_8_bits(RegisterLabel8::B, 0x01);
+
+        let cycles = opcode.run(&mut cpu, MemoryAdapter::new(&mut memory));
+
+        // Check the result
+        assert_eq!(cpu.read_8_bits(RegisterLabel8::A), 0x01);
+
+        // Check the size
+        assert_eq!(cpu.read_16_bits(RegisterLabel16::ProgramCounter), 0x01);
+        assert_eq!(cycles, 4);
+
+        // Check another set of registers just in case
+        let opcode = OpCode::new(
+            Category::LD8,
+            [
+                Argument::Register8Constant(RegisterLabel8::F),
+                Argument::Register8Constant(RegisterLabel8::D),
+            ],
+        );
+
+        cpu.write_8_bits(RegisterLabel8::D, 0xFF);
+        let _ = opcode.run(&mut cpu, MemoryAdapter::new(&mut memory));
+
+        assert_eq!(cpu.read_8_bits(RegisterLabel8::F), 0xFF);
+    }
+
+    #[test]
+    fn ld8_can_move_to_hl_offset() {
+        // Create instruction
+
+        // Run
+
+        // Check the result
+
+        // Check the size
+    }
+
+    #[test]
+    fn l8_can_move_from_hl_offset() {
+        // Create instruction
+
+        // Run
+
+        // Check the result
+
+        // Check the size
+    }
+
+    fn r8_r8_opcode(dest_r8: RegisterLabel8, src_r8: RegisterLabel8) -> OpCode {
+        OpCode::new(
+            Category::LD8,
+            [
+                Argument::Register8Constant(dest_r8),
+                Argument::Register8Constant(src_r8),
+            ],
+        )
+    }
+
+    #[test]
+    fn ld8_is_decoded_correctly() {
+        let decode = |memory| Decoder::decode_instruction(0x00, memory).unwrap();
+
+        const A: RegisterLabel8 = RegisterLabel8::A;
+        const B: RegisterLabel8 = RegisterLabel8::B;
+        const C: RegisterLabel8 = RegisterLabel8::C;
+        const D: RegisterLabel8 = RegisterLabel8::D;
+        const E: RegisterLabel8 = RegisterLabel8::E;
+        const F: RegisterLabel8 = RegisterLabel8::F;
+        const H: RegisterLabel8 = RegisterLabel8::H;
+        const L: RegisterLabel8 = RegisterLabel8::L;
+
+        // All r8 -> r8 instructions
+        assert_eq!(decode(&[0x40]), r8_r8_opcode(B, B));
+        assert_eq!(decode(&[0x41]), r8_r8_opcode(B, C));
+        assert_eq!(decode(&[0x42]), r8_r8_opcode(B, D));
+        assert_eq!(decode(&[0x43]), r8_r8_opcode(B, E));
+        assert_eq!(decode(&[0x44]), r8_r8_opcode(B, H));
+        assert_eq!(decode(&[0x45]), r8_r8_opcode(B, L));
+
+        // All r8 -> (HL) instructions
+
+        //
     }
 }
