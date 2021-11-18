@@ -5,7 +5,7 @@
 #   Run from the docs directory
 
 # Pull out all the opcodes from the file
-SUPPORTED_CODES=$(cat ../../src/gameboy/opcodes/opcodes.rs \
+SUPPORTED_CODES=$(cat ../../src/gameboy/opcodes/dictionary.rs \
     | grep -E '0x[0-9A-F][0-9A-F]' \
     | sed 's/[[:space:]]*(\(0x[0-9A-F][0-9A-F]\).*/"\1",/g')
 
