@@ -296,6 +296,20 @@ mod load8_test {
         assert_eq!(decode(&[0x43]), r8_r8_opcode(B, E));
         assert_eq!(decode(&[0x44]), r8_r8_opcode(B, H));
         assert_eq!(decode(&[0x45]), r8_r8_opcode(B, L));
+        assert_eq!(decode(&[0x47]), r8_r8_opcode(B, A));
+        assert_eq!(decode(&[0x48]), r8_r8_opcode(C, B));
+        assert_eq!(decode(&[0x49]), r8_r8_opcode(C, C));
+        assert_eq!(decode(&[0x4A]), r8_r8_opcode(C, D));
+        assert_eq!(decode(&[0x4B]), r8_r8_opcode(C, E));
+        assert_eq!(decode(&[0x4C]), r8_r8_opcode(C, H));
+        assert_eq!(decode(&[0x4D]), r8_r8_opcode(C, L));
+
+        assert_eq!(decode(&[0x50]), r8_r8_opcode(D, B));
+        assert_eq!(decode(&[0x51]), r8_r8_opcode(D, C));
+        assert_eq!(decode(&[0x52]), r8_r8_opcode(D, D));
+        assert_eq!(decode(&[0x53]), r8_r8_opcode(D, E));
+        assert_eq!(decode(&[0x54]), r8_r8_opcode(D, H));
+        assert_eq!(decode(&[0x55]), r8_r8_opcode(D, L));
 
         // All r8 -> (HL) instructions
 
