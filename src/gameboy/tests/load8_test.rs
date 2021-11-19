@@ -310,6 +310,38 @@ mod load8_test {
         assert_eq!(decode(&[0x53]), r8_r8_opcode(D, E));
         assert_eq!(decode(&[0x54]), r8_r8_opcode(D, H));
         assert_eq!(decode(&[0x55]), r8_r8_opcode(D, L));
+        assert_eq!(decode(&[0x57]), r8_r8_opcode(D, A));
+        assert_eq!(decode(&[0x58]), r8_r8_opcode(E, B));
+        assert_eq!(decode(&[0x59]), r8_r8_opcode(E, C));
+        assert_eq!(decode(&[0x5A]), r8_r8_opcode(E, D));
+        assert_eq!(decode(&[0x5B]), r8_r8_opcode(E, E));
+        assert_eq!(decode(&[0x5C]), r8_r8_opcode(E, H));
+        assert_eq!(decode(&[0x5D]), r8_r8_opcode(E, L));
+        assert_eq!(decode(&[0x5F]), r8_r8_opcode(E, A));
+
+        assert_eq!(decode(&[0x60]), r8_r8_opcode(H, B));
+        assert_eq!(decode(&[0x61]), r8_r8_opcode(H, C));
+        assert_eq!(decode(&[0x62]), r8_r8_opcode(H, D));
+        assert_eq!(decode(&[0x63]), r8_r8_opcode(H, E));
+        assert_eq!(decode(&[0x64]), r8_r8_opcode(H, H));
+        assert_eq!(decode(&[0x65]), r8_r8_opcode(H, L));
+
+        assert_eq!(decode(&[0x67]), r8_r8_opcode(H, A));
+        assert_eq!(decode(&[0x68]), r8_r8_opcode(L, B));
+        assert_eq!(decode(&[0x69]), r8_r8_opcode(L, C));
+        assert_eq!(decode(&[0x6A]), r8_r8_opcode(L, D));
+        assert_eq!(decode(&[0x6B]), r8_r8_opcode(L, E));
+        assert_eq!(decode(&[0x6C]), r8_r8_opcode(L, H));
+        assert_eq!(decode(&[0x6D]), r8_r8_opcode(L, L));
+        assert_eq!(decode(&[0x6F]), r8_r8_opcode(L, A));
+
+        assert_eq!(decode(&[0x78]), r8_r8_opcode(A, B));
+        assert_eq!(decode(&[0x79]), r8_r8_opcode(A, C));
+        assert_eq!(decode(&[0x7A]), r8_r8_opcode(A, D));
+        assert_eq!(decode(&[0x7B]), r8_r8_opcode(A, E));
+        assert_eq!(decode(&[0x7C]), r8_r8_opcode(A, H));
+        assert_eq!(decode(&[0x7D]), r8_r8_opcode(A, L));
+        assert_eq!(decode(&[0x7F]), r8_r8_opcode(A, A));
 
         // All r8 -> (HL) instructions
 
