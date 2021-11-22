@@ -44,31 +44,6 @@ mod load8_test {
         ld8_test(0x1E, RegisterLabel8::E);
 
         {
-            // LD C A
-            let mut gb = Gameboy::new(vec![0xE2]);
-            gb.set_register_8(RegisterLabel8::C, 0x01);
-            gb.set_register_8(RegisterLabel8::A, 0x02);
-
-            let cycles = gb.step_once();
-
-            assert_eq!(gb.get_memory_at(0xFF01), 0x02);
-            assert_eq!(gb.get_register_16(RegisterLabel16::ProgramCounter), 0x01);
-            assert_eq!(cycles, 8);
-        }
-
-        {
-            // LD (HL) A
-            let mut gb = Gameboy::new(vec![0x77]);
-            gb.set_register_16(RegisterLabel16::HL, 0x0005);
-            gb.set_register_8(RegisterLabel8::A, 0x01);
-            let cycles = gb.step_once();
-
-            assert_eq!(gb.get_memory_at(0x0005), 0x01);
-            assert_eq!(gb.get_register_16(RegisterLabel16::ProgramCounter), 0x01);
-            assert_eq!(cycles, 8);
-        }
-
-        {
             // LD A (DE)
             let mut gb = Gameboy::new(vec![0x1A, 0x01]);
             gb.set_register_16(RegisterLabel16::DE, 0x01);
@@ -237,12 +212,55 @@ mod load8_test {
         assert_eq!(cycles, 8);
     }
 
+    #[test]
+    fn ld8_from_r8_into_hl() {
+        let opcode = OpCode::new(
+            Category::LD8,
+            [
+                Argument::RegisterIndirect(RegisterLabel16::HL),
+                Argument::Register8Constant(RegisterLabel8::B),
+            ],
+        );
+
+        let mut cpu = CPU::new();
+        let mut memory = vec![0x0; 0xFFFF];
+
+        cpu.write_16_bits(RegisterLabel16::HL, 0xFF00);
+        cpu.write_8_bits(RegisterLabel8::B, 0x12);
+
+        let cycles = opcode.run(&mut cpu, MemoryAdapter::new(&mut memory));
+
+        assert_eq!(cycles, 8);
+        assert_eq!(memory[0xFF00], 0x12);
+        assert_eq!(cpu.read_16_bits(RegisterLabel16::ProgramCounter), 0x1);
+    }
+
     fn r8_r8_opcode(dest_r8: RegisterLabel8, src_r8: RegisterLabel8) -> OpCode {
         OpCode::new(
             Category::LD8,
             [
                 Argument::Register8Constant(dest_r8),
                 Argument::Register8Constant(src_r8),
+            ],
+        )
+    }
+
+    fn r8_hl_opcode(dest: RegisterLabel8) -> OpCode {
+        OpCode::new(
+            Category::LD8,
+            [
+                Argument::Register8Constant(dest),
+                Argument::RegisterIndirect(RegisterLabel16::HL),
+            ],
+        )
+    }
+
+    fn hl_r8_opcode(src: RegisterLabel8) -> OpCode {
+        OpCode::new(
+            Category::LD8,
+            [
+                Argument::RegisterIndirect(RegisterLabel16::HL),
+                Argument::Register8Constant(src),
             ],
         )
     }
@@ -314,7 +332,21 @@ mod load8_test {
         assert_eq!(decode(&[0x7F]), r8_r8_opcode(A, A));
 
         // All r8 <- (HL) instructions
+        assert_eq!(decode(&[0x46]), r8_hl_opcode(B));
+        assert_eq!(decode(&[0x4E]), r8_hl_opcode(C));
+        assert_eq!(decode(&[0x56]), r8_hl_opcode(D));
+        assert_eq!(decode(&[0x5E]), r8_hl_opcode(E));
+        assert_eq!(decode(&[0x66]), r8_hl_opcode(H));
+        assert_eq!(decode(&[0x6E]), r8_hl_opcode(L));
+        assert_eq!(decode(&[0x7E]), r8_hl_opcode(A));
 
-        //
+        // All (HL) <- r8 instructions
+        assert_eq!(decode(&[0x70]), hl_r8_opcode(B));
+        assert_eq!(decode(&[0x71]), hl_r8_opcode(C));
+        assert_eq!(decode(&[0x72]), hl_r8_opcode(D));
+        assert_eq!(decode(&[0x73]), hl_r8_opcode(E));
+        assert_eq!(decode(&[0x74]), hl_r8_opcode(H));
+        assert_eq!(decode(&[0x75]), hl_r8_opcode(L));
+        assert_eq!(decode(&[0x77]), hl_r8_opcode(A));
     }
 }
