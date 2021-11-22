@@ -87,6 +87,7 @@ pub fn arg_from_str(arg: &str, index: u16, memory: &[u8]) -> Result<Argument, &'
         "H" => Argument::Register8Constant(RegisterLabel8::H),
         "L" => Argument::Register8Constant(RegisterLabel8::L),
         "(C)" => Argument::HighOffsetRegister(RegisterLabel8::C),
+        "(BC)" => Argument::RegisterIndirect(RegisterLabel16::BC),
         "(DE)" => Argument::RegisterIndirect(RegisterLabel16::DE),
         "(HL)" => Argument::RegisterIndirect(RegisterLabel16::HL),
         "(a8)" => Argument::HighOffsetConstant(memory[index as usize + 1]),

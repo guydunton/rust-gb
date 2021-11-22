@@ -348,5 +348,37 @@ mod load8_test {
         assert_eq!(decode(&[0x74]), hl_r8_opcode(H));
         assert_eq!(decode(&[0x75]), hl_r8_opcode(L));
         assert_eq!(decode(&[0x77]), hl_r8_opcode(A));
+
+        assert_eq!(
+            decode(&[0x02]),
+            OpCode::new(
+                Category::LD8,
+                [
+                    Argument::RegisterIndirect(RegisterLabel16::BC),
+                    Argument::Register8Constant(RegisterLabel8::A)
+                ]
+            )
+        );
+        assert_eq!(
+            decode(&[0x12]),
+            OpCode::new(
+                Category::LD8,
+                [
+                    Argument::RegisterIndirect(RegisterLabel16::DE),
+                    Argument::Register8Constant(RegisterLabel8::A)
+                ]
+            )
+        );
+
+        assert_eq!(
+            decode(&[0x0A]),
+            OpCode::new(
+                Category::LD8,
+                [
+                    Argument::Register8Constant(RegisterLabel8::A),
+                    Argument::RegisterIndirect(RegisterLabel16::BC)
+                ]
+            )
+        );
     }
 }
