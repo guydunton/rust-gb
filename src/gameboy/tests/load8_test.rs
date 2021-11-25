@@ -235,6 +235,30 @@ mod load8_test {
         assert_eq!(cpu.read_16_bits(RegisterLabel16::ProgramCounter), 0x1);
     }
 
+    #[test]
+    fn ld_a_hl_decrement() {
+        let opcode = OpCode::new(
+            Category::LD8,
+            [
+                Argument::Register8Constant(RegisterLabel8::A),
+                Argument::RegisterIndirectDec(RegisterLabel16::HL),
+            ],
+        );
+
+        let mut cpu = CPU::new();
+        let mut memory = vec![0x0; 0xFFFF];
+
+        cpu.write_16_bits(RegisterLabel16::HL, 0xFF00);
+        memory[0xFF00] = 0x12;
+
+        let cycles = opcode.run(&mut cpu, MemoryAdapter::new(&mut memory));
+
+        assert_eq!(cpu.read_8_bits(RegisterLabel8::A), 0x12);
+        assert_eq!(cpu.read_16_bits(RegisterLabel16::HL), 0xFEFF);
+        assert_eq!(cpu.read_16_bits(RegisterLabel16::ProgramCounter), 0x01);
+        assert_eq!(cycles, 8);
+    }
+
     fn r8_r8_opcode(dest_r8: RegisterLabel8, src_r8: RegisterLabel8) -> OpCode {
         OpCode::new(
             Category::LD8,
@@ -377,6 +401,28 @@ mod load8_test {
                 [
                     Argument::Register8Constant(RegisterLabel8::A),
                     Argument::RegisterIndirect(RegisterLabel16::BC)
+                ]
+            )
+        );
+
+        assert_eq!(
+            decode(&[0x3A]),
+            OpCode::new(
+                Category::LD8,
+                [
+                    Argument::Register8Constant(RegisterLabel8::A),
+                    Argument::RegisterIndirectDec(RegisterLabel16::HL)
+                ]
+            )
+        );
+
+        assert_eq!(
+            decode(&[0x26, 0x12]),
+            OpCode::new(
+                Category::LD8,
+                [
+                    Argument::Register8Constant(RegisterLabel8::H),
+                    Argument::SmallValue(0x12)
                 ]
             )
         );
