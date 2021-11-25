@@ -290,6 +290,25 @@ mod load8_test {
     }
 
     #[test]
+    fn ld_h_d8() {
+        let opcode = OpCode::new(
+            Category::LD8,
+            [
+                Argument::Register8Constant(RegisterLabel8::A),
+                Argument::SmallValue(0x12),
+            ],
+        );
+
+        let mut cpu = CPU::new();
+        let mut memory = vec![0x0; 0xFFFF];
+
+        let cycles = opcode.run(&mut cpu, MemoryAdapter::new(&mut memory));
+
+        assert_eq!(cycles, 8);
+        assert_eq!(cpu.read_16_bits(RegisterLabel16::ProgramCounter), 2);
+    }
+
+    #[test]
     fn ld8_is_decoded_correctly() {
         let decode = |memory| Decoder::decode_instruction(0x00, memory).unwrap();
 
