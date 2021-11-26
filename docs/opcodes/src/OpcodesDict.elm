@@ -248,7 +248,7 @@ opcodes_dict =
     , Set (OpcodeData "#ffcc99" "RST 28H" 1 "16" "- - - -")
     , Set (OpcodeData "#ccccff" "LDH A,(a8)" 2 "12" "- - - -")
     , Set (OpcodeData "#ccffcc" "POP AF" 1 "12" "Z N H C")
-    , Set (OpcodeData "#ccccff" "LD A,(C)" 2 "8" "- - - -")
+    , Set (OpcodeData "#ccccff" "LD A,(C)" 1 "8" "- - - -")
     , Set (OpcodeData "#ff99cc" "DI" 1 "4" "- - - -")
     , Unset
     , Set (OpcodeData "#ccffcc" "PUSH AF" 1 "16" "- - - -")

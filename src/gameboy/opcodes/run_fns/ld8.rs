@@ -18,6 +18,7 @@ pub fn run_ld8(args: &[Argument], cpu: &mut CPU, memory: &mut MemoryAdapter) -> 
             Argument::RegisterIndirectDec(register) => {
                 memory.get_memory_at(cpu.read_16_bits(register))
             }
+            Argument::AddressIndirect(address) => memory.get_memory_at(address),
             _ => panic!("Command does not support source argument {:?}", args[1]),
         };
 
