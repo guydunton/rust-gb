@@ -1,6 +1,11 @@
 #[cfg(test)]
 mod dec_test {
-    use crate::gameboy::{Flags, Gameboy, RegisterLabel16, RegisterLabel8};
+    use crate::gameboy::{
+        cpu::CPU,
+        memory_adapter::MemoryAdapter,
+        opcodes::{Argument, Category, Decoder},
+        Flags, Gameboy, OpCode, RegisterLabel16, RegisterLabel8,
+    };
 
     #[test]
     fn dec_instruction_removes_one_from_the_correct_register() {
@@ -92,5 +97,66 @@ mod dec_test {
             // The register needs to be decremented
             assert_eq!(gb.get_register_16(register), 5);
         }
+    }
+
+    #[test]
+    fn dec_with_a_16_bit_register() {
+        let opcode = OpCode::new(
+            Category::DEC,
+            [
+                Argument::Register16Constant(RegisterLabel16::BC),
+                Argument::None,
+            ],
+        );
+
+        let mut cpu = CPU::new();
+        let mut memory = vec![0x0; 0xFFFF];
+
+        cpu.write_16_bits(RegisterLabel16::BC, 0x04);
+
+        let cycles = opcode.run(&mut cpu, MemoryAdapter::new(&mut memory));
+
+        assert_eq!(cpu.read_16_bits(RegisterLabel16::BC), 0x03);
+        assert_eq!(cpu.read_16_bits(RegisterLabel16::ProgramCounter), 0x1);
+        assert_eq!(cycles, 8);
+    }
+
+    #[test]
+    fn can_decode_16_bit_dec() {
+        let decode = |memory| Decoder::decode_instruction(0x00, memory).unwrap();
+
+        const BC: RegisterLabel16 = RegisterLabel16::BC;
+        const DE: RegisterLabel16 = RegisterLabel16::DE;
+        const HL: RegisterLabel16 = RegisterLabel16::HL;
+        const SP: RegisterLabel16 = RegisterLabel16::StackPointer;
+
+        assert_eq!(
+            decode(&[0x0B]),
+            OpCode::new(
+                Category::DEC,
+                [Argument::Register16Constant(BC), Argument::None]
+            )
+        );
+        assert_eq!(
+            decode(&[0x1B]),
+            OpCode::new(
+                Category::DEC,
+                [Argument::Register16Constant(DE), Argument::None]
+            )
+        );
+        assert_eq!(
+            decode(&[0x2B]),
+            OpCode::new(
+                Category::DEC,
+                [Argument::Register16Constant(HL), Argument::None]
+            )
+        );
+        assert_eq!(
+            decode(&[0x3B]),
+            OpCode::new(
+                Category::DEC,
+                [Argument::Register16Constant(SP), Argument::None]
+            )
+        );
     }
 }
