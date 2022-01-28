@@ -66,7 +66,7 @@ impl OpCode {
                 cycles += run_inc(&self.args, cpu, &mut memory);
             }
             Category::DEC => {
-                cycles += run_dec(&self.args, cpu, memory.get_memory());
+                cycles += run_dec(&self.args, cpu, &mut memory);
             }
             Category::RL => {
                 cycles += run_rl(&self.args, cpu, memory.get_memory());
