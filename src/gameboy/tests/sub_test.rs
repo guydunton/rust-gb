@@ -1,7 +1,12 @@
 #[cfg(test)]
 mod sub_test {
-    use crate::gameboy::Gameboy;
+    use crate::gameboy::opcodes::{Argument, Category, Decoder};
     use crate::gameboy::{Flags, RegisterLabel16, RegisterLabel8};
+    use crate::gameboy::{Gameboy, OpCode};
+
+    fn decode(memory: &[u8]) -> OpCode {
+        Decoder::decode_instruction(0x00, memory).unwrap()
+    }
 
     #[test]
     fn sub_b_instruction() {
@@ -62,5 +67,31 @@ mod sub_test {
         let _ = gb.step_once();
 
         assert_eq!(gb.get_flag(Flags::H), true);
+    }
+
+    #[test]
+    fn decoding_sub_instructions_test() {
+        const A: RegisterLabel8 = RegisterLabel8::A;
+        const B: RegisterLabel8 = RegisterLabel8::B;
+        const C: RegisterLabel8 = RegisterLabel8::C;
+        const D: RegisterLabel8 = RegisterLabel8::D;
+        const E: RegisterLabel8 = RegisterLabel8::E;
+        const H: RegisterLabel8 = RegisterLabel8::H;
+        const L: RegisterLabel8 = RegisterLabel8::L;
+
+        let sub_opcode = |register| {
+            OpCode::new(
+                Category::SUB,
+                [Argument::Register8Constant(register), Argument::None],
+            )
+        };
+
+        assert_eq!(decode(&[0x90]), sub_opcode(B));
+        assert_eq!(decode(&[0x91]), sub_opcode(C));
+        assert_eq!(decode(&[0x92]), sub_opcode(D));
+        assert_eq!(decode(&[0x93]), sub_opcode(E));
+        assert_eq!(decode(&[0x94]), sub_opcode(H));
+        assert_eq!(decode(&[0x95]), sub_opcode(L));
+        assert_eq!(decode(&[0x97]), sub_opcode(A));
     }
 }
