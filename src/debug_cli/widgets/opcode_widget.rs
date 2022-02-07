@@ -49,7 +49,7 @@ impl<'a> Print for OpCodeWidget<'a> {
 
         let pc_width = 3;
 
-        output.push(format!("-------------------------------------------"));
+        output.push("-------------------------------------------".to_string());
         output.push(format!(
             "{:<pc_width$} {:<width$} : {}",
             "",
@@ -58,7 +58,7 @@ impl<'a> Print for OpCodeWidget<'a> {
             pc_width = pc_width,
             width = 10
         ));
-        output.push(format!("-------------------------------------------"));
+        output.push("-------------------------------------------".to_string());
         for instruction in instructions {
             let pc_counter = if instruction.get_address() == self.get_pc() {
                 "->"
@@ -75,7 +75,7 @@ impl<'a> Print for OpCodeWidget<'a> {
                 width = 10
             ));
         }
-        output.push(format!("-------------------------------------------"));
+        output.push("-------------------------------------------".to_string());
 
         output
     }

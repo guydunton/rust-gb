@@ -1,9 +1,9 @@
 pub struct MemoryView<'a> {
-    memory: &'a Vec<u8>,
+    memory: &'a [u8],
 }
 
 impl<'a> MemoryView<'a> {
-    pub fn new(memory: &Vec<u8>) -> MemoryView {
+    pub fn new(memory: &[u8]) -> MemoryView {
         MemoryView { memory }
     }
 

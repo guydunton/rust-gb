@@ -1,6 +1,7 @@
 use super::Channel;
 use super::{timer::TickResult, Timer};
 
+#[allow(clippy::upper_case_acronyms)]
 pub struct ALU<'a> {
     audio_callback: Box<dyn FnMut(i16) + 'a>,
     sample_timer: Timer,

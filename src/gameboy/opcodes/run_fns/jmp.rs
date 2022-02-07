@@ -20,12 +20,13 @@ pub fn run_jmp(args: &[Argument], cpu: &mut CPU, _memory: &mut Vec<u8>) -> u32 {
     let mut cycles = 8;
 
     match args[0] {
-        Argument::JumpArgument(condition) => {
+        Argument::JumpCondition(condition) => {
             // Arg 1 is the condition
             let condition_checker = || -> bool {
+                let zero_flag = read_flag(cpu, Flags::Z);
                 match condition {
-                    JumpCondition::NotZero => read_flag(cpu, Flags::Z) == false,
-                    JumpCondition::Zero => read_flag(cpu, Flags::Z) == true,
+                    JumpCondition::NotZero => !zero_flag,
+                    JumpCondition::Zero => zero_flag,
                 }
             };
 

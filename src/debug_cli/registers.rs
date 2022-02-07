@@ -5,10 +5,10 @@ pub struct Registers {
 }
 
 impl Registers {
-    pub fn get_register_val(&self, register: &String) -> String {
+    pub fn get_register_val(&self, register: &str) -> String {
         self.registers
             .get(register)
-            .map(|x| x.clone())
-            .unwrap_or("Invalid register".to_string())
+            .cloned()
+            .unwrap_or_else(|| "Invalid register".to_string())
     }
 }

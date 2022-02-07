@@ -53,7 +53,7 @@ impl Decoder {
 
 fn parts_from_dictionary(
     code: u8,
-    dictionary: &'static Vec<(u8, Vec<&'static str>)>,
+    dictionary: &'static [(u8, Vec<&'static str>)],
     error: DecodingError,
 ) -> Result<&std::vec::Vec<&str>, DecodingError> {
     dictionary

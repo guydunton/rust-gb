@@ -1,3 +1,5 @@
+#![allow(clippy::comparison_chain)]
+
 extern crate image as img;
 
 #[macro_use]
@@ -67,13 +69,8 @@ impl<'a> App<'a> {
         if self.is_debug {
             let debug_controls = update(&self.gb, &mut self.breakpoints);
 
-            match debug_controls {
-                DebugControls::Continue => {
-                    self.is_debug = false;
-                }
-                _ => {
-                    // Do nothing
-                }
+            if let DebugControls::Continue = debug_controls {
+                self.is_debug = false;
             }
         }
 
@@ -92,9 +89,7 @@ impl<'a> App<'a> {
 fn build_audio_event_loop() -> impl DeviceTrait {
     // Create an audio device & event loop
     let host = cpal::default_host();
-    let device = host.default_output_device().unwrap();
-
-    device
+    host.default_output_device().unwrap()
 }
 
 fn create_audio_thread<T>(device: T, receiver: Receiver<i16>) -> impl StreamTrait
@@ -106,7 +101,7 @@ where
         buffer_size: cpal::BufferSize::Default,
         sample_rate: SampleRate { 0: 44100 },
     };
-    let stream = device
+    device
         .build_output_stream(
             &my_config,
             move |data, _| {
@@ -124,8 +119,7 @@ where
             },
             move |_err| {},
         )
-        .unwrap();
-    stream
+        .unwrap()
 }
 
 fn load_rom(file_name: &str) -> std::io::Result<Vec<u8>> {

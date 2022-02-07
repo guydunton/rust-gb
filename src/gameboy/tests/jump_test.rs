@@ -65,7 +65,7 @@ mod jump_test {
         gb.set_register_16(RegisterLabel16::ProgramCounter, 0x01);
 
         let cycles = gb.step_once();
-        use super::super::super::opcodes::Decoder;
+        use crate::gameboy::opcodes::Decoder;
         let opcode = Decoder::decode_instruction(0x01, gb.get_memory_slice_at(0, 0xFFFF)).unwrap();
         assert_eq!(opcode.size(), 2);
 

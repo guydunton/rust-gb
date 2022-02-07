@@ -38,7 +38,7 @@ impl Channel {
             self.enabled = true;
 
             // Reset the trigger
-            memory[0xFF14] = memory[0xFF14] & 0b0111_1111;
+            memory[0xFF14] &= 0b0111_1111;
         }
 
         // If enabled start counting the timers
@@ -67,7 +67,7 @@ impl Channel {
         self.volume as i16 * get_duty(self.duty, self.duty_position) as i16
     }
 
-    pub fn trigger(&mut self, memory: &Vec<u8>) {
+    pub fn trigger(&mut self, memory: &[u8]) {
         self.frequency = Self::get_frequency(memory);
         self.volume = ((memory[0xFF12] & 0b1111_0000) >> 4) as i32;
 
@@ -84,11 +84,9 @@ impl Channel {
         self.duty = DutyCycle::from((memory[0xFF11] & 0b1100_0000) >> 6);
     }
 
-    fn get_frequency(memory: &Vec<u8>) -> i32 {
+    fn get_frequency(memory: &[u8]) -> i32 {
         let freq_lsb = (memory[0xFF13]) as i32;
         let freq_msb = (memory[0xFF14] & 0b0000_0111) as i32;
-        let frequency = (freq_msb << 8) | freq_lsb;
-
-        frequency
+        (freq_msb << 8) | freq_lsb
     }
 }
