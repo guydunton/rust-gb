@@ -50,5 +50,5 @@ pub fn run_ld16(args: &[Argument], cpu: &mut CPU, memory: &mut Vec<u8>) -> u32 {
         _ => 0,
     };
 
-    return cycles;
+    cycles
 }

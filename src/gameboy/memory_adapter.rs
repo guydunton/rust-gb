@@ -1,8 +1,10 @@
 use super::memory_view::MemoryView;
 
+type StoredCallback<'a> = Box<dyn FnMut(u8) + 'a>;
+
 pub struct MemoryAdapter<'a> {
     memory: &'a mut Vec<u8>,
-    callback_conditions: Vec<(u16, Box<dyn FnMut(u8) + 'a>)>,
+    callback_conditions: Vec<(u16, StoredCallback<'a>)>,
 }
 
 impl<'a> MemoryAdapter<'a> {
@@ -28,11 +30,11 @@ impl<'a> MemoryAdapter<'a> {
     }
 
     pub fn get_memory_at(&self, address: u16) -> u8 {
-        MemoryView::new(&self.memory).get_memory_at(address)
+        MemoryView::new(self.memory).get_memory_at(address)
     }
 
     pub fn get_memory(&mut self) -> &mut Vec<u8> {
-        &mut self.memory
+        self.memory
     }
 }
 

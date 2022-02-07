@@ -1,3 +1,4 @@
+#[allow(clippy::upper_case_acronyms)]
 #[derive(PartialEq, Debug, Copy, Clone)]
 pub enum Category {
     NOP,
@@ -22,11 +23,7 @@ pub enum Category {
 }
 
 fn is_cb_category(category: Category) -> bool {
-    match category {
-        Category::RL => true,
-        Category::BIT => true,
-        _ => false,
-    }
+    matches!(category, Category::RL | Category::BIT)
 }
 
 pub fn category_from_str(cat: &str) -> Category {
@@ -58,6 +55,5 @@ pub fn category_from_str(cat: &str) -> Category {
 
 pub fn category_size(category: Category) -> u16 {
     let cb_size = if is_cb_category(category) { 1 } else { 0 };
-    let total_size = cb_size + 1;
-    total_size
+    cb_size + 1
 }

@@ -30,7 +30,7 @@ impl Timer {
             self.count -= dt as i32;
 
             if self.count <= 0 {
-                self.count = self.length + self.count;
+                self.count += self.length;
                 return TickResult::Ticked;
             } else {
                 return TickResult::Noop;

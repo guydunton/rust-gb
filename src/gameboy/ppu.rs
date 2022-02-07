@@ -2,6 +2,7 @@ use super::memory_view::MemoryView;
 use super::Labels;
 use super::ScreenColor;
 
+#[allow(clippy::upper_case_acronyms)]
 pub struct PPU {
     screen_data: Vec<ScreenColor>,
     bg_palette: [ScreenColor; 4],
@@ -16,12 +17,12 @@ fn convert_base_to_color(palette_base: u8) -> [ScreenColor; 4] {
         ScreenColor::White,
     ];
 
-    for i in 0..4 {
+    for (i, item) in bg_palette.iter_mut().enumerate() {
         match (palette_base >> (i * 2)) & 0b0000_0011 {
-            0 => bg_palette[i] = ScreenColor::White,
-            1 => bg_palette[i] = ScreenColor::Light,
-            2 => bg_palette[i] = ScreenColor::Dark,
-            3 => bg_palette[i] = ScreenColor::Black,
+            0 => *item = ScreenColor::White,
+            1 => *item = ScreenColor::Light,
+            2 => *item = ScreenColor::Dark,
+            3 => *item = ScreenColor::Black,
             _ => {
                 panic!("An error ocurred during palette creation");
             }
@@ -80,8 +81,8 @@ impl PPU {
         pixels
     }
 
-    pub fn get_vram_data(&self, memory: &Vec<u8>) -> Vec<ScreenColor> {
-        let mem_view = MemoryView::new(&memory);
+    pub fn get_vram_data(&self, memory: &[u8]) -> Vec<ScreenColor> {
+        let mem_view = MemoryView::new(memory);
         let mut vram = vec![ScreenColor::White; 256 * 256];
 
         // Loop through $9800-$9BFF - BG Map Data 1 to see all the sprites on screen
@@ -130,7 +131,7 @@ impl PPU {
 
                 if memory[Labels::LCDC_Y as usize] <= 144 {
                     // Write a line into the screen data starting at LCDC_Y - 1
-                    
+
                     // Which line are we drawing
                     let drawing_line = memory[Labels::LCDC_Y as usize].saturating_sub(1);
 
@@ -156,7 +157,8 @@ impl PPU {
                         let inside_tile_x = (vram_x % 8) as u8;
                         let inside_tile_y = (vram_y % 8) as u8;
 
-                        let pixel_value = get_pixel_value_from_sprite(inside_tile_x, inside_tile_y, &tile_bytes);
+                        let pixel_value =
+                            get_pixel_value_from_sprite(inside_tile_x, inside_tile_y, tile_bytes);
                         let pixel_color = self.bg_palette[pixel_value as usize];
                         self.screen_data[pixel_index as usize] = pixel_color;
                     }
@@ -177,28 +179,24 @@ fn find_tile_index(vram_x: u32, vram_y: u32) -> u16 {
     let tile_y = vram_y / 8;
 
     // Find the tile index
-    let tile_index = (tile_x + tile_y * 32) as u16;
-    tile_index
+    (tile_x + tile_y * 32) as u16
 }
 
-fn get_tile_data(tile_index: u16, memory: &Vec<u8>) -> &[u8] {
+fn get_tile_data(tile_index: u16, memory: &[u8]) -> &[u8] {
     // Get the tile_data_start
-    let tile_data_start = (Labels::CHARACTER_RAM_START + 
-        memory[(Labels::BG_MAP_DATA_1_START + tile_index) as usize] as u16 * 16) as usize;
+    let tile_data_start = (Labels::CHARACTER_RAM_START
+        + memory[(Labels::BG_MAP_DATA_1_START + tile_index) as usize] as u16 * 16)
+        as usize;
 
-    let tile_bytes = &memory[tile_data_start..(tile_data_start + 16)];
-    tile_bytes
+    &memory[tile_data_start..(tile_data_start + 16)]
 }
- 
+
 fn get_pixel_value_from_sprite(x: u8, y: u8, sprite_data: &[u8]) -> u8 {
-    let row_bytes: [u8;2] = [
-        sprite_data[y as usize * 2],
-        sprite_data[y as usize * 2 + 1]
-    ];
+    let row_bytes: [u8; 2] = [sprite_data[y as usize * 2], sprite_data[y as usize * 2 + 1]];
 
     // Get the least significant bit
-    let ls_bit = (row_bytes[0] >> (7-x)) & 1;
-    let ms_bit = (row_bytes[1] >> (7-x)) & 1;
+    let ls_bit = (row_bytes[0] >> (7 - x)) & 1;
+    let ms_bit = (row_bytes[1] >> (7 - x)) & 1;
 
     ls_bit | (ms_bit << 1)
 }
@@ -207,8 +205,8 @@ fn get_pixel_value_from_sprite(x: u8, y: u8, sprite_data: &[u8]) -> u8 {
 fn get_the_correct_pixel_from_background_sprite() {
     // Sprite Data
     let sprite_data = [
-        0x55, 0x33, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
-        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+        0x55, 0x33, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0x00,
     ];
 
     // Get the correct color

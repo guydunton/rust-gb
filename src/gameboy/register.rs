@@ -70,10 +70,10 @@ impl RegisterPair {
     }
 
     pub fn contains_8_bit_register(&self, label: RegisterLabel8) -> bool {
-        match self.labels_8_bit.iter().find(|pair| pair.label == label) {
-            Some(_) => true,
-            _ => false,
-        }
+        matches!(
+            self.labels_8_bit.iter().find(|pair| pair.label == label),
+            Some(_)
+        )
     }
 
     pub fn contains_16_bit_register(&self, label: RegisterLabel16) -> bool {
@@ -82,7 +82,7 @@ impl RegisterPair {
 
     pub fn perform_16_bit_read(&self) -> u16 {
         // read all the data into a u16
-        u16::from_be_bytes(self.data_pair.clone())
+        u16::from_be_bytes(self.data_pair)
     }
 
     pub fn perform_8_bit_read(&self, label: RegisterLabel8) -> Option<u8> {

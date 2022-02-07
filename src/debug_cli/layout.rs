@@ -49,7 +49,7 @@ impl<'a> Layout<'a> {
         let max_lines = std::cmp::max(col_0_size, col_1_size);
 
         // Create a buffer with that many lines in it. Each line is 80 chars wide
-        let buffer_line = std::iter::repeat(' ').take(80).collect::<String>();
+        let buffer_line = " ".repeat(80);
         let mut buffer = vec![buffer_line; max_lines];
 
         // Iterate through all the column 0 widgets and print them into the buffer.

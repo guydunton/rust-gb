@@ -1,6 +1,8 @@
 mod audio;
 mod cpu;
 mod flags_register;
+
+#[allow(clippy::module_inception)]
 mod gameboy;
 mod memory_adapter;
 mod memory_labels;

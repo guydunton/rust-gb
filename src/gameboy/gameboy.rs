@@ -67,7 +67,7 @@ impl<'a> Gameboy<'a> {
         }
 
         let mut memory = vec![0x0; 0xFFFF + 1];
-        memory[..game_data.len()].clone_from_slice(&game_data[..]);
+        memory[..game_data.len()].clone_from_slice(game_data);
         memory[..bootloader.len()].clone_from_slice(&bootloader[..]);
 
         let mut rom_header_data = vec![0x0u8; bootloader.len()];
@@ -120,11 +120,11 @@ impl<'a> Gameboy<'a> {
 
     #[allow(dead_code)]
     pub fn tick(&mut self, dt: f64) -> TickResult {
-        self.tick_with_breaks(dt, &vec![])
+        self.tick_with_breaks(dt, &[])
     }
 
     #[allow(dead_code)]
-    pub fn tick_with_breaks(&mut self, dt: f64, breakpoints: &Vec<u16>) -> TickResult {
+    pub fn tick_with_breaks(&mut self, dt: f64, breakpoints: &[u16]) -> TickResult {
         let cycles_to_use = (dt * 4194304f64) as u32;
         let mut total_cycles_used = 0;
 
@@ -140,7 +140,7 @@ impl<'a> Gameboy<'a> {
                 return TickResult::HitBreakpoint;
             }
         }
-        return TickResult::FrameComplete;
+        TickResult::FrameComplete
     }
 
     /// Run the next instruction and return the number of cycles used.
@@ -166,7 +166,7 @@ impl<'a> Gameboy<'a> {
                 // Run the ALU by the same amount of cycles
                 self.alu.tick(cycles, &mut self.memory);
 
-                return cycles;
+                cycles
             }
             Err(err) => {
                 panic!("{}", err);
@@ -250,6 +250,7 @@ impl<'a> Gameboy<'a> {
         opcode.map(|op| op.to_string().trim().to_owned()).ok()
     }
 
+    #[allow(clippy::needless_return)]
     #[allow(dead_code)]
     pub fn get_opcode_with_offset(&self, offset: u16) -> Result<(String, u16), ()> {
         let current_counter = self.cpu.read_16_bits(RegisterLabel16::ProgramCounter);
@@ -262,16 +263,16 @@ impl<'a> Gameboy<'a> {
             match added_counter {
                 Some(value) => {
                     if value == u16::max_value() {
-                        return Err({});
+                        return Err(());
                     }
                     let opcode = self.get_opcode_at(value);
                     match opcode {
                         Ok(op) => opcode_size_offset += op.size(),
-                        Err(_err) => return Err({}),
+                        Err(_err) => return Err(()),
                     }
                 }
                 None => {
-                    return Err({});
+                    return Err(());
                 }
             }
         }
@@ -281,7 +282,7 @@ impl<'a> Gameboy<'a> {
         match desired_counter {
             Some(value) => {
                 if value == u16::max_value() {
-                    return Err({});
+                    return Err(());
                 }
                 let opcode = self.get_opcode_at(value);
                 return opcode
@@ -289,7 +290,7 @@ impl<'a> Gameboy<'a> {
                     .map_err(|_| ({}));
             }
             None => {
-                return Err({});
+                return Err(());
             }
         }
     }

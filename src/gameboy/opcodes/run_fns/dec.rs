@@ -20,7 +20,7 @@ pub fn run_dec(args: &[Argument], cpu: &mut CPU, memory: &mut MemoryAdapter) -> 
             }
 
             // If result borrows from top half of byte set H flag
-            if b == 0b1_000 {
+            if b == 0b1000 {
                 write_flag(cpu, Flags::H, true);
             }
 
@@ -52,7 +52,7 @@ pub fn run_dec(args: &[Argument], cpu: &mut CPU, memory: &mut MemoryAdapter) -> 
             }
 
             // If result borrows from top half of byte set H flag
-            if b == 0b1_000 {
+            if b == 0b1000 {
                 write_flag(cpu, Flags::H, true);
             }
 

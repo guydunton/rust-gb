@@ -1,5 +1,6 @@
 use super::register::{RegisterLabel16, RegisterLabel8, RegisterPair};
 
+#[allow(clippy::upper_case_acronyms)]
 #[derive(Clone)]
 pub struct CPU {
     registers: Vec<RegisterPair>,

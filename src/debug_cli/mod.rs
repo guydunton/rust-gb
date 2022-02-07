@@ -26,7 +26,7 @@ pub fn update(gb: &Gameboy, breakpoints: &mut Vec<u16>) -> DebugControls {
             .read_line(&mut text)
             .expect("Input failed unexpectedly");
         let trimmed = text.trim();
-        match trimmed.as_ref() {
+        match trimmed {
             "s" => return DebugControls::Tick,
             "c" => return DebugControls::Continue,
             "b" => breakpoint_menu(breakpoints),
@@ -40,9 +40,9 @@ pub fn update(gb: &Gameboy, breakpoints: &mut Vec<u16>) -> DebugControls {
 }
 
 fn default_view(gb: &Gameboy) {
-    let opcodes = OpCodeWidget::new(&gb);
-    let registers = RegistersWidget::new(&gb);
-    let flags = FlagsWidget::new(&gb);
+    let opcodes = OpCodeWidget::new(gb);
+    let registers = RegistersWidget::new(gb);
+    let flags = FlagsWidget::new(gb);
     let mut layout = Layout::new();
     layout.add_widget(Box::new(opcodes), 0);
     layout.add_widget(Box::new(registers), 1);
@@ -51,10 +51,10 @@ fn default_view(gb: &Gameboy) {
 }
 
 fn audio_view(gb: &Gameboy) {
-    let channel1 = AudioWidget::new(&gb, Channel::One);
-    let channel2 = AudioWidget::new(&gb, Channel::Two);
-    let channel3 = AudioWidget::new(&gb, Channel::Three);
-    let channel4 = AudioWidget::new(&gb, Channel::Four);
+    let channel1 = AudioWidget::new(gb, Channel::One);
+    let channel2 = AudioWidget::new(gb, Channel::Two);
+    let channel3 = AudioWidget::new(gb, Channel::Three);
+    let channel4 = AudioWidget::new(gb, Channel::Four);
     let mut layout = Layout::new();
     layout.add_widget(Box::new(channel1), 0);
     layout.add_widget(Box::new(channel2), 1);
@@ -75,13 +75,13 @@ fn breakpoint_menu(breakpoints: &mut Vec<u16>) {
 
     if trimmed == "s" {
         breakpoints.iter().for_each(|bp| println!("{:#X}", *bp));
-    } else if trimmed.starts_with("a") {
+    } else if trimmed.starts_with('a') {
         // Get the last part of the command
         let address = trimmed.split(' ').collect::<Vec<&str>>()[1];
         println!("{}", address);
         let bp_address = u16::from_str_radix(address, 16).unwrap();
         breakpoints.push(bp_address);
-    } else if trimmed.starts_with("r") {
+    } else if trimmed.starts_with('r') {
         // Get the last part of the command
         let address = trimmed.split(' ').collect::<Vec<&str>>()[1];
         let bp_address = u16::from_str_radix(address, 16).unwrap();
@@ -110,7 +110,7 @@ fn request_address(gb: &Gameboy) {
 
     // Print the address in a new layout
     let mut layout = Layout::new();
-    let memory_widget = MemoryWidget::new(&gb, address);
+    let memory_widget = MemoryWidget::new(gb, address);
     layout.add_widget(Box::new(memory_widget), 0);
     layout.draw();
 }
