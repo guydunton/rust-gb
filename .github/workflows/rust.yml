@@ -16,12 +16,6 @@ jobs:
           sudo apt update -y
           sudo apt install -y libasound2-dev libudev-dev pkg-config
 
-        # Should only be needed temporarily. Remove once Rust versions have updated on each OS. See below:
-        # Linux: https://github.com/actions/virtual-environments/blob/main/images/linux/Ubuntu2004-README.md#rust-tools
-        # Windows: https://github.com/actions/virtual-environments/blob/main/images/win/Windows2019-Readme.md#rust-tools
-      - name: Update Rust version to latest
-        run: rustup update
-
       - uses: actions/checkout@v1
 
       - uses: actions/cache@v2
@@ -37,3 +31,29 @@ jobs:
 
       - name: Run tests
         run: cargo test --verbose
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Update dependencies
+        if: ${{ runner.os == 'Linux' }}
+        run: |
+          sudo apt update -y
+          sudo apt install -y libasound2-dev libudev-dev pkg-config
+
+      - uses: actions/checkout@v1
+
+      - uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+      - run: rustup component add clippy
+
+      - uses: actions-rs/clippy-check@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          args: --all-features
