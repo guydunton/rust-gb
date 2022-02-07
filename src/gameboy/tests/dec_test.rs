@@ -1,15 +1,12 @@
 #[cfg(test)]
 mod dec_test {
+    use super::super::decode_util::decode;
     use crate::gameboy::{
         cpu::CPU,
         memory_adapter::MemoryAdapter,
-        opcodes::{Argument, Category, Decoder},
+        opcodes::{Argument, Category},
         Flags, Gameboy, OpCode, RegisterLabel16, RegisterLabel8,
     };
-
-    fn decode(memory: &[u8]) -> OpCode {
-        Decoder::decode_instruction(0x00, memory).unwrap()
-    }
 
     #[test]
     fn dec_instruction_removes_one_from_the_correct_register() {
