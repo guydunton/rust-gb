@@ -5,7 +5,8 @@ import Hex exposing (toHex)
 
 supportedCodes : List String
 supportedCodes =
-    [ {supportedCodes}
+    [ "0xCB"
+    , {supportedCodes}
     ]
 
 
