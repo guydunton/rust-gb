@@ -1,5 +1,5 @@
 use crate::gameboy::{
-    cpu::CPU,Gameboy,
+    cpu::CPU,
     memory_adapter::MemoryAdapter,
     opcodes::{Argument, Category},
     Flags, OpCode, RegisterLabel16, RegisterLabel8,
