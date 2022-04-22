@@ -16,6 +16,7 @@ mod ret_test;
 mod sub_test;
 mod timing;
 mod xor_test;
+mod cpl_test;
 
 use crate::gameboy::Gameboy;
 

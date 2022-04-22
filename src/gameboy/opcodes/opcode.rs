@@ -87,6 +87,9 @@ impl OpCode {
                 // TODO: Implement interrupts
                 cycles += 4;
             }
+            Category::CPL => {
+                cycles += run_cpl(&self.args, cpu, memory.get_memory());
+            }
         };
 
         cycles

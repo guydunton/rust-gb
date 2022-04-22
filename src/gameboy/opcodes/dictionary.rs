@@ -39,6 +39,7 @@ lazy_static! {
         (0x2C, "INC L"),
         (0x2D, "DEC L"),
         (0x2E, "LD8 L d8"),
+        (0x2F, "CPL"),
         (0x31, "LD16 SP d16"),
         (0x32, "LD8 (HL-) A"),
         (0x33, "INC SP"),

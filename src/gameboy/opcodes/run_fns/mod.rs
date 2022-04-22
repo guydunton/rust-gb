@@ -16,6 +16,7 @@ mod rotate_left_a;
 mod rotate_method;
 mod sub;
 mod xor;
+mod cpl;
 
 pub use self::add::run_add;
 pub use self::bit::run_bit;
@@ -34,3 +35,4 @@ pub use self::rotate_left::run_rl;
 pub use self::rotate_left_a::run_rla;
 pub use self::sub::run_sub;
 pub use self::xor::run_xor;
+pub use self::cpl::run_cpl;
