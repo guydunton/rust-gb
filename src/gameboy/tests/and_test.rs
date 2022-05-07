@@ -56,4 +56,81 @@ fn decode_and_instruction() {
         decode(&[0xE6, 0x01]),
         OpCode::new(Category::AND, [Argument::SmallValue(0x01), Argument::None])
     );
+
+    let and_op_r8 = |register| {
+        OpCode::new(
+            Category::AND,
+            [Argument::Register8Constant(register), Argument::None],
+        )
+    };
+
+    const A: RegisterLabel8 = RegisterLabel8::A;
+    const B: RegisterLabel8 = RegisterLabel8::B;
+    const C: RegisterLabel8 = RegisterLabel8::C;
+    const D: RegisterLabel8 = RegisterLabel8::D;
+    const E: RegisterLabel8 = RegisterLabel8::E;
+    const H: RegisterLabel8 = RegisterLabel8::H;
+    const L: RegisterLabel8 = RegisterLabel8::L;
+
+    assert_eq!(decode(&[0xA0]), and_op_r8(B));
+    assert_eq!(decode(&[0xA1]), and_op_r8(C));
+    assert_eq!(decode(&[0xA2]), and_op_r8(D));
+    assert_eq!(decode(&[0xA3]), and_op_r8(E));
+    assert_eq!(decode(&[0xA4]), and_op_r8(H));
+    assert_eq!(decode(&[0xA5]), and_op_r8(L));
+    assert_eq!(decode(&[0xA7]), and_op_r8(A));
+
+    assert_eq!(
+        decode(&[0xA6]),
+        OpCode::new(
+            Category::AND,
+            [
+                Argument::RegisterIndirect(RegisterLabel16::HL),
+                Argument::None
+            ]
+        )
+    );
+}
+
+#[test]
+fn and_instruction_works_with_registers() {
+    let opcode = OpCode::new(
+        Category::AND,
+        [
+            Argument::Register8Constant(RegisterLabel8::B),
+            Argument::None,
+        ],
+    );
+
+    let mut cpu = CPU::new();
+    let mut memory = vec![0x0; 0xFFFF];
+
+    cpu.write_8_bits(RegisterLabel8::A, 0b0000_0011);
+    cpu.write_8_bits(RegisterLabel8::B, 0b0000_0001);
+
+    opcode.run(&mut cpu, MemoryAdapter::new(&mut memory));
+
+    assert_eq!(cpu.read_8_bits(RegisterLabel8::A), 0b_0000_0001);
+}
+
+#[test]
+fn and_instruction_works_with_indirection() {
+    let opcode = OpCode::new(
+        Category::AND,
+        [
+            Argument::RegisterIndirect(RegisterLabel16::HL),
+            Argument::None,
+        ],
+    );
+
+    let mut cpu = CPU::new();
+    let mut memory = vec![0x0; 0xFFFF];
+
+    cpu.write_8_bits(RegisterLabel8::A, 0b0000_0011);
+    cpu.write_16_bits(RegisterLabel16::HL, 0xFF01);
+    memory[0xFF01] = 0b0000_0001;
+
+    opcode.run(&mut cpu, MemoryAdapter::new(&mut memory));
+
+    assert_eq!(cpu.read_8_bits(RegisterLabel8::A), 0b_0000_0001);
 }
