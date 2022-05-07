@@ -13,7 +13,7 @@ fn move_program_counter(cpu: &mut CPU, distance: i8) {
     );
 }
 
-pub fn run_jmp(args: &[Argument], cpu: &mut CPU, _memory: &mut Vec<u8>) -> u32 {
+pub fn run_jmp(args: &[Argument], cpu: &mut CPU, _memory: &mut [u8]) -> u32 {
     assert!(args.len() <= 2);
 
     // 8 cycles by default

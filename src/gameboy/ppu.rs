@@ -117,7 +117,7 @@ impl PPU {
         self.bg_palette = convert_base_to_color(value);
     }
 
-    pub fn tick(&mut self, cycles: u32, memory: &mut Vec<u8>) {
+    pub fn tick(&mut self, cycles: u32, memory: &mut [u8]) {
         // Get the 7th bit
         let bit_7_set = (memory[Labels::V_BLANK as usize] & 0b1000_0000) != 0;
         let is_screen_on = bit_7_set;

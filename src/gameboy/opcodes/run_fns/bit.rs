@@ -3,7 +3,7 @@ use crate::gameboy::cpu::CPU;
 use super::super::super::flags_register::{write_flag, Flags};
 use super::super::argument::Argument;
 
-pub fn run_bit(args: &[Argument], cpu: &mut CPU, _memory: &mut Vec<u8>) -> u32 {
+pub fn run_bit(args: &[Argument], cpu: &mut CPU, _memory: &mut [u8]) -> u32 {
     let mut cycles = 0;
     assert_eq!(args.len(), 2);
 

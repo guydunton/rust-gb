@@ -3,7 +3,7 @@ use crate::gameboy::cpu::CPU;
 use super::super::super::{read_flag, write_flag, Flags, RegisterLabel8};
 use super::rotate_method::shift_reg_and_flag;
 
-pub fn run_rla(cpu: &mut CPU, _memory: &mut Vec<u8>) -> u32 {
+pub fn run_rla(cpu: &mut CPU, _memory: &mut [u8]) -> u32 {
     let mut cycles = 0;
     let reg_contents = cpu.read_8_bits(RegisterLabel8::A);
     let carry_flag = read_flag(cpu, Flags::C);

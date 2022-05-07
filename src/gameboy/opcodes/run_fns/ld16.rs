@@ -2,7 +2,7 @@ use crate::gameboy::{cpu::CPU, write_flag, Flags, RegisterLabel16, RegisterLabel
 
 use super::super::Argument;
 
-pub fn run_ld16(args: &[Argument], cpu: &mut CPU, memory: &mut Vec<u8>) -> u32 {
+pub fn run_ld16(args: &[Argument], cpu: &mut CPU, memory: &mut [u8]) -> u32 {
     assert_eq!(args.len(), 2);
 
     let source = match args[1] {

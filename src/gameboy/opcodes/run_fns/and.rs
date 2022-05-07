@@ -3,7 +3,7 @@ use crate::gameboy::{cpu::CPU, RegisterLabel8};
 use super::super::super::flags_register::{write_flag, Flags};
 use super::super::argument::Argument;
 
-pub fn run_and(args: &[Argument], cpu: &mut CPU, memory: &mut Vec<u8>) -> u32 {
+pub fn run_and(args: &[Argument], cpu: &mut CPU, memory: &mut [u8]) -> u32 {
     cpu.write_8_bits(RegisterLabel8::F, 0);
     write_flag(cpu, Flags::H, true);
 
