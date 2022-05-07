@@ -24,6 +24,11 @@ pub fn run_add(args: &[Argument], cpu: &mut CPU, memory: &mut [u8]) -> u32 {
             let address = cpu.read_16_bits(register);
             memory[address as usize]
         }
+        Argument::Register8Constant(register) => cpu.read_8_bits(register),
+        Argument::SmallValue(val) => {
+            extra_cycles += 4;
+            val
+        }
         _ => {
             panic!("Unknown argument to ADD command {}", args[1]);
         }
