@@ -1,4 +1,5 @@
 mod add_test;
+mod and_test;
 mod alu_test;
 mod cp_test;
 mod dec_test;

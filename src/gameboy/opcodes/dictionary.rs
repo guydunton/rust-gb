@@ -145,6 +145,7 @@ lazy_static! {
         (0xCD, "CALL a16"),
         (0xE0, "LD8 (a8) A"),
         (0xE2, "LD8 (C) A"),
+        (0xE6, "AND d8"),
         (0xEA, "LD8 (a16) A"),
         (0xF0, "LD8 A (a8)"),
         (0xF2, "LD8 A (C)"),
