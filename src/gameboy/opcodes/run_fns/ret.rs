@@ -2,7 +2,7 @@ use crate::gameboy::cpu::CPU;
 
 use crate::gameboy::RegisterLabel16;
 
-pub fn run_ret(cpu: &mut CPU, memory: &mut Vec<u8>) -> u32 {
+pub fn run_ret(cpu: &mut CPU, memory: &mut [u8]) -> u32 {
     let stack_pointer = cpu.read_16_bits(RegisterLabel16::StackPointer);
 
     // Get the top 2 bytes of the stack

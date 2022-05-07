@@ -6,7 +6,7 @@ use crate::gameboy::flags_register;
 use super::super::Argument;
 use crate::gameboy::RegisterLabel8;
 
-pub fn run_xor(args: &[Argument], cpu: &mut CPU, _memory: &mut Vec<u8>) -> u32 {
+pub fn run_xor(args: &[Argument], cpu: &mut CPU, _memory: &mut [u8]) -> u32 {
     let mut cycles = 0;
 
     match args[0] {

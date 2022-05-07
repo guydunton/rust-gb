@@ -29,7 +29,7 @@ impl Channel {
         }
     }
 
-    pub fn tick(&mut self, dt: u32, memory: &mut Vec<u8>) {
+    pub fn tick(&mut self, dt: u32, memory: &mut [u8]) {
         // Set enabled from mem and trigger the channel
         if (memory[0xFF14] & 0b1000_0000) != 0 {
             self.trigger(memory);

@@ -28,7 +28,7 @@ impl<'a> ALU<'a> {
         }
     }
 
-    pub fn tick(&mut self, tick: u32, memory: &mut Vec<u8>) {
+    pub fn tick(&mut self, tick: u32, memory: &mut [u8]) {
         self.square_channel_1.tick(tick, memory);
 
         // if the cycles are less than 0 then emit a value, reset the count

@@ -4,7 +4,7 @@ use crate::gameboy::{flags_register, Flags};
 
 use super::super::Argument;
 
-pub fn run_or(args: &[Argument], cpu: &mut CPU, _memory: &mut Vec<u8>) -> u32 {
+pub fn run_or(args: &[Argument], cpu: &mut CPU, _memory: &mut [u8]) -> u32 {
     match args[0] {
         Argument::Register8Constant(register) => {
             let new_val = cpu.read_8_bits(RegisterLabel8::A) | cpu.read_8_bits(register);

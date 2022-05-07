@@ -3,7 +3,7 @@ use super::super::argument::Argument;
 use crate::gameboy::cpu::CPU;
 use crate::gameboy::RegisterLabel16;
 
-pub fn run_call(args: &[Argument], cpu: &mut CPU, memory: &mut Vec<u8>) -> u32 {
+pub fn run_call(args: &[Argument], cpu: &mut CPU, memory: &mut [u8]) -> u32 {
     let mut cycles = 0;
     if let Argument::Label(address) = args[0] {
         // Store the contents of the program counter on the stack

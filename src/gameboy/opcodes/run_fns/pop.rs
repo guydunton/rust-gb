@@ -3,7 +3,7 @@ use crate::gameboy::cpu::CPU;
 use super::super::Argument;
 use crate::gameboy::RegisterLabel16;
 
-pub fn run_pop(args: &[Argument], cpu: &mut CPU, memory: &mut Vec<u8>) -> u32 {
+pub fn run_pop(args: &[Argument], cpu: &mut CPU, memory: &mut [u8]) -> u32 {
     if let Argument::Register16Constant(_) = args[0] {
         // Read the stack pointer
         let sp = cpu.read_16_bits(RegisterLabel16::StackPointer);

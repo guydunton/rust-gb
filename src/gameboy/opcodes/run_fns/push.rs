@@ -3,7 +3,7 @@ use crate::gameboy::cpu::CPU;
 use super::super::Argument;
 use crate::gameboy::RegisterLabel16;
 
-pub fn run_push(args: &[Argument], cpu: &mut CPU, memory: &mut Vec<u8>) -> u32 {
+pub fn run_push(args: &[Argument], cpu: &mut CPU, memory: &mut [u8]) -> u32 {
     let mut cycles = 0;
     if let Argument::Register16Constant(reg) = args[0] {
         let value = cpu.read_16_bits(reg);

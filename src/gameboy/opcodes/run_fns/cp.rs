@@ -4,7 +4,7 @@ use super::super::super::{write_flag, Flags};
 use super::super::Argument;
 use crate::gameboy::RegisterLabel8;
 
-pub fn run_cp(args: &[Argument], cpu: &mut CPU, memory: &mut Vec<u8>) -> u32 {
+pub fn run_cp(args: &[Argument], cpu: &mut CPU, memory: &mut [u8]) -> u32 {
     // Clear all the flags
     cpu.write_8_bits(RegisterLabel8::F, 0);
 
