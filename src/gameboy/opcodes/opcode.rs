@@ -41,6 +41,9 @@ impl OpCode {
             Category::XOR => {
                 cycles += run_xor(&self.args, cpu, memory.get_memory());
             }
+            Category::AND => {
+                cycles += run_and(&self.args, cpu, memory.get_memory());
+                        }
             Category::BIT => {
                 cycles += run_bit(&self.args, cpu, memory.get_memory());
             }

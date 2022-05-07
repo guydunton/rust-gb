@@ -17,7 +17,9 @@ mod rotate_method;
 mod sub;
 mod xor;
 mod cpl;
+mod and;
 
+pub use self::and::run_and;
 pub use self::add::run_add;
 pub use self::bit::run_bit;
 pub use self::call::run_call;

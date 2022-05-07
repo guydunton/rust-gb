@@ -99,7 +99,7 @@ where
     let my_config = StreamConfig {
         channels: 1,
         buffer_size: cpal::BufferSize::Default,
-        sample_rate: SampleRate { 0: 44100 },
+        sample_rate: SampleRate(44100),
     };
     device
         .build_output_stream(
