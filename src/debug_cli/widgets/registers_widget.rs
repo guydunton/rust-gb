@@ -71,7 +71,7 @@ impl<'a> Print for RegistersWidget<'a> {
             output.push(format!(
                 "{:<#width$} : {}",
                 register,
-                registers.get_register_val(&register.to_string()),
+                registers.get_register_val(&register),
                 width = 8
             ));
         }
