@@ -108,9 +108,11 @@ fn and_instruction_works_with_registers() {
     cpu.write_8_bits(RegisterLabel8::A, 0b0000_0011);
     cpu.write_8_bits(RegisterLabel8::B, 0b0000_0001);
 
-    opcode.run(&mut cpu, MemoryAdapter::new(&mut memory));
+    let cycles = opcode.run(&mut cpu, MemoryAdapter::new(&mut memory));
 
     assert_eq!(cpu.read_8_bits(RegisterLabel8::A), 0b_0000_0001);
+    assert_eq!(cpu.read_16_bits(RegisterLabel16::ProgramCounter), 0x01);
+    assert_eq!(cycles, 4);
 }
 
 #[test]
@@ -130,7 +132,9 @@ fn and_instruction_works_with_indirection() {
     cpu.write_16_bits(RegisterLabel16::HL, 0xFF01);
     memory[0xFF01] = 0b0000_0001;
 
-    opcode.run(&mut cpu, MemoryAdapter::new(&mut memory));
+    let cycles = opcode.run(&mut cpu, MemoryAdapter::new(&mut memory));
 
     assert_eq!(cpu.read_8_bits(RegisterLabel8::A), 0b_0000_0001);
+    assert_eq!(cpu.read_16_bits(RegisterLabel16::ProgramCounter), 0x01);
+    assert_eq!(cycles, 8);
 }
