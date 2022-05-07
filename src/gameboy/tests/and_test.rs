@@ -5,6 +5,8 @@ use crate::gameboy::{
     read_flag, Flags, OpCode, RegisterLabel16, RegisterLabel8,
 };
 
+use super::decode_util::decode;
+
 #[test]
 fn and_with_d8_works_correctly() {
     let opcode = OpCode::new(
@@ -46,4 +48,12 @@ fn and_with_d8_works_if_result_is_1() {
     assert_eq!(cpu.read_8_bits(RegisterLabel8::A), 0b_0000_0001);
 
     assert_eq!(read_flag(&cpu, Flags::Z), false);
+}
+
+#[test]
+fn decode_and_instruction() {
+    assert_eq!(
+        decode(&[0xE6, 0x01]),
+        OpCode::new(Category::AND, [Argument::SmallValue(0x01), Argument::None])
+    );
 }
