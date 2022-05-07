@@ -1,5 +1,11 @@
 use crate::{
-    gameboy::{Flags, RegisterLabel16, RegisterLabel8},
+    gameboy::{
+        cpu::CPU,
+        memory_adapter::MemoryAdapter,
+        opcodes::{Argument, Category},
+        tests::decode_util::decode,
+        Flags, OpCode, RegisterLabel16, RegisterLabel8,
+    },
     Gameboy,
 };
 
@@ -65,4 +71,89 @@ fn add_hl_reset_flags_if_set() {
     assert!(!gb.get_flag(Flags::H));
     assert!(!gb.get_flag(Flags::N));
     assert!(!gb.get_flag(Flags::C));
+}
+
+#[test]
+fn add_r8_to_a() {
+    let opcode = OpCode::new(
+        Category::ADD,
+        [
+            Argument::Register8Constant(RegisterLabel8::A),
+            Argument::Register8Constant(RegisterLabel8::B),
+        ],
+    );
+
+    let mut cpu = CPU::new();
+    let mut memory = vec![0x0; 0xFFFF];
+
+    cpu.write_8_bits(RegisterLabel8::A, 0x02);
+    cpu.write_8_bits(RegisterLabel8::B, 0x02);
+
+    let cycles = opcode.run(&mut cpu, MemoryAdapter::new(&mut memory));
+
+    assert_eq!(cpu.read_8_bits(RegisterLabel8::A), 0x04);
+    assert_eq!(cpu.read_16_bits(RegisterLabel16::ProgramCounter), 0x01);
+    assert_eq!(cycles, 4);
+}
+
+#[test]
+fn add_d8_to_a() {
+    let opcode = OpCode::new(
+        Category::ADD,
+        [
+            Argument::Register8Constant(RegisterLabel8::A),
+            Argument::SmallValue(0x04),
+        ],
+    );
+
+    let mut cpu = CPU::new();
+    let mut memory = vec![0x0; 0xFFFF];
+
+    cpu.write_8_bits(RegisterLabel8::A, 0x02);
+
+    let cycles = opcode.run(&mut cpu, MemoryAdapter::new(&mut memory));
+
+    assert_eq!(cpu.read_8_bits(RegisterLabel8::A), 0x06);
+    assert_eq!(cpu.read_16_bits(RegisterLabel16::ProgramCounter), 0x02);
+    assert_eq!(cycles, 8);
+}
+
+#[test]
+fn decode_add_instructions() {
+    let add_a_r8 = |register| {
+        OpCode::new(
+            Category::ADD,
+            [
+                Argument::Register8Constant(RegisterLabel8::A),
+                Argument::Register8Constant(register),
+            ],
+        )
+    };
+
+    const A: RegisterLabel8 = RegisterLabel8::A;
+    const B: RegisterLabel8 = RegisterLabel8::B;
+    const C: RegisterLabel8 = RegisterLabel8::C;
+    const D: RegisterLabel8 = RegisterLabel8::D;
+    const E: RegisterLabel8 = RegisterLabel8::E;
+    const H: RegisterLabel8 = RegisterLabel8::H;
+    const L: RegisterLabel8 = RegisterLabel8::L;
+
+    assert_eq!(decode(&[0x80]), add_a_r8(B));
+    assert_eq!(decode(&[0x81]), add_a_r8(C));
+    assert_eq!(decode(&[0x82]), add_a_r8(D));
+    assert_eq!(decode(&[0x83]), add_a_r8(E));
+    assert_eq!(decode(&[0x84]), add_a_r8(H));
+    assert_eq!(decode(&[0x85]), add_a_r8(L));
+    assert_eq!(decode(&[0x87]), add_a_r8(A));
+
+    assert_eq!(
+        decode(&[0xC6, 0x04]),
+        OpCode::new(
+            Category::ADD,
+            [
+                Argument::Register8Constant(RegisterLabel8::A),
+                Argument::SmallValue(0x04)
+            ]
+        )
+    );
 }
