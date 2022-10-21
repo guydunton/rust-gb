@@ -1,4 +1,4 @@
-#[derive(PartialEq, Copy, Clone, Debug)]
+#[derive(PartialEq, Eq, Copy, Clone, Debug)]
 pub enum RegisterLabel8 {
     A,
     F,
@@ -10,7 +10,7 @@ pub enum RegisterLabel8 {
     L,
 }
 
-#[derive(PartialEq, Copy, Clone, Debug)]
+#[derive(PartialEq, Eq, Copy, Clone, Debug)]
 pub enum RegisterLabel16 {
     AF,
     BC,

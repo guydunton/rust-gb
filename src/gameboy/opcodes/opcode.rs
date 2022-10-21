@@ -6,7 +6,7 @@ use super::run_fns::*;
 use crate::gameboy::RegisterLabel16;
 use std::fmt;
 
-#[derive(PartialEq, Clone, Copy, Debug)]
+#[derive(PartialEq, Eq, Clone, Copy, Debug)]
 pub struct OpCode {
     category: Category,
     args: [Argument; 2],

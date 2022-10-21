@@ -1,3 +1,4 @@
+#![allow(clippy::needless_return)]
 use super::super::layout::Print;
 use crate::gameboy::Gameboy;
 
