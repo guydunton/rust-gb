@@ -43,7 +43,7 @@ impl OpCode {
             }
             Category::AND => {
                 cycles += run_and(&self.args, cpu, memory.get_memory());
-                        }
+            }
             Category::BIT => {
                 cycles += run_bit(&self.args, cpu, memory.get_memory());
             }
@@ -92,6 +92,9 @@ impl OpCode {
             }
             Category::CPL => {
                 cycles += run_cpl(&self.args, cpu, memory.get_memory());
+            }
+            Category::SWAP => {
+                cycles += run_swap(&self.args, cpu, memory.get_memory());
             }
         };
 

@@ -1,7 +1,9 @@
 mod add_test;
-mod and_test;
 mod alu_test;
+mod and_test;
+mod cb_test;
 mod cp_test;
+mod cpl_test;
 mod dec_test;
 mod decode_util;
 mod inc_test;
@@ -17,7 +19,6 @@ mod ret_test;
 mod sub_test;
 mod timing;
 mod xor_test;
-mod cpl_test;
 
 use crate::gameboy::Gameboy;
 

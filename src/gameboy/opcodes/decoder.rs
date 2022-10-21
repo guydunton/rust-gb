@@ -13,12 +13,12 @@ pub struct Decoder {}
 
 impl Decoder {
     pub fn decode_instruction(program_counter: u16, program_code: &[u8]) -> Result<OpCode, String> {
-        let code = program_code[program_counter as usize];
+        let mut code = program_code[program_counter as usize];
         let parts_or_error = match code {
             0xCB => {
                 // Get the next code
-                let cb_code = program_code[program_counter as usize + 1];
-                parts_from_dictionary(cb_code, &CB_DICTIONARY, DecodingError::CBFailure)
+                code = program_code[program_counter as usize + 1];
+                parts_from_dictionary(code, &CB_DICTIONARY, DecodingError::CBFailure)
             }
             _ => {
                 // Try to get the value from the dictionary
