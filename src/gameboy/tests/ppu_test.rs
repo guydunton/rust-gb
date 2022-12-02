@@ -12,7 +12,7 @@ fn ppu_infinite_loop_gb() -> Gameboy<'static> {
     let mut gb = infinite_loop_gb();
 
     // Turn the screen on & set the palette
-    gb.set_memory_at(Labels::V_BLANK, 0x80);
+    gb.set_memory_at(Labels::LCD_CONTROLS, 0x80);
     gb.set_memory_at(Labels::BG_PALETTE, DEFAULT_PALLETE);
 
     gb
@@ -184,7 +184,7 @@ fn turning_off_the_lcd_screen_resets_ly_register_to_0() {
     render_line(&mut gb);
 
     // set the screen to off
-    gb.set_memory_at(Labels::V_BLANK, 0);
+    gb.set_memory_at(Labels::LCD_CONTROLS, 0);
 
     // The LY register should be set to zero
     assert_eq!(gb.get_memory_at(Labels::LCDC_Y), 0);
@@ -288,7 +288,7 @@ fn test_that_vlank_is_triggered() {
     let mut gb = Gameboy::new(vec![0xFB, 0x00, 0x00, 0x18, 0xFD]);
 
     // Turn the screen on & set the palette
-    gb.set_memory_at(Labels::V_BLANK, 0x80);
+    gb.set_memory_at(Labels::LCD_CONTROLS, 0x80);
     gb.set_memory_at(Labels::BG_PALETTE, DEFAULT_PALLETE);
 
     // Enable vblank interrupt
@@ -311,7 +311,7 @@ fn vblank_triggered_only_once() {
     let mut gb = Gameboy::new(vec![0xFB, 0x00, 0x00, 0x18, 0xFD]);
 
     // Turn the screen on & set the palette
-    gb.set_memory_at(Labels::V_BLANK, 0x80);
+    gb.set_memory_at(Labels::LCD_CONTROLS, 0x80);
     gb.set_memory_at(Labels::BG_PALETTE, DEFAULT_PALLETE);
 
     // Enable vblank interrupt

@@ -121,7 +121,7 @@ impl PPU {
 
     pub fn tick(&mut self, cycles: u32, memory: &mut [u8]) {
         // Get the 7th bit
-        let bit_7_set = (memory[Labels::V_BLANK as usize] & 0b1000_0000) != 0;
+        let bit_7_set = (memory[Labels::LCD_CONTROLS as usize] & 0b1000_0000) != 0;
         let is_screen_on = bit_7_set;
 
         if is_screen_on {
@@ -175,7 +175,8 @@ impl PPU {
                     // Set vblank interrupt but not if already done
                     if !self.vblank_triggered {
                         // Trigger vblank
-                        memory[0xFF0F] = memory[0xFF0F] | 0b0000_0001;
+                        memory[Labels::INTERRUPT_TRIGGER as usize] =
+                            memory[Labels::INTERRUPT_TRIGGER as usize] | 0b0000_0001;
                         self.vblank_triggered = true;
                     }
                 }

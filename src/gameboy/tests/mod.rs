@@ -32,6 +32,7 @@ fn infinite_loop_gb() -> Gameboy<'static> {
 
 use crate::gameboy::flags_register::*;
 use crate::gameboy::register::{RegisterLabel16, RegisterLabel8};
+use crate::gameboy::Labels;
 
 #[test]
 fn i_can_access_all_parts_of_memory() {
@@ -285,7 +286,7 @@ fn set_ff50_to_disable_bootloader() {
     let mut gb = Gameboy::new_with_bootloader(audio, &vec![0x01; 32_000]);
 
     assert_ne!(gb.get_memory_at(0x00), 0x01);
-    gb.set_memory_at(0xFF50, 1);
+    gb.set_memory_at(Labels::BOOTLOADER_DISABLE, 1);
     assert_eq!(gb.get_memory_at(0x00), 0x01);
 }
 

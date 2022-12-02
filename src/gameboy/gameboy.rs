@@ -175,7 +175,8 @@ impl<'a> Gameboy<'a> {
                     .write_16_bits(RegisterLabel16::ProgramCounter, 0x40);
 
                 // Reset vblank interrupt trigger
-                self.memory[0xFF0F] = self.memory[0xFF0F] & 0b1111_1110;
+                self.memory[Labels::INTERRUPT_TRIGGER as usize] =
+                    self.memory[Labels::INTERRUPT_TRIGGER as usize] & 0b1111_1110;
 
                 // disable interrupts in the process
                 self.cpu.disable_interrupts();

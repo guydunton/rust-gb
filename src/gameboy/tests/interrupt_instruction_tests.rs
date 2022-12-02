@@ -1,7 +1,7 @@
 use crate::gameboy::cpu::CPU;
 use crate::gameboy::memory_adapter::MemoryAdapter;
 use crate::gameboy::opcodes::{Argument, Category, Decoder};
-use crate::gameboy::{Gameboy, OpCode, RegisterLabel16, RegisterLabel8};
+use crate::gameboy::{Gameboy, Labels, OpCode, RegisterLabel16, RegisterLabel8};
 
 #[test]
 fn decode_interrupt_instructions() {
@@ -63,7 +63,7 @@ fn interrupt_is_only_enabled_after_instruction_after_ei() {
     gb.set_memory_at(0xFFFF, 0b0000_0001);
 
     // Trigger an interrupt
-    gb.set_memory_at(0xFF0F, 0b0000_0001);
+    gb.set_memory_at(Labels::INTERRUPT_TRIGGER, 0b0000_0001);
 
     // Enable interrupts
     gb.step_once();
@@ -95,5 +95,5 @@ fn interrupt_is_only_enabled_after_instruction_after_ei() {
     assert_eq!(gb.get_register_8(RegisterLabel8::A), 0x0);
 
     // The vblank trigger has been reset
-    assert!((gb.get_memory_at(0xFF0F) & 0b0000_0001) == 0);
+    assert!((gb.get_memory_at(Labels::INTERRUPT_TRIGGER) & 0b0000_0001) == 0);
 }
