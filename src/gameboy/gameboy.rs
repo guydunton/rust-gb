@@ -1,5 +1,6 @@
 use super::audio::ALU;
 use super::cpu::CPU;
+use super::interrupt_routine::InterruptRoutine;
 use super::memory_adapter::MemoryAdapter;
 use super::memory_labels::Labels;
 use super::memory_view::MemoryView;
@@ -21,6 +22,11 @@ pub struct Gameboy<'a> {
     memory: Vec<u8>,
     rom_header_data: Vec<u8>,
 }
+
+const INTERRUPT_ROUTINES: [InterruptRoutine; 1] = [InterruptRoutine {
+    bit: 0,
+    routine_address: 0x40,
+}];
 
 impl<'a> Gameboy<'a> {
     pub fn new_with_bootloader<F>(audio_callback: F, game_data: &[u8]) -> Gameboy<'a>
@@ -149,39 +155,29 @@ impl<'a> Gameboy<'a> {
         // If interrupts are enabled check each interrupt flag
         if self.cpu.is_interrupts_enabled() {
             let interrupt_enabled_flags = self.memory[0xFFFF];
-            let interrupt_triggered_flags = self.memory[0xFF0F];
+            let interrupt_triggered_flags = self.memory[Labels::INTERRUPT_TRIGGER as usize];
 
-            // Check vblank interrupt
-            let vblank_enabled = (interrupt_enabled_flags & 0b0000_0001) > 0;
-            let vblank_triggered = (interrupt_triggered_flags & 0b0000_0001) > 0;
+            for interrupt in INTERRUPT_ROUTINES.iter() {
+                // Check vblank interrupt
+                let interrupt_enabled =
+                    (interrupt_enabled_flags & (0b0000_0001 << interrupt.bit)) > 0;
+                let interrupt_triggered =
+                    (interrupt_triggered_flags & 0b0000_0001 << interrupt.bit) > 0;
 
-            if vblank_enabled && vblank_triggered {
-                // if one is enabled call it's handler using 20 CPU cycles
-                let return_address = self.cpu.read_16_bits(RegisterLabel16::ProgramCounter);
-                let stack_address = self.cpu.read_16_bits(RegisterLabel16::StackPointer);
+                if interrupt_enabled && interrupt_triggered {
+                    // if one is enabled call it's handler using 20 CPU cycles
+                    let cycles = self.call_routine(interrupt.routine_address);
 
-                let return_addr_bytes = return_address.to_le_bytes();
+                    // Reset interrupt trigger
+                    self.memory[Labels::INTERRUPT_TRIGGER as usize] = self.memory
+                        [Labels::INTERRUPT_TRIGGER as usize]
+                        & !(0b0000_0001 << interrupt.bit);
 
-                self.memory[(stack_address.checked_sub(1).unwrap_or(0)) as usize] =
-                    return_addr_bytes[1];
-                self.memory[(stack_address.checked_sub(2).unwrap_or(0)) as usize] =
-                    return_addr_bytes[0];
+                    // disable interrupts in the process
+                    self.cpu.disable_interrupts();
 
-                self.cpu.write_16_bits(
-                    RegisterLabel16::StackPointer,
-                    stack_address.saturating_sub(2),
-                );
-                self.cpu
-                    .write_16_bits(RegisterLabel16::ProgramCounter, 0x40);
-
-                // Reset vblank interrupt trigger
-                self.memory[Labels::INTERRUPT_TRIGGER as usize] =
-                    self.memory[Labels::INTERRUPT_TRIGGER as usize] & 0b1111_1110;
-
-                // disable interrupts in the process
-                self.cpu.disable_interrupts();
-
-                return 20;
+                    return cycles;
+                }
             }
         }
 
@@ -363,5 +359,24 @@ impl<'a> Gameboy<'a> {
 
     fn get_opcode_at(&self, address: u16) -> Result<OpCode, String> {
         Decoder::decode_instruction(address, &self.memory)
+    }
+
+    fn call_routine(&mut self, address: u16) -> u32 {
+        let return_address = self.cpu.read_16_bits(RegisterLabel16::ProgramCounter);
+        let stack_address = self.cpu.read_16_bits(RegisterLabel16::StackPointer);
+
+        let return_addr_bytes = return_address.to_le_bytes();
+
+        self.memory[(stack_address.checked_sub(1).unwrap_or(0)) as usize] = return_addr_bytes[1];
+        self.memory[(stack_address.checked_sub(2).unwrap_or(0)) as usize] = return_addr_bytes[0];
+
+        self.cpu.write_16_bits(
+            RegisterLabel16::StackPointer,
+            stack_address.saturating_sub(2),
+        );
+        self.cpu
+            .write_16_bits(RegisterLabel16::ProgramCounter, address);
+
+        20
     }
 }
