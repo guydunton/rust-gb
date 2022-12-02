@@ -87,14 +87,16 @@ impl OpCode {
                 cycles += run_or(&self.args, cpu, memory.get_memory());
             }
             Category::EI => {
-                // TODO: Implement interrupts
-                cycles += 4;
+                cycles += run_ei(&self.args, cpu, memory.get_memory());
             }
             Category::CPL => {
                 cycles += run_cpl(&self.args, cpu, memory.get_memory());
             }
             Category::SWAP => {
                 cycles += run_swap(&self.args, cpu, memory.get_memory());
+            }
+            Category::DI => {
+                cycles += run_di(&self.args, cpu, memory.get_memory());
             }
         };
 

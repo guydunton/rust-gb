@@ -6,6 +6,7 @@ use super::ScreenColor;
 pub struct PPU {
     screen_data: Vec<ScreenColor>,
     bg_palette: [ScreenColor; 4],
+    vblank_triggered: bool,
     cycles: u32,
 }
 
@@ -42,6 +43,7 @@ impl PPU {
         PPU {
             screen_data,
             bg_palette,
+            vblank_triggered: false,
             cycles: 0,
         }
     }
@@ -127,13 +129,20 @@ impl PPU {
 
             if new_cycles >= 456 {
                 // increment the LY register
-                memory[Labels::LCDC_Y as usize] = (memory[Labels::LCDC_Y as usize] + 1) % 154;
+                let ly = memory[Labels::LCDC_Y as usize];
+                let new_ly = (ly + 1) % 154;
+                memory[Labels::LCDC_Y as usize] = new_ly;
 
-                if memory[Labels::LCDC_Y as usize] <= 144 {
+                // The ly has flipped around so vblank can be triggered again
+                if new_ly < ly {
+                    self.vblank_triggered = false;
+                }
+
+                if new_ly <= 144 {
                     // Write a line into the screen data starting at LCDC_Y - 1
 
                     // Which line are we drawing
-                    let drawing_line = memory[Labels::LCDC_Y as usize].saturating_sub(1);
+                    let drawing_line = new_ly.saturating_sub(1);
 
                     // This would be where we pick which pixels we want from VRAM
 
@@ -161,6 +170,13 @@ impl PPU {
                             get_pixel_value_from_sprite(inside_tile_x, inside_tile_y, tile_bytes);
                         let pixel_color = self.bg_palette[pixel_value as usize];
                         self.screen_data[pixel_index as usize] = pixel_color;
+                    }
+                } else {
+                    // Set vblank interrupt but not if already done
+                    if !self.vblank_triggered {
+                        // Trigger vblank
+                        memory[0xFF0F] = memory[0xFF0F] | 0b0000_0001;
+                        self.vblank_triggered = true;
                     }
                 }
             }

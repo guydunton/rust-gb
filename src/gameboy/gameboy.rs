@@ -146,9 +146,51 @@ impl<'a> Gameboy<'a> {
     /// Run the next instruction and return the number of cycles used.
     #[allow(dead_code)]
     pub fn step_once(&mut self) -> u32 {
+        // If interrupts are enabled check each interrupt flag
+        if self.cpu.is_interrupts_enabled() {
+            let interrupt_enabled_flags = self.memory[0xFFFF];
+            let interrupt_triggered_flags = self.memory[0xFF0F];
+
+            // Check vblank interrupt
+            let vblank_enabled = (interrupt_enabled_flags & 0b0000_0001) > 0;
+            let vblank_triggered = (interrupt_triggered_flags & 0b0000_0001) > 0;
+
+            if vblank_enabled && vblank_triggered {
+                // if one is enabled call it's handler using 20 CPU cycles
+                let return_address = self.cpu.read_16_bits(RegisterLabel16::ProgramCounter);
+                let stack_address = self.cpu.read_16_bits(RegisterLabel16::StackPointer);
+
+                let return_addr_bytes = return_address.to_le_bytes();
+
+                self.memory[(stack_address.checked_sub(1).unwrap_or(0)) as usize] =
+                    return_addr_bytes[1];
+                self.memory[(stack_address.checked_sub(2).unwrap_or(0)) as usize] =
+                    return_addr_bytes[0];
+
+                self.cpu.write_16_bits(
+                    RegisterLabel16::StackPointer,
+                    stack_address.saturating_sub(2),
+                );
+                self.cpu
+                    .write_16_bits(RegisterLabel16::ProgramCounter, 0x40);
+
+                // Reset vblank interrupt trigger
+                self.memory[0xFF0F] = self.memory[0xFF0F] & 0b1111_1110;
+
+                // disable interrupts in the process
+                self.cpu.disable_interrupts();
+
+                return 20;
+            }
+        }
+
         let opcode = self.get_opcode();
         match opcode {
             Ok(op) => {
+                let interrupts_enabled_before = self.cpu.is_interrupt_enable_started();
+
+                let mut enable_rom_header = false;
+
                 let cycles;
                 {
                     // Set up the memory callbacks
@@ -157,7 +199,20 @@ impl<'a> Gameboy<'a> {
                     mem_adapter.add_callback(Labels::BG_PALETTE, |new_palette| {
                         ppu_ref.reset_bg_palette(new_palette);
                     });
+                    mem_adapter.add_callback(Labels::BOOTLOADER_DISABLE, |_| {
+                        // Restore the Cart memory in place of the bootloader
+                        enable_rom_header = true;
+                    });
                     cycles = op.run(&mut self.cpu, mem_adapter);
+                }
+
+                if enable_rom_header {
+                    self.memory[..0xFF].copy_from_slice(&self.rom_header_data[..0xFF]);
+                }
+
+                // If interrupts are also enabled afterwards then enable interrupts
+                if self.cpu.is_interrupt_enable_started() && interrupts_enabled_before {
+                    self.cpu.enable_interrupts();
                 }
 
                 // Now run the PPU by the same amount of cycles
@@ -293,6 +348,11 @@ impl<'a> Gameboy<'a> {
                 return Err(());
             }
         }
+    }
+
+    #[allow(dead_code)]
+    pub fn get_ime_flag(&self) -> bool {
+        self.cpu.is_interrupts_enabled()
     }
 
     fn get_opcode(&self) -> Result<OpCode, String> {

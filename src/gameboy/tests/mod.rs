@@ -7,7 +7,7 @@ mod cpl_test;
 mod dec_test;
 mod decode_util;
 mod inc_test;
-mod interrupts;
+mod interrupt_instruction_tests;
 mod jump_test;
 mod load16_test;
 mod load8_test;
@@ -286,5 +286,17 @@ fn set_ff50_to_disable_bootloader() {
 
     assert_ne!(gb.get_memory_at(0x00), 0x01);
     gb.set_memory_at(0xFF50, 1);
+    assert_eq!(gb.get_memory_at(0x00), 0x01);
+}
+
+#[test]
+fn run_ldh50_to_disable_bootloader() {
+    let audio = |_| {};
+    let mut gb = Gameboy::new_with_bootloader(audio, &vec![0x01; 32_000]);
+    gb.set_memory_at(0x0, 0xE0);
+    gb.set_memory_at(0x01, 0x50);
+
+    gb.step_once();
+
     assert_eq!(gb.get_memory_at(0x00), 0x01);
 }
