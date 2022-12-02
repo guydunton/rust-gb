@@ -83,8 +83,8 @@ To build on Linux (tested on ubuntu) you must install some extra dependencies fo
 - [x] Get screen scrolling working
 - [x] Basic sound support
 - [x] Continue adding support for bootloader commands.
+- [x] Implement interrupts
 - [ ] Begin implementing functionality for Tetris
-- [ ] Implement interrupts
 - [ ] Improve audio implementation
 - [ ] Benchmark each opcode to make sure they take less time than they would on a real GB
 - [ ] Fix callback system within opcodes
