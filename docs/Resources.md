@@ -25,7 +25,6 @@ https://realboyemulator.wordpress.com/2013/01/03/a-look-at-the-game-boy-bootstra
 http://bgb.bircd.org/pandocs.htm
 https://gbdev.gg8.se/wiki/articles/The_Cartridge_Header
 
-
 ## Sound emulation
 
 Sound emulation was a huge pain. Now that it is supported in RustGB I might write something to make it a little clearer.
@@ -38,4 +37,6 @@ The following pages go some way to explaining it.
 
 I wrote up how I implemented the bootstrap sounds on my website: https://www.guydunton.com/articles/gameboy-first-sounds/
 
+## Cycles accurate instructions
 
+- https://github.com/AntonioND/giibiiadvance/blob/master/docs/TCAGBD.pdf

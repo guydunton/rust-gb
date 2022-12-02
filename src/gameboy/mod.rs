@@ -4,6 +4,7 @@ mod flags_register;
 
 #[allow(clippy::module_inception)]
 mod gameboy;
+mod interrupt_routine;
 mod memory_adapter;
 mod memory_labels;
 mod memory_view;

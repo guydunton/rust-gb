@@ -21,6 +21,7 @@ pub enum Category {
     CP,
     OR,
     EI,
+    DI,
     SWAP,
     CPL,
 }
@@ -51,6 +52,7 @@ pub fn category_from_str(cat: &str) -> Category {
         "CP" => Category::CP,
         "OR" => Category::OR,
         "EI" => Category::EI,
+        "DI" => Category::DI,
         "CPL" => Category::CPL,
         "SWAP" => Category::SWAP,
         _ => {

@@ -12,7 +12,7 @@ fn ppu_infinite_loop_gb() -> Gameboy<'static> {
     let mut gb = infinite_loop_gb();
 
     // Turn the screen on & set the palette
-    gb.set_memory_at(Labels::V_BLANK, 0x80);
+    gb.set_memory_at(Labels::LCD_CONTROLS, 0x80);
     gb.set_memory_at(Labels::BG_PALETTE, DEFAULT_PALLETE);
 
     gb
@@ -184,7 +184,7 @@ fn turning_off_the_lcd_screen_resets_ly_register_to_0() {
     render_line(&mut gb);
 
     // set the screen to off
-    gb.set_memory_at(Labels::V_BLANK, 0);
+    gb.set_memory_at(Labels::LCD_CONTROLS, 0);
 
     // The LY register should be set to zero
     assert_eq!(gb.get_memory_at(Labels::LCDC_Y), 0);
@@ -281,6 +281,62 @@ fn screen_draws_correctly_when_it_wraps_around_the_side_and_bottom() {
     first_pixels.copy_from_slice(&screen_data[0..4]);
 
     assert_eq!(first_pixels, colors(vec![0, 1, 2, 3]));
+}
+
+#[test]
+fn test_that_vlank_is_triggered() {
+    let mut gb = Gameboy::new(vec![0xFB, 0x00, 0x00, 0x18, 0xFD]);
+
+    // Turn the screen on & set the palette
+    gb.set_memory_at(Labels::LCD_CONTROLS, 0x80);
+    gb.set_memory_at(Labels::BG_PALETTE, DEFAULT_PALLETE);
+
+    // Enable vblank interrupt
+    gb.set_memory_at(0xFFFF, 0b0000_0001);
+
+    // Render the whole screen
+    for _ in 0..142 {
+        render_line(&mut gb);
+    }
+
+    for _ in 0..31 {
+        gb.step_once();
+    }
+
+    assert_eq!(gb.get_register_16(RegisterLabel16::ProgramCounter), 0x40);
+}
+
+#[test]
+fn vblank_triggered_only_once() {
+    let mut gb = Gameboy::new(vec![0xFB, 0x00, 0x00, 0x18, 0xFD]);
+
+    // Turn the screen on & set the palette
+    gb.set_memory_at(Labels::LCD_CONTROLS, 0x80);
+    gb.set_memory_at(Labels::BG_PALETTE, DEFAULT_PALLETE);
+
+    // Enable vblank interrupt
+    gb.set_memory_at(0xFFFF, 0b0000_0001);
+
+    // Set the vblank interrupt to enable interrupts then return
+    gb.set_memory_at(0x40, 0xFB);
+    gb.set_memory_at(0x41, 0xC9);
+
+    // Render the whole screen
+    for _ in 0..142 {
+        render_line(&mut gb);
+    }
+
+    for _ in 0..31 {
+        gb.step_once();
+    }
+
+    assert_eq!(gb.get_register_16(RegisterLabel16::ProgramCounter), 0x40);
+
+    gb.step_once();
+    gb.step_once();
+
+    gb.step_once();
+    assert_ne!(gb.get_register_16(RegisterLabel16::ProgramCounter), 0x40);
 }
 
 fn render_line(gb: &mut Gameboy) {

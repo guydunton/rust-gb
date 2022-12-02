@@ -1,5 +1,6 @@
 use super::audio::ALU;
 use super::cpu::CPU;
+use super::interrupt_routine::InterruptRoutine;
 use super::memory_adapter::MemoryAdapter;
 use super::memory_labels::Labels;
 use super::memory_view::MemoryView;
@@ -21,6 +22,11 @@ pub struct Gameboy<'a> {
     memory: Vec<u8>,
     rom_header_data: Vec<u8>,
 }
+
+const INTERRUPT_ROUTINES: [InterruptRoutine; 1] = [InterruptRoutine {
+    bit: 0,
+    routine_address: 0x40,
+}];
 
 impl<'a> Gameboy<'a> {
     pub fn new_with_bootloader<F>(audio_callback: F, game_data: &[u8]) -> Gameboy<'a>
@@ -146,9 +152,42 @@ impl<'a> Gameboy<'a> {
     /// Run the next instruction and return the number of cycles used.
     #[allow(dead_code)]
     pub fn step_once(&mut self) -> u32 {
+        // If interrupts are enabled check each interrupt flag
+        if self.cpu.is_interrupts_enabled() {
+            let interrupt_enabled_flags = self.memory[0xFFFF];
+            let interrupt_triggered_flags = self.memory[Labels::INTERRUPT_TRIGGER as usize];
+
+            for interrupt in INTERRUPT_ROUTINES.iter() {
+                // Check vblank interrupt
+                let interrupt_enabled =
+                    (interrupt_enabled_flags & (0b0000_0001 << interrupt.bit)) > 0;
+                let interrupt_triggered =
+                    (interrupt_triggered_flags & 0b0000_0001 << interrupt.bit) > 0;
+
+                if interrupt_enabled && interrupt_triggered {
+                    // if one is enabled call it's handler using 20 CPU cycles
+                    let cycles = self.call_routine(interrupt.routine_address);
+
+                    // Reset interrupt trigger
+                    self.memory[Labels::INTERRUPT_TRIGGER as usize] = self.memory
+                        [Labels::INTERRUPT_TRIGGER as usize]
+                        & !(0b0000_0001 << interrupt.bit);
+
+                    // disable interrupts in the process
+                    self.cpu.disable_interrupts();
+
+                    return cycles;
+                }
+            }
+        }
+
         let opcode = self.get_opcode();
         match opcode {
             Ok(op) => {
+                let interrupts_enabled_before = self.cpu.is_interrupt_enable_started();
+
+                let mut enable_rom_header = false;
+
                 let cycles;
                 {
                     // Set up the memory callbacks
@@ -157,7 +196,20 @@ impl<'a> Gameboy<'a> {
                     mem_adapter.add_callback(Labels::BG_PALETTE, |new_palette| {
                         ppu_ref.reset_bg_palette(new_palette);
                     });
+                    mem_adapter.add_callback(Labels::BOOTLOADER_DISABLE, |_| {
+                        // Restore the Cart memory in place of the bootloader
+                        enable_rom_header = true;
+                    });
                     cycles = op.run(&mut self.cpu, mem_adapter);
+                }
+
+                if enable_rom_header {
+                    self.memory[..0xFF].copy_from_slice(&self.rom_header_data[..0xFF]);
+                }
+
+                // If interrupts are also enabled afterwards then enable interrupts
+                if self.cpu.is_interrupt_enable_started() && interrupts_enabled_before {
+                    self.cpu.enable_interrupts();
                 }
 
                 // Now run the PPU by the same amount of cycles
@@ -295,6 +347,11 @@ impl<'a> Gameboy<'a> {
         }
     }
 
+    #[allow(dead_code)]
+    pub fn get_ime_flag(&self) -> bool {
+        self.cpu.is_interrupts_enabled()
+    }
+
     fn get_opcode(&self) -> Result<OpCode, String> {
         let counter = self.cpu.read_16_bits(RegisterLabel16::ProgramCounter);
         self.get_opcode_at(counter)
@@ -302,5 +359,24 @@ impl<'a> Gameboy<'a> {
 
     fn get_opcode_at(&self, address: u16) -> Result<OpCode, String> {
         Decoder::decode_instruction(address, &self.memory)
+    }
+
+    fn call_routine(&mut self, address: u16) -> u32 {
+        let return_address = self.cpu.read_16_bits(RegisterLabel16::ProgramCounter);
+        let stack_address = self.cpu.read_16_bits(RegisterLabel16::StackPointer);
+
+        let return_addr_bytes = return_address.to_le_bytes();
+
+        self.memory[(stack_address.checked_sub(1).unwrap_or(0)) as usize] = return_addr_bytes[1];
+        self.memory[(stack_address.checked_sub(2).unwrap_or(0)) as usize] = return_addr_bytes[0];
+
+        self.cpu.write_16_bits(
+            RegisterLabel16::StackPointer,
+            stack_address.saturating_sub(2),
+        );
+        self.cpu
+            .write_16_bits(RegisterLabel16::ProgramCounter, address);
+
+        20
     }
 }
