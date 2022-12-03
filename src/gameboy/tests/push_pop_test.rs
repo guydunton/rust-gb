@@ -49,46 +49,17 @@ fn push_instruction_tests_push_moves_2_bytes_onto_the_stack() {
 
 #[test]
 fn push_instruction_decoding() {
-    assert_eq!(
-        decode(&[0xC5]),
+    let push = |register| {
         OpCode::new(
             Category::PUSH,
-            [
-                Argument::Register16Constant(RegisterLabel16::BC),
-                Argument::None
-            ]
+            [Argument::Register16Constant(register), Argument::None],
         )
-    );
-    assert_eq!(
-        decode(&[0xD5]),
-        OpCode::new(
-            Category::PUSH,
-            [
-                Argument::Register16Constant(RegisterLabel16::DE),
-                Argument::None
-            ]
-        )
-    );
-    assert_eq!(
-        decode(&[0xE5]),
-        OpCode::new(
-            Category::PUSH,
-            [
-                Argument::Register16Constant(RegisterLabel16::HL),
-                Argument::None
-            ]
-        )
-    );
-    assert_eq!(
-        decode(&[0xF5]),
-        OpCode::new(
-            Category::PUSH,
-            [
-                Argument::Register16Constant(RegisterLabel16::AF),
-                Argument::None
-            ]
-        )
-    );
+    };
+
+    assert_eq!(decode(&[0xC5]), push(RegisterLabel16::BC),);
+    assert_eq!(decode(&[0xD5]), push(RegisterLabel16::DE));
+    assert_eq!(decode(&[0xE5]), push(RegisterLabel16::HL));
+    assert_eq!(decode(&[0xF5]), push(RegisterLabel16::AF));
 }
 
 #[test]
