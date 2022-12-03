@@ -56,6 +56,13 @@ impl OpCode {
             Category::RET => {
                 cycles += run_ret(&self.args, cpu, memory.get_memory());
             }
+            Category::RETI => {
+                // This is a strange combination instruction which just does
+                // RET & EI. It's used because it takes the same number of
+                // cycles as just doing RET.
+                cycles += run_ret(&self.args, cpu, memory.get_memory());
+                run_ei(&self.args, cpu, memory.get_memory());
+            }
             Category::PUSH => {
                 cycles += run_push(&self.args, cpu, memory.get_memory());
             }

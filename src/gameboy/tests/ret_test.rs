@@ -132,3 +132,39 @@ fn ret_with_condition_still_1_byte() {
 
     assert_eq!(opcode.size(), 1);
 }
+
+#[test]
+fn decode_the_reti_instuction() {
+    assert_eq!(
+        decode(&[0xD9]),
+        OpCode::new(Category::RETI, [Argument::None, Argument::None])
+    );
+}
+
+#[test]
+fn reti_returns_and_enables_interrupts() {
+    /*
+     * RETI
+     * DATA: 0x0003 <- Stack points points here
+     * NOP <- Interrupts will be enabled after here
+     */
+    let mut gb = Gameboy::new(vec![0xD9, 0x03, 0x00, 0x00]);
+    gb.set_register_16(RegisterLabel16::StackPointer, 0x01);
+
+    assert!(!gb.get_ime_flag()); // Interrupts are initially disabled
+
+    // Run the ret instruction
+    let cycles = gb.step_once();
+
+    assert_eq!(cycles, 16);
+
+    // Check we returned
+    assert_eq!(gb.get_register_16(RegisterLabel16::ProgramCounter), 0x03);
+    assert_eq!(gb.get_register_16(RegisterLabel16::StackPointer), 0x03);
+
+    assert!(!gb.get_ime_flag()); // interrupts aren't enabled yet
+
+    gb.step_once(); // Run the nop to enable interrupts
+
+    assert!(gb.get_ime_flag());
+}

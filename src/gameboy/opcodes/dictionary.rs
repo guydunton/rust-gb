@@ -163,6 +163,7 @@ lazy_static! {
         (0xCD, "CALL a16"),
         (0xD1, "POP DE"),
         (0xD5, "PUSH DE"),
+        (0xD9, "RETI"),
         (0xE0, "LD8 (a8) A"),
         (0xE1, "POP HL"),
         (0xE2, "LD8 (C) A"),
