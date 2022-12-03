@@ -153,6 +153,7 @@ lazy_static! {
         (0xB5, "OR L"),
         (0xB7, "OR A"),
         (0xBE, "CP (HL)"),
+        (0xC0, "RET NZ"),
         (0xC1, "POP BC"),
         (0xC3, "JP a16"),
         (0xC5, "PUSH BC"),

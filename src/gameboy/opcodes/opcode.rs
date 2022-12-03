@@ -54,7 +54,7 @@ impl OpCode {
                 cycles += run_call(&self.args, cpu, memory.get_memory());
             }
             Category::RET => {
-                cycles += run_ret(cpu, memory.get_memory());
+                cycles += run_ret(&self.args, cpu, memory.get_memory());
             }
             Category::PUSH => {
                 cycles += run_push(&self.args, cpu, memory.get_memory());
