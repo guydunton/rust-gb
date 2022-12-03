@@ -90,3 +90,18 @@ fn push_instruction_decoding() {
         )
     );
 }
+
+#[test]
+fn pop_instruction_decoding() {
+    let pop = |register| {
+        OpCode::new(
+            Category::POP,
+            [Argument::Register16Constant(register), Argument::None],
+        )
+    };
+
+    assert_eq!(decode(&[0xC1]), pop(RegisterLabel16::BC));
+    assert_eq!(decode(&[0xD1]), pop(RegisterLabel16::DE));
+    assert_eq!(decode(&[0xE1]), pop(RegisterLabel16::HL));
+    assert_eq!(decode(&[0xF1]), pop(RegisterLabel16::AF));
+}
