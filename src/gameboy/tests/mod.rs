@@ -13,8 +13,8 @@ mod load16_test;
 mod load8_test;
 mod opcode_printer_test;
 mod or;
-mod pop_test;
 mod ppu_test;
+mod push_pop_test;
 mod ret_test;
 mod sub_test;
 mod timing;
@@ -163,24 +163,6 @@ fn call_instruction_takes_24_cycles() {
     */
     let cycles = gb.step_once();
     assert_eq!(cycles, 24);
-}
-
-#[test]
-fn push_instruction_tests_push_moves_2_bytes_onto_the_stack() {
-    let mut gb = Gameboy::new(vec![0xC5, 0x00, 0x00]);
-    gb.set_register_16(RegisterLabel16::BC, 0x1234);
-    gb.set_register_16(RegisterLabel16::StackPointer, 0x03);
-
-    let cycles = gb.step_once();
-
-    assert_eq!(gb.get_memory_at(1), 0x34);
-    assert_eq!(gb.get_memory_at(2), 0x12);
-
-    assert_eq!(gb.get_register_16(RegisterLabel16::StackPointer), 0x01);
-
-    // The cycles and the size are correct
-    assert_eq!(cycles, 16);
-    assert_eq!(gb.get_register_16(RegisterLabel16::ProgramCounter), 0x01);
 }
 
 #[test]

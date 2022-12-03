@@ -73,10 +73,11 @@ impl fmt::Display for Argument {
 
 pub fn arg_from_str(arg: &str, index: u16, memory: &[u8]) -> Result<Argument, &'static str> {
     let result = match arg {
+        "BC" => Argument::Register16Constant(RegisterLabel16::BC),
         "DE" => Argument::Register16Constant(RegisterLabel16::DE),
         "HL" => Argument::Register16Constant(RegisterLabel16::HL),
+        "AF" => Argument::Register16Constant(RegisterLabel16::AF),
         "SP" => Argument::Register16Constant(RegisterLabel16::StackPointer),
-        "BC" => Argument::Register16Constant(RegisterLabel16::BC),
         "(HL-)" => Argument::RegisterIndirectDec(RegisterLabel16::HL),
         "(HL+)" => Argument::RegisterIndirectInc(RegisterLabel16::HL),
         "A" => Argument::Register8Constant(RegisterLabel8::A),
