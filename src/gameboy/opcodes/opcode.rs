@@ -105,6 +105,9 @@ impl OpCode {
             Category::DI => {
                 cycles += run_di(&self.args, cpu, memory.get_memory());
             }
+            Category::SCF => {
+                cycles += run_scf(cpu, memory.get_memory());
+            }
         };
 
         cycles

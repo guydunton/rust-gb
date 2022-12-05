@@ -25,6 +25,7 @@ pub enum Category {
     DI,
     SWAP,
     CPL,
+    SCF,
 }
 
 fn is_cb_category(category: Category) -> bool {
@@ -57,6 +58,7 @@ pub fn category_from_str(cat: &str) -> Category {
         "DI" => Category::DI,
         "CPL" => Category::CPL,
         "SWAP" => Category::SWAP,
+        "SCF" => Category::SCF,
         _ => {
             panic!("Failed to create category {:?}", cat);
         }
