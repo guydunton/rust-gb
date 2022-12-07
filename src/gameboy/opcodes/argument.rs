@@ -18,6 +18,7 @@ pub enum Argument {
     Label(u16),
     AddressIndirect(u16),
     SPOffset(i8),
+    Vector(u16),
     None,
 }
 
@@ -38,6 +39,7 @@ pub fn size_in_bytes(argument: Argument) -> u16 {
         Argument::Label(_) => 2,
         Argument::AddressIndirect(_) => 2,
         Argument::SPOffset(_) => 1,
+        Argument::Vector(_) => 0,
         Argument::None => 0,
     }
 }
@@ -66,6 +68,7 @@ impl fmt::Display for Argument {
             Argument::Label(val) => write!(f, "{:#X}", val),
             Argument::AddressIndirect(val) => write!(f, "({:#X})", val),
             Argument::SPOffset(val) => write!(f, "SP+{:#X}", val),
+            Argument::Vector(address) => write!(f, "{:#X}H", address),
             Argument::None => write!(f, ""),
         }
     }
@@ -87,6 +90,14 @@ pub fn arg_from_str(arg: &str, index: u16, memory: &[u8]) -> Result<Argument, &'
         "E" => Argument::Register8Constant(RegisterLabel8::E),
         "H" => Argument::Register8Constant(RegisterLabel8::H),
         "L" => Argument::Register8Constant(RegisterLabel8::L),
+        "00H" => Argument::Vector(0x0000),
+        "10H" => Argument::Vector(0x0010),
+        "20H" => Argument::Vector(0x0020),
+        "30H" => Argument::Vector(0x0030),
+        "08H" => Argument::Vector(0x0008),
+        "18H" => Argument::Vector(0x0018),
+        "28H" => Argument::Vector(0x0028),
+        "38H" => Argument::Vector(0x0038),
         "(C)" => Argument::HighOffsetRegister(RegisterLabel8::C),
         "(BC)" => Argument::RegisterIndirect(RegisterLabel16::BC),
         "(DE)" => Argument::RegisterIndirect(RegisterLabel16::DE),

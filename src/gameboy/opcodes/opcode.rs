@@ -108,6 +108,9 @@ impl OpCode {
             Category::SCF => {
                 cycles += run_scf(cpu, memory.get_memory());
             }
+            Category::RST => {
+                cycles += run_rst(&self.args, cpu, memory.get_memory());
+            }
         };
 
         cycles
