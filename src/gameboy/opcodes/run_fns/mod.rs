@@ -1,4 +1,5 @@
 mod add;
+mod add16;
 mod and;
 mod bit;
 mod call;
@@ -24,6 +25,7 @@ mod swap;
 mod xor;
 
 pub use self::add::run_add;
+pub use self::add16::run_add16;
 pub use self::and::run_and;
 pub use self::bit::run_bit;
 pub use self::call::run_call;

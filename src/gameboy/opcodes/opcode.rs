@@ -72,6 +72,9 @@ impl OpCode {
             Category::ADD => {
                 cycles += run_add(&self.args, cpu, memory.get_memory());
             }
+            Category::ADD16 => {
+                cycles += run_add16(&self.args, cpu, memory.get_memory());
+            }
             Category::INC => {
                 cycles += run_inc(&self.args, cpu, &mut memory);
             }

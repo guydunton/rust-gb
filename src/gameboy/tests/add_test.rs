@@ -3,6 +3,7 @@ use crate::{
         cpu::CPU,
         memory_adapter::MemoryAdapter,
         opcodes::{Argument, Category},
+        read_flag,
         tests::decode_util::decode,
         Flags, OpCode, RegisterLabel16, RegisterLabel8,
     },
@@ -156,4 +157,101 @@ fn decode_add_instructions() {
             ]
         )
     );
+}
+
+#[test]
+fn decode_16_bit_adds() {
+    const HL: RegisterLabel16 = RegisterLabel16::HL;
+    const BC: RegisterLabel16 = RegisterLabel16::BC;
+    const DE: RegisterLabel16 = RegisterLabel16::DE;
+    const SP: RegisterLabel16 = RegisterLabel16::StackPointer;
+
+    let add = |reg1, reg2| {
+        OpCode::new(
+            Category::ADD16,
+            [
+                Argument::Register16Constant(reg1),
+                Argument::Register16Constant(reg2),
+            ],
+        )
+    };
+
+    assert_eq!(decode(&[0x09]), add(HL, BC));
+    assert_eq!(decode(&[0x19]), add(HL, DE));
+    assert_eq!(decode(&[0x29]), add(HL, HL));
+    assert_eq!(decode(&[0x39]), add(HL, SP));
+}
+
+#[test]
+fn add16_works_correctly() {
+    let opcode = OpCode::new(
+        Category::ADD16,
+        [
+            Argument::Register16Constant(RegisterLabel16::HL),
+            Argument::Register16Constant(RegisterLabel16::BC),
+        ],
+    );
+
+    let mut cpu = CPU::new();
+    let mut memory = vec![0x00; 0xFF];
+
+    cpu.write_16_bits(RegisterLabel16::HL, 0x1234);
+    cpu.write_16_bits(RegisterLabel16::BC, 0x4321);
+
+    let cycles = opcode.run(&mut cpu, MemoryAdapter::new(&mut memory));
+
+    assert_eq!(cycles, 8);
+    assert_eq!(cpu.read_16_bits(RegisterLabel16::HL), 0x5555);
+    assert_eq!(cpu.read_16_bits(RegisterLabel16::ProgramCounter), 1);
+}
+
+#[test]
+fn add_16_sets_the_half_carry_flag() {
+    let opcode = OpCode::new(
+        Category::ADD16,
+        [
+            Argument::Register16Constant(RegisterLabel16::HL),
+            Argument::Register16Constant(RegisterLabel16::BC),
+        ],
+    );
+
+    let mut cpu = CPU::new();
+    let mut memory = vec![0x00; 0xFF];
+
+    // Check that the Half flag is set
+    cpu.write_16_bits(RegisterLabel16::HL, 0b0000_1111_1111_1111);
+    cpu.write_16_bits(RegisterLabel16::BC, 0b1);
+
+    opcode.run(&mut cpu, MemoryAdapter::new(&mut memory));
+
+    assert_eq!(read_flag(&cpu, Flags::H), true);
+    assert_eq!(read_flag(&cpu, Flags::C), false);
+    assert_eq!(read_flag(&cpu, Flags::N), false);
+}
+
+#[test]
+fn add_16_sets_the_carry_flag() {
+    let opcode = OpCode::new(
+        Category::ADD16,
+        [
+            Argument::Register16Constant(RegisterLabel16::HL),
+            Argument::Register16Constant(RegisterLabel16::BC),
+        ],
+    );
+
+    let mut cpu = CPU::new();
+    let mut memory = vec![0x00; 0xFF];
+
+    // Check that the Half flag is set
+    cpu.write_16_bits(RegisterLabel16::HL, 0b1111_1111_1111_1111);
+    cpu.write_16_bits(RegisterLabel16::BC, 0b1);
+
+    opcode.run(&mut cpu, MemoryAdapter::new(&mut memory));
+
+    assert_eq!(read_flag(&cpu, Flags::H), false);
+    assert_eq!(read_flag(&cpu, Flags::C), true);
+    assert_eq!(read_flag(&cpu, Flags::N), false);
+
+    // The wrapped value should be in HL
+    assert_eq!(cpu.read_16_bits(RegisterLabel16::HL), 0);
 }
