@@ -179,6 +179,7 @@ lazy_static! {
         (0xE5, "PUSH HL"),
         (0xE6, "AND d8"),
         (0xE7, "RST 20H"),
+        (0xE9, "JP (HL)"),
         (0xEA, "LD8 (a16) A"),
         (0xEF, "RST 28H"),
         (0xF0, "LD8 A (a8)"),

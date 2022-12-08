@@ -17,7 +17,7 @@ pub fn run_jmp(args: &[Argument], cpu: &mut CPU, _memory: &mut [u8]) -> u32 {
     assert!(args.len() <= 2);
 
     // 8 cycles by default
-    let mut cycles = 8;
+    let mut cycles = 4;
 
     match args[0] {
         Argument::JumpCondition(condition) => {
@@ -29,6 +29,8 @@ pub fn run_jmp(args: &[Argument], cpu: &mut CPU, _memory: &mut [u8]) -> u32 {
                     JumpCondition::Zero => zero_flag,
                 }
             };
+
+            cycles += 4;
 
             if condition_checker() {
                 // Arg 2 is relative location
@@ -45,11 +47,15 @@ pub fn run_jmp(args: &[Argument], cpu: &mut CPU, _memory: &mut [u8]) -> u32 {
         }
         Argument::JumpDistance(distance) => {
             move_program_counter(cpu, distance);
-            cycles += 4;
+            cycles += 8;
         }
         Argument::Label(location) => {
             cpu.write_16_bits(RegisterLabel16::ProgramCounter, location);
-            cycles += 8;
+            cycles += 12;
+        }
+        Argument::RegisterIndirect(register) => {
+            let address = cpu.read_16_bits(register);
+            cpu.write_16_bits(RegisterLabel16::ProgramCounter, address);
         }
         _ => {
             panic!("Invalid argument for jump statement {:?}", args[0]);

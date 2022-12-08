@@ -14,6 +14,8 @@ There were a couple of errors in the main GBZ80 opcode table so I'm hosting a mo
 
 ![Opcodes highlighting supported codes](images/opcode_support.png)
 
+https://rgbds.gbdev.io/docs/master/gbz80.7/
+
 ## Bootstrap explanation
 
 This site explains how the bootloader works.
@@ -24,6 +26,8 @@ https://realboyemulator.wordpress.com/2013/01/03/a-look-at-the-game-boy-bootstra
 
 http://bgb.bircd.org/pandocs.htm
 https://gbdev.gg8.se/wiki/articles/The_Cartridge_Header
+
+https://gbdev.io/pandocs/
 
 ## Sound emulation
 
