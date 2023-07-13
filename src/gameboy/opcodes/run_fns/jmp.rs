@@ -1,4 +1,5 @@
-#[allow(clippy::if_same_then_else)]
+#![allow(clippy::if_same_then_else)]
+
 use crate::gameboy::cpu::CPU;
 
 use super::super::super::{read_flag, Flags};
