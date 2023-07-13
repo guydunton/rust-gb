@@ -1,9 +1,9 @@
 use crate::gameboy::{
     cpu::CPU,
     memory_adapter::MemoryAdapter,
-    opcodes::{Argument, Category},
+    opcodes::{Argument, Category, JumpCondition},
     tests::decode_util::decode,
-    Flags, Gameboy, OpCode, RegisterLabel16, RegisterLabel8,
+    write_flag, Flags, Gameboy, OpCode, RegisterLabel16, RegisterLabel8,
 };
 
 #[test]
@@ -107,4 +107,50 @@ fn jp_hl_instruction_jumps() {
 
     assert_eq!(cycles, 4);
     assert_eq!(cpu.read_16_bits(RegisterLabel16::ProgramCounter), 0x0123);
+}
+
+#[test]
+fn decode_jump_tests() {
+    assert_eq!(
+        decode(&[0xCA, 0x34, 0x12]),
+        OpCode::new(
+            Category::JP,
+            [
+                Argument::JumpCondition(JumpCondition::Zero),
+                Argument::Label(0x1234)
+            ]
+        )
+    );
+}
+
+#[test]
+fn jmp_a16_size_check() {
+    let opcode = OpCode::new(
+        Category::JP,
+        [
+            Argument::JumpCondition(JumpCondition::Zero),
+            Argument::Label(0x1234),
+        ],
+    );
+    assert_eq!(opcode.size(), 3);
+}
+
+#[test]
+fn jmp_a16_takes_12_cycles_if_no_jump() {
+    let opcode = OpCode::new(
+        Category::JP,
+        [
+            Argument::JumpCondition(JumpCondition::Zero),
+            Argument::Label(0x1234),
+        ],
+    );
+
+    let mut cpu = CPU::new();
+    let mut memory = vec![0x00, 0xFF];
+
+    write_flag(&mut cpu, Flags::Z, false);
+
+    let cycles = opcode.run(&mut cpu, MemoryAdapter::new(&mut memory));
+
+    assert_eq!(cycles, 12);
 }

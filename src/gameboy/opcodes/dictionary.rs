@@ -166,6 +166,7 @@ lazy_static! {
         (0xC7, "RST 00H"),
         (0xC8, "RET Z"),
         (0xC9, "RET"),
+        (0xCA, "JP Z a16"),
         (0xCD, "CALL a16"),
         (0xCF, "RST 08H"),
         (0xD1, "POP DE"),
