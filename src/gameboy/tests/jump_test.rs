@@ -121,6 +121,16 @@ fn decode_jump_tests() {
             ]
         )
     );
+    assert_eq!(
+        decode(&[0xC2, 0x34, 0x12]),
+        OpCode::new(
+            Category::JP,
+            [
+                Argument::JumpCondition(JumpCondition::NotZero),
+                Argument::Label(0x1234)
+            ]
+        )
+    );
 }
 
 #[test]

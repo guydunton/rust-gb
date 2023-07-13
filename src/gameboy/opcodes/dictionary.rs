@@ -160,6 +160,7 @@ lazy_static! {
         (0xBE, "CP (HL)"),
         (0xC0, "RET NZ"),
         (0xC1, "POP BC"),
+        (0xC2, "JP NZ a16"),
         (0xC3, "JP a16"),
         (0xC5, "PUSH BC"),
         (0xC6, "ADD A d8"),
