@@ -118,6 +118,7 @@ where
                 }
             },
             move |_err| {},
+            None,
         )
         .unwrap()
 }
@@ -133,20 +134,15 @@ fn main() {
     let gb_screen_height = SCREEN_HEIGHT;
     let gb_screen_width = SCREEN_WIDTH;
 
-    let matches = clap::App::new("RustGB")
+    let matches = clap::Command::new("RustGB")
         .arg(
-            Arg::with_name("debug")
-                .short("d")
+            Arg::new("debug")
+                .short('d')
                 .long("debug")
                 .help("Start in debug mode")
                 .required(false),
         )
-        .arg(
-            Arg::with_name("ROM")
-                .required(true)
-                .help("Start with rom")
-                .takes_value(true),
-        )
+        .arg(Arg::new("ROM").required(true).help("Start with rom"))
         .get_matches();
 
     // Create a channel which takes audio data
@@ -167,10 +163,10 @@ fn main() {
             .build()
             .unwrap();
 
-    let is_debug = matches.is_present("debug");
+    let is_debug = matches.get_flag("debug");
 
     // Load the ROM
-    let rom_file_name = matches.value_of("ROM").unwrap();
+    let rom_file_name = matches.get_one::<String>("ROM").unwrap();
     let rom_data = load_rom(rom_file_name);
 
     let rom_bytes = match rom_data {
