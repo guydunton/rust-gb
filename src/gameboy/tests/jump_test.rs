@@ -131,6 +131,16 @@ fn decode_jump_tests() {
             ]
         )
     );
+    assert_eq!(
+        decode(&[0xDA, 0x34, 0x12]),
+        OpCode::new(
+            Category::JP,
+            [
+                Argument::JumpCondition(JumpCondition::Carry),
+                Argument::Label(0x1234)
+            ]
+        )
+    )
 }
 
 #[test]

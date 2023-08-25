@@ -48,6 +48,7 @@ pub fn size_in_bytes(argument: Argument) -> u16 {
 pub enum JumpCondition {
     NotZero,
     Zero,
+    Carry,
 }
 
 impl fmt::Display for Argument {
@@ -118,6 +119,7 @@ pub fn arg_from_str(arg: &str, index: u16, memory: &[u8]) -> Result<Argument, &'
         "d8" => Argument::SmallValue(memory[(index + 1) as usize]),
         "NZ" => Argument::JumpCondition(JumpCondition::NotZero),
         "Z" => Argument::JumpCondition(JumpCondition::Zero),
+        "CA" => Argument::JumpCondition(JumpCondition::Carry),
         "r8" => Argument::JumpDistance(memory[(index + 1) as usize] as i8),
         "SP+r8" => Argument::SPOffset(memory[(index + 1) as usize] as i8),
         "7" => Argument::Bit(7),

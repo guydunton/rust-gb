@@ -14,6 +14,7 @@ pub fn run_ret(args: &[Argument], cpu: &mut CPU, memory: &mut [u8]) -> u32 {
             match condition {
                 JumpCondition::NotZero => !read_flag(cpu, Flags::Z),
                 JumpCondition::Zero => read_flag(cpu, Flags::Z),
+                JumpCondition::Carry => read_flag(cpu, Flags::C),
             }
         }
         _ => true,

@@ -120,7 +120,7 @@ impl PPU {
     }
 
     pub fn tick(&mut self, cycles: u32, memory: &mut [u8]) {
-        // Get the 7th bit
+        // Get bit 7 (8th)
         let bit_7_set = (memory[Labels::LCD_CONTROLS as usize] & 0b1000_0000) != 0;
         let is_screen_on = bit_7_set;
 
