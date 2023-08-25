@@ -10,7 +10,7 @@ mod gameboy;
 
 use crate::debug_cli::{update, DebugControls};
 use crate::gameboy::{Gameboy, ScreenColor, TickResult};
-use clap::Arg;
+use clap::{Arg, ArgAction};
 use cpal::traits::{DeviceTrait, HostTrait, StreamTrait};
 use cpal::{SampleRate, StreamConfig};
 use fs::File;
@@ -140,6 +140,7 @@ fn main() {
                 .short('d')
                 .long("debug")
                 .help("Start in debug mode")
+                .action(ArgAction::SetTrue)
                 .required(false),
         )
         .arg(Arg::new("ROM").required(true).help("Start with rom"))

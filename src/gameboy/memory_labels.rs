@@ -8,5 +8,6 @@ pub mod Labels {
     pub const SCROLL_Y: u16 = 0xFF42;
     pub const SCROLL_X: u16 = 0xFF43;
     pub const LCDC_Y: u16 = 0xFF44;
+    pub const DMA: u16 = 0xFF46;
     pub const BOOTLOADER_DISABLE: u16 = 0xFF50;
 }

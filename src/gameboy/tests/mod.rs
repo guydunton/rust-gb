@@ -11,6 +11,7 @@ mod interrupt_instruction_tests;
 mod jump_test;
 mod load16_test;
 mod load8_test;
+mod memory_test;
 mod misc_instructions_test;
 mod opcode_printer_test;
 mod or;

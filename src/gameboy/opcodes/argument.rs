@@ -59,7 +59,7 @@ impl fmt::Display for Argument {
             Argument::RegisterIndirectInc(reg) => write!(f, "({:?})+", reg),
             Argument::RegisterIndirect(reg) => write!(f, "({:?})", reg),
             Argument::HighOffsetRegister(reg) => write!(f, "(0xFF+{:?})", reg),
-            Argument::HighOffsetConstant(val) => write!(f, "(0xFF{})", val),
+            Argument::HighOffsetConstant(val) => write!(f, "({:#X})", *val as u16 + 0xFF00),
             Argument::LargeValue(val) => write!(f, "{:#X}", val),
             Argument::SmallValue(val) => write!(f, "{:#X}", val),
             Argument::JumpDistance(val) => write!(f, "{}", val),

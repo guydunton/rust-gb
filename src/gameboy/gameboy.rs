@@ -187,6 +187,7 @@ impl<'a> Gameboy<'a> {
                 let interrupts_enabled_before = self.cpu.is_interrupt_enable_started();
 
                 let mut enable_rom_header = false;
+                let mut perform_dma_copy = None;
 
                 let cycles;
                 {
@@ -200,11 +201,25 @@ impl<'a> Gameboy<'a> {
                         // Restore the Cart memory in place of the bootloader
                         enable_rom_header = true;
                     });
+                    mem_adapter.add_callback(Labels::DMA, |source| {
+                        // Copy locations in memory
+                        perform_dma_copy = Some(source);
+                    });
                     cycles = op.run(&mut self.cpu, mem_adapter);
                 }
 
                 if enable_rom_header {
                     self.memory[..0xFF].copy_from_slice(&self.rom_header_data[..0xFF]);
+                }
+
+                if let Some(source) = perform_dma_copy {
+                    let start = ((source as u16) << 8) as usize;
+                    let end = (((source as u16) << 8) + 0x9F) as usize;
+                    let block: Vec<u8> = self.memory[start..end]
+                        .iter()
+                        .map(|val| val.clone())
+                        .collect();
+                    self.memory[0xFE00..0xFE9F].clone_from_slice(&block[..]);
                 }
 
                 // If interrupts are also enabled afterwards then enable interrupts
