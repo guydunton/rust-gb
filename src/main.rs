@@ -29,6 +29,7 @@ fn screen_color_to_color(c: ScreenColor) -> [u8; 4] {
 
 const SCREEN_WIDTH: u32 = 160;
 const SCREEN_HEIGHT: u32 = 144;
+const WINDOW_SCALING: u32 = 4;
 
 pub struct App<'a> {
     texture_context: G2dTextureContext,
@@ -57,12 +58,19 @@ impl<'a> App<'a> {
 
         let canvas = img::ImageBuffer::from_vec(SCREEN_WIDTH, SCREEN_HEIGHT, buffer).unwrap();
 
+        let mut texture_settings = TextureSettings::new();
+        texture_settings.set_filter(Filter::Nearest);
+
         // Transform into a texture so piston can use it.
         let texture: G2dTexture =
-            Texture::from_image(&mut self.texture_context, &canvas, &TextureSettings::new())
-                .unwrap();
+            Texture::from_image(&mut self.texture_context, &canvas, &texture_settings).unwrap();
 
-        piston_window::image(&texture, c.transform.scale(2.0, 2.0), g);
+        piston_window::image(
+            &texture,
+            c.transform
+                .scale(WINDOW_SCALING as f64, WINDOW_SCALING as f64),
+            g,
+        );
     }
 
     fn update(&mut self, args: UpdateArgs) {
@@ -157,12 +165,17 @@ fn main() {
         }
     };
 
-    let mut window: PistonWindow =
-        WindowSettings::new("Gameboy", [gb_screen_width * 2, gb_screen_height * 2])
-            .exit_on_esc(true)
-            .resizable(false)
-            .build()
-            .unwrap();
+    let mut window: PistonWindow = WindowSettings::new(
+        "Gameboy",
+        [
+            gb_screen_width * WINDOW_SCALING,
+            gb_screen_height * WINDOW_SCALING,
+        ],
+    )
+    .exit_on_esc(true)
+    .resizable(false)
+    .build()
+    .unwrap();
 
     let is_debug = matches.get_flag("debug");
 
