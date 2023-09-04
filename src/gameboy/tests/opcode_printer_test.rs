@@ -33,9 +33,19 @@ mod opcode_printer_tests {
     #[test]
     fn will_fail_getting_an_instruction_out_of_range() {
         let mut gb = Gameboy::new(vec![0x00]);
-        gb.set_register_16(RegisterLabel16::ProgramCounter, 10);
+        gb.set_register_16(RegisterLabel16::ProgramCounter, 11);
         let next_instruction = gb.get_opcode_with_offset(u16::max_value() - 10);
 
         assert!(next_instruction.is_err());
+    }
+
+    #[test]
+    fn get_high_opcode() {
+        let mut gb = Gameboy::new(vec![]);
+
+        gb.set_register_16(RegisterLabel16::ProgramCounter, 0xFFFF);
+        let opcode = gb.get_opcode_with_offset(0);
+
+        assert!(opcode.is_ok());
     }
 }

@@ -348,9 +348,6 @@ impl<'a> Gameboy<'a> {
 
         match desired_counter {
             Some(value) => {
-                if value == u16::max_value() {
-                    return Err(());
-                }
                 let opcode = self.get_opcode_at(value);
                 return opcode
                     .map(|op| (op.to_string().trim().to_owned(), value))
