@@ -17,7 +17,7 @@ fn jump_instruction() {
             gb.set_register_16(RegisterLabel16::ProgramCounter, 0x0003);
             gb.set_flag(Flags::Z, condition_val);
 
-            let cycles = gb.step_once();
+            let cycles = gb.step_once().unwrap();
 
             assert_eq!(gb.get_register_16(RegisterLabel16::ProgramCounter), 0x0000);
             assert_eq!(cycles, 12); // cycles different for action vs no action
@@ -27,7 +27,7 @@ fn jump_instruction() {
             gb.set_register_16(RegisterLabel16::ProgramCounter, 0x0003);
             gb.set_flag(Flags::Z, !condition_val);
 
-            let cycles = gb.step_once();
+            let cycles = gb.step_once().unwrap();
 
             assert_eq!(gb.get_register_16(RegisterLabel16::ProgramCounter), 0x0005);
             assert_eq!(cycles, 8);
@@ -68,7 +68,7 @@ fn the_jr_with_no_conditions_always_jumps() {
     // Move the gameboy past the first NOP
     gb.set_register_16(RegisterLabel16::ProgramCounter, 0x01);
 
-    let cycles = gb.step_once();
+    let cycles = gb.step_once().unwrap();
     use crate::gameboy::opcodes::Decoder;
     let opcode = Decoder::decode_instruction(0x01, gb.get_memory_slice_at(0, 0xFFFF)).unwrap();
     assert_eq!(opcode.size(), 2);
@@ -80,7 +80,7 @@ fn the_jr_with_no_conditions_always_jumps() {
 #[test]
 fn jp_a16_instruction_jumps_to_location() {
     let mut gb = Gameboy::new(vec![0xC3, 0x01, 0x05]); // JP $0501
-    let cycles = gb.step_once();
+    let cycles = gb.step_once().unwrap();
 
     assert_eq!(gb.get_register_16(RegisterLabel16::ProgramCounter), 0x501);
     assert_eq!(cycles, 16);
@@ -103,7 +103,7 @@ fn jp_hl_instruction_jumps() {
 
     cpu.write_16_bits(RegisterLabel16::HL, 0x0123);
 
-    let cycles = jump.run(&mut cpu, MemoryAdapter::new(&mut memory));
+    let cycles = jump.run(&mut cpu, MemoryAdapter::new(&mut memory)).unwrap();
 
     assert_eq!(cycles, 4);
     assert_eq!(cpu.read_16_bits(RegisterLabel16::ProgramCounter), 0x0123);
@@ -170,7 +170,9 @@ fn jmp_a16_takes_12_cycles_if_no_jump() {
 
     write_flag(&mut cpu, Flags::Z, false);
 
-    let cycles = opcode.run(&mut cpu, MemoryAdapter::new(&mut memory));
+    let cycles = opcode
+        .run(&mut cpu, MemoryAdapter::new(&mut memory))
+        .unwrap();
 
     assert_eq!(cycles, 12);
 }

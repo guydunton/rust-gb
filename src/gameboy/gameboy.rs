@@ -13,6 +13,7 @@ use super::{read_flag, write_flag, Flags, OpCode, RegisterLabel16, RegisterLabel
 pub enum TickResult {
     HitBreakpoint,
     FrameComplete,
+    Crash,
 }
 
 pub struct Gameboy<'a> {
@@ -135,7 +136,15 @@ impl<'a> Gameboy<'a> {
         let mut total_cycles_used = 0;
 
         loop {
-            total_cycles_used += self.step_once();
+            match self.step_once() {
+                Some(cycles) => {
+                    total_cycles_used += cycles;
+                }
+                None => {
+                    return TickResult::Crash;
+                }
+            }
+
             if total_cycles_used > cycles_to_use {
                 break;
             }
@@ -151,7 +160,7 @@ impl<'a> Gameboy<'a> {
 
     /// Run the next instruction and return the number of cycles used.
     #[allow(dead_code)]
-    pub fn step_once(&mut self) -> u32 {
+    pub fn step_once(&mut self) -> Option<u32> {
         // If interrupts are enabled check each interrupt flag
         if self.cpu.is_interrupts_enabled() {
             let interrupt_enabled_flags = self.memory[0xFFFF];
@@ -176,7 +185,7 @@ impl<'a> Gameboy<'a> {
                     // disable interrupts in the process
                     self.cpu.disable_interrupts();
 
-                    return cycles;
+                    return Some(cycles);
                 }
             }
         }
@@ -205,7 +214,7 @@ impl<'a> Gameboy<'a> {
                         // Copy locations in memory
                         perform_dma_copy = Some(source);
                     });
-                    cycles = op.run(&mut self.cpu, mem_adapter);
+                    cycles = op.run(&mut self.cpu, mem_adapter)?;
                 }
 
                 if enable_rom_header {
@@ -233,7 +242,7 @@ impl<'a> Gameboy<'a> {
                 // Run the ALU by the same amount of cycles
                 self.alu.tick(cycles, &mut self.memory);
 
-                cycles
+                Some(cycles)
             }
             Err(err) => {
                 panic!("{}", err);

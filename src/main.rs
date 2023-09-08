@@ -31,6 +31,12 @@ const SCREEN_WIDTH: u32 = 160;
 const SCREEN_HEIGHT: u32 = 144;
 const WINDOW_SCALING: u32 = 4;
 
+#[derive(PartialEq)]
+enum AppResult {
+    Continue,
+    Finish,
+}
+
 pub struct App<'a> {
     texture_context: G2dTextureContext,
     gb: Gameboy<'a>,
@@ -73,7 +79,7 @@ impl<'a> App<'a> {
         );
     }
 
-    fn update(&mut self, args: UpdateArgs) {
+    fn update(&mut self, args: UpdateArgs) -> AppResult {
         if self.is_debug {
             let debug_controls = update(&self.gb, &mut self.breakpoints);
 
@@ -87,10 +93,17 @@ impl<'a> App<'a> {
         } else {
             let stop_reason = self.gb.tick_with_breaks(args.dt, &self.breakpoints);
 
-            if stop_reason == TickResult::HitBreakpoint {
-                self.is_debug = true;
+            match stop_reason {
+                TickResult::HitBreakpoint => {
+                    self.is_debug = true;
+                }
+                TickResult::Crash => {
+                    return AppResult::Finish;
+                }
+                _ => {}
             }
         }
+        return AppResult::Continue;
     }
 }
 
@@ -214,7 +227,11 @@ fn main() {
         }
 
         if let Some(u) = e.update_args() {
-            app.update(u);
+            if app.update(u) == AppResult::Finish {
+                break;
+            }
         }
     }
+
+    println!("Finishing");
 }

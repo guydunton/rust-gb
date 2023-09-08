@@ -54,7 +54,7 @@ fn xor_instruction() {
     gb.set_register_8(RegisterLabel8::A, 0x01);
     gb.set_register_8(RegisterLabel8::F, 0b1111_0000);
 
-    let cycles = gb.step_once();
+    let cycles = gb.step_once().unwrap();
 
     assert_eq!(gb.get_register_8(RegisterLabel8::A), 0x00);
     assert_eq!(gb.get_register_16(RegisterLabel16::ProgramCounter), 0x01);
@@ -74,7 +74,7 @@ fn bit_instruction() {
         let mut gb = Gameboy::new(vec![0xCB, 0x7C]);
         gb.set_register_8(RegisterLabel8::H, 0b1000_0000);
         let carry_flag = gb.get_flag(Flags::C);
-        let cycles = gb.step_once();
+        let cycles = gb.step_once().unwrap();
 
         assert_eq!(gb.get_flag(Flags::Z), false);
         assert_eq!(gb.get_flag(Flags::N), false);
@@ -88,7 +88,7 @@ fn bit_instruction() {
         // Check the bit flag when the bit is 0
         let mut gb = Gameboy::new(vec![0xCB, 0x7C]);
         gb.set_register_8(RegisterLabel8::H, 0x0);
-        let cycles = gb.step_once();
+        let cycles = gb.step_once().unwrap();
 
         assert_eq!(gb.get_flag(Flags::Z), true);
         assert_eq!(cycles, 12);
@@ -98,7 +98,7 @@ fn bit_instruction() {
 #[test]
 fn nop_instruction() {
     let mut gb = Gameboy::new(vec![0x00]);
-    let cycles = gb.step_once();
+    let cycles = gb.step_once().unwrap();
 
     assert_eq!(gb.get_register_16(RegisterLabel16::ProgramCounter), 0x1);
     assert_eq!(cycles, 4);
@@ -163,7 +163,7 @@ fn call_instruction_takes_24_cycles() {
     0x05 : Part 2 of the stack
     0x06 : part 1 of the stack
     */
-    let cycles = gb.step_once();
+    let cycles = gb.step_once().unwrap();
     assert_eq!(cycles, 24);
 }
 
@@ -177,7 +177,7 @@ fn rotate_left_shifts_along_with_the_carry_flag() {
     gb.set_flag(Flags::C, true);
     gb.set_register_8(RegisterLabel8::C, 0b0101_0101);
 
-    let cycles = gb.step_once();
+    let cycles = gb.step_once().unwrap();
 
     assert_eq!(gb.get_register_8(RegisterLabel8::C), 0b1010_1011);
     assert_eq!(gb.get_flag(Flags::C), false);
@@ -225,7 +225,7 @@ fn rla_cycles_the_a_register_left_through_carry() {
     gb.set_register_8(RegisterLabel8::A, 0b0101_0101);
     gb.set_flag(Flags::C, true);
 
-    let cycles = gb.step_once();
+    let cycles = gb.step_once().unwrap();
     assert_eq!(cycles, 4);
     assert_eq!(gb.get_register_8(RegisterLabel8::A), 0b1010_1011);
     assert_eq!(gb.get_flag(Flags::C), false);

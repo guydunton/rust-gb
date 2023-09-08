@@ -17,12 +17,12 @@ impl OpCode {
         OpCode { category, args }
     }
 
-    pub fn run(&self, cpu: &mut CPU, mut memory: MemoryAdapter) -> u32 {
+    pub fn run(&self, cpu: &mut CPU, mut memory: MemoryAdapter) -> Option<u32> {
         // Update the program counter
         let program_counter = cpu.read_16_bits(RegisterLabel16::ProgramCounter);
         cpu.write_16_bits(
             RegisterLabel16::ProgramCounter,
-            program_counter + self.size(),
+            program_counter.checked_add(self.size())?,
         );
 
         let mut cycles = 0;
@@ -116,7 +116,7 @@ impl OpCode {
             }
         };
 
-        cycles
+        Some(cycles)
     }
 
     pub fn size(&self) -> u16 {

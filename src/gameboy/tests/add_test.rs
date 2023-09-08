@@ -22,7 +22,7 @@ fn add_fixture_gb<'a>(code: u8, a_val: u8, source_val: u8) -> Gameboy<'a> {
 fn add_hl_size_test() {
     let mut gb = add_fixture_gb(0x86, 1, 2);
 
-    let cycles = gb.step_once();
+    let cycles = gb.step_once().unwrap();
 
     assert_eq!(cycles, 8);
     assert_eq!(gb.get_register_16(RegisterLabel16::ProgramCounter), 0x01);
@@ -90,7 +90,9 @@ fn add_r8_to_a() {
     cpu.write_8_bits(RegisterLabel8::A, 0x02);
     cpu.write_8_bits(RegisterLabel8::B, 0x02);
 
-    let cycles = opcode.run(&mut cpu, MemoryAdapter::new(&mut memory));
+    let cycles = opcode
+        .run(&mut cpu, MemoryAdapter::new(&mut memory))
+        .unwrap();
 
     assert_eq!(cpu.read_8_bits(RegisterLabel8::A), 0x04);
     assert_eq!(cpu.read_16_bits(RegisterLabel16::ProgramCounter), 0x01);
@@ -112,7 +114,9 @@ fn add_d8_to_a() {
 
     cpu.write_8_bits(RegisterLabel8::A, 0x02);
 
-    let cycles = opcode.run(&mut cpu, MemoryAdapter::new(&mut memory));
+    let cycles = opcode
+        .run(&mut cpu, MemoryAdapter::new(&mut memory))
+        .unwrap();
 
     assert_eq!(cpu.read_8_bits(RegisterLabel8::A), 0x06);
     assert_eq!(cpu.read_16_bits(RegisterLabel16::ProgramCounter), 0x02);
@@ -198,7 +202,9 @@ fn add16_works_correctly() {
     cpu.write_16_bits(RegisterLabel16::HL, 0x1234);
     cpu.write_16_bits(RegisterLabel16::BC, 0x4321);
 
-    let cycles = opcode.run(&mut cpu, MemoryAdapter::new(&mut memory));
+    let cycles = opcode
+        .run(&mut cpu, MemoryAdapter::new(&mut memory))
+        .unwrap();
 
     assert_eq!(cycles, 8);
     assert_eq!(cpu.read_16_bits(RegisterLabel16::HL), 0x5555);

@@ -24,7 +24,9 @@ fn inc_increases_value_in_registry() {
     let mut cpu = CPU::new();
     let mut memory = vec![0x0; 0xFFFF];
 
-    let cycles = opcode.run(&mut cpu, MemoryAdapter::new(&mut memory));
+    let cycles = opcode
+        .run(&mut cpu, MemoryAdapter::new(&mut memory))
+        .unwrap();
 
     assert_eq!(cycles, 4);
     assert_eq!(cpu.read_16_bits(RegisterLabel16::ProgramCounter), 0x01);
@@ -104,7 +106,9 @@ fn inc_supports_hl_indirect() {
 
     cpu.write_16_bits(RegisterLabel16::HL, 0xFF00);
 
-    let cycles = opcode.run(&mut cpu, MemoryAdapter::new(&mut memory));
+    let cycles = opcode
+        .run(&mut cpu, MemoryAdapter::new(&mut memory))
+        .unwrap();
 
     assert_eq!(cycles, 12);
     assert_eq!(memory[0xFF00], 0x01);
@@ -150,7 +154,7 @@ fn inc_16_instruction() {
 
     for &(instruction, register) in instructions.iter() {
         let mut gb = Gameboy::new(vec![instruction]);
-        let cycles = gb.step_once();
+        let cycles = gb.step_once().unwrap();
 
         // Set the flags
         gb.set_flag(Flags::N, false);

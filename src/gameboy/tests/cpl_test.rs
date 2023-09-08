@@ -2,8 +2,7 @@ use crate::gameboy::{
     cpu::CPU,
     memory_adapter::MemoryAdapter,
     opcodes::{Argument, Category},
-    Flags, OpCode, RegisterLabel16, RegisterLabel8,
-    read_flag
+    read_flag, Flags, OpCode, RegisterLabel16, RegisterLabel8,
 };
 
 #[test]
@@ -17,11 +16,13 @@ fn run_cpl() {
 
     cpu.write_8_bits(RegisterLabel8::A, a_value);
 
-    let cycles = opcode.run(&mut cpu, MemoryAdapter::new(&mut memory));
+    let cycles = opcode
+        .run(&mut cpu, MemoryAdapter::new(&mut memory))
+        .unwrap();
 
     assert_eq!(cycles, 4);
     assert_eq!(cpu.read_16_bits(RegisterLabel16::ProgramCounter), 1);
-    assert_eq!(cpu.read_8_bits(RegisterLabel8::A), a_value^a_value);
+    assert_eq!(cpu.read_8_bits(RegisterLabel8::A), a_value ^ a_value);
 
     assert_eq!(read_flag(&cpu, Flags::N), true);
     assert_eq!(read_flag(&cpu, Flags::H), true);

@@ -25,7 +25,9 @@ fn ei_instruction_works() {
     let mut cpu = CPU::new();
     let mut memory = vec![0x0; 0xFFFF];
 
-    let cycles = opcode.run(&mut cpu, MemoryAdapter::new(&mut memory));
+    let cycles = opcode
+        .run(&mut cpu, MemoryAdapter::new(&mut memory))
+        .unwrap();
 
     assert_eq!(cycles, 4);
     assert_eq!(cpu.read_16_bits(RegisterLabel16::ProgramCounter), 1);
@@ -43,7 +45,9 @@ fn di_instruction_works() {
 
     cpu.enable_interrupts();
 
-    let cycles = opcode.run(&mut cpu, MemoryAdapter::new(&mut memory));
+    let cycles = opcode
+        .run(&mut cpu, MemoryAdapter::new(&mut memory))
+        .unwrap();
 
     assert_eq!(cycles, 4);
     assert_eq!(cpu.read_16_bits(RegisterLabel16::ProgramCounter), 1);
@@ -78,7 +82,7 @@ fn interrupt_is_only_enabled_after_instruction_after_ei() {
     assert_eq!(gb.get_register_16(RegisterLabel16::ProgramCounter), 0x02);
 
     // Running the next instruction triggers the interrupt and we jump to the vblank routine
-    let cycles = gb.step_once();
+    let cycles = gb.step_once().unwrap();
     assert_eq!(cycles, 20);
 
     // The stack contains the return address
@@ -122,7 +126,9 @@ fn rst_works_like_call() {
 
     cpu.write_16_bits(RegisterLabel16::StackPointer, 0xA00F);
     cpu.write_16_bits(RegisterLabel16::ProgramCounter, 0x0002);
-    let cycles = opcode.run(&mut cpu, MemoryAdapter::new(&mut memory));
+    let cycles = opcode
+        .run(&mut cpu, MemoryAdapter::new(&mut memory))
+        .unwrap();
 
     assert_eq!(cycles, 16);
     assert_eq!(memory[0xA00E], 0x00);
