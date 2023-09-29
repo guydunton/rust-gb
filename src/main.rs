@@ -8,15 +8,17 @@ extern crate lazy_static;
 mod debug_cli;
 mod gameboy;
 
-use crate::debug_cli::{update, DebugControls};
+use crate::debug_cli::{update, DebugControls, OpcodeWriter};
 use crate::gameboy::{Gameboy, ScreenColor, TickResult};
-use clap::{Arg, ArgAction};
+use clap::{value_parser, Arg, ArgAction};
 use cpal::traits::{DeviceTrait, HostTrait, StreamTrait};
 use cpal::{SampleRate, StreamConfig};
 use fs::File;
 use piston_window::*;
+use std::fs;
+use std::io::Read;
+use std::path::PathBuf;
 use std::sync::mpsc::{channel, Receiver};
-use std::{fs, io::Read};
 
 fn screen_color_to_color(c: ScreenColor) -> [u8; 4] {
     match c {
@@ -31,11 +33,20 @@ const SCREEN_WIDTH: u32 = 160;
 const SCREEN_HEIGHT: u32 = 144;
 const WINDOW_SCALING: u32 = 4;
 
+#[derive(PartialEq)]
+enum AppResult {
+    Continue,
+    Finish,
+}
+
+type OpcodeCallback<'a> = Box<dyn FnMut(u16, String) -> () + 'a>;
+
 pub struct App<'a> {
     texture_context: G2dTextureContext,
     gb: Gameboy<'a>,
     is_debug: bool,
     breakpoints: Vec<u16>,
+    opcode_writer: Option<OpcodeCallback<'a>>,
 }
 
 impl<'a> App<'a> {
@@ -73,7 +84,7 @@ impl<'a> App<'a> {
         );
     }
 
-    fn update(&mut self, args: UpdateArgs) {
+    fn update(&mut self, args: UpdateArgs) -> AppResult {
         if self.is_debug {
             let debug_controls = update(&self.gb, &mut self.breakpoints);
 
@@ -85,12 +96,21 @@ impl<'a> App<'a> {
         if self.is_debug {
             self.gb.step_once();
         } else {
-            let stop_reason = self.gb.tick_with_breaks(args.dt, &self.breakpoints);
+            let stop_reason =
+                self.gb
+                    .tick_with_breaks(args.dt, &self.breakpoints, &mut self.opcode_writer);
 
-            if stop_reason == TickResult::HitBreakpoint {
-                self.is_debug = true;
+            match stop_reason {
+                TickResult::HitBreakpoint => {
+                    self.is_debug = true;
+                }
+                TickResult::Crash => {
+                    return AppResult::Finish;
+                }
+                _ => {}
             }
         }
+        return AppResult::Continue;
     }
 }
 
@@ -151,6 +171,16 @@ fn main() {
                 .action(ArgAction::SetTrue)
                 .required(false),
         )
+        .arg(
+            Arg::new("log")
+                .short('l')
+                .long("log")
+                .help("Record a logfile of all instructions")
+                .action(ArgAction::Set)
+                .value_name("FILE")
+                .value_parser(value_parser!(PathBuf))
+                .required(false),
+        )
         .arg(Arg::new("ROM").required(true).help("Start with rom"))
         .get_matches();
 
@@ -178,6 +208,9 @@ fn main() {
     .unwrap();
 
     let is_debug = matches.get_flag("debug");
+    let mut opcode_writer = matches
+        .get_one::<PathBuf>("log")
+        .map(|path| OpcodeWriter::new(path));
 
     // Load the ROM
     let rom_file_name = matches.get_one::<String>("ROM").unwrap();
@@ -191,30 +224,45 @@ fn main() {
         }
     };
 
-    let mut app = App {
-        texture_context: window.create_texture_context(),
-        gb: Gameboy::new_with_bootloader(audio_callback, &rom_bytes),
-        is_debug,
-        breakpoints: vec![],
-    };
+    {
+        let writer: Option<Box<dyn FnMut(u16, String)>> = opcode_writer.as_mut().map(|w| {
+            Box::new(|address, opcode| w.store_opcode(address, opcode))
+                as Box<dyn FnMut(u16, String)>
+        });
 
-    let stream;
-    if !is_debug {
-        let device = build_audio_event_loop();
-        stream = create_audio_thread(device, receiver);
-        stream.play().unwrap();
+        let mut app = App {
+            texture_context: window.create_texture_context(),
+            gb: Gameboy::new_with_bootloader(audio_callback, &rom_bytes),
+            is_debug,
+            breakpoints: vec![],
+            opcode_writer: writer,
+        };
+
+        let stream;
+        if !is_debug {
+            let device = build_audio_event_loop();
+            stream = create_audio_thread(device, receiver);
+            stream.play().unwrap();
+        }
+
+        let mut events = Events::new(EventSettings::new());
+        while let Some(e) = events.next(&mut window) {
+            if let Some(_r) = e.render_args() {
+                window.draw_2d(&e, |context, g, _| {
+                    app.render(context, g);
+                });
+            }
+
+            if let Some(u) = e.update_args() {
+                if app.update(u) == AppResult::Finish {
+                    break;
+                }
+            }
+        }
     }
 
-    let mut events = Events::new(EventSettings::new());
-    while let Some(e) = events.next(&mut window) {
-        if let Some(_r) = e.render_args() {
-            window.draw_2d(&e, |context, g, _| {
-                app.render(context, g);
-            });
-        }
-
-        if let Some(u) = e.update_args() {
-            app.update(u);
-        }
+    // Write the log
+    if let Some(mut writer) = opcode_writer {
+        writer.write_file();
     }
 }

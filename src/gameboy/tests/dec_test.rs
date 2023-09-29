@@ -24,7 +24,7 @@ mod dec_test {
             let mut gb = Gameboy::new(vec![opcode]);
             gb.set_register_8(register, 6);
 
-            let cycles = gb.step_once();
+            let cycles = gb.step_once().unwrap();
 
             // The opcode needs to be 1 byte & take 4 cycles
             assert_eq!(gb.get_register_16(RegisterLabel16::ProgramCounter), 0x1);
@@ -57,7 +57,9 @@ mod dec_test {
         cpu.write_16_bits(RegisterLabel16::HL, 0x00FF);
         memory[0x00FF] = 0x4;
 
-        let cycles = opcode.run(&mut cpu, MemoryAdapter::new(&mut memory));
+        let cycles = opcode
+            .run(&mut cpu, MemoryAdapter::new(&mut memory))
+            .unwrap();
 
         assert_eq!(cycles, 12);
         assert_eq!(cpu.read_16_bits(RegisterLabel16::ProgramCounter), 0x01);
@@ -181,7 +183,9 @@ mod dec_test {
 
         cpu.write_16_bits(RegisterLabel16::BC, 0x04);
 
-        let cycles = opcode.run(&mut cpu, MemoryAdapter::new(&mut memory));
+        let cycles = opcode
+            .run(&mut cpu, MemoryAdapter::new(&mut memory))
+            .unwrap();
 
         assert_eq!(cpu.read_16_bits(RegisterLabel16::BC), 0x03);
         assert_eq!(cpu.read_16_bits(RegisterLabel16::ProgramCounter), 0x1);

@@ -26,7 +26,9 @@ fn scf_sets_the_carry_flag_and_others() {
 
     let mut memory = vec![0x0; 0xFF];
 
-    let cycles = opcode.run(&mut cpu, MemoryAdapter::new(&mut memory));
+    let cycles = opcode
+        .run(&mut cpu, MemoryAdapter::new(&mut memory))
+        .unwrap();
 
     assert_eq!(cycles, 4);
     assert_eq!(read_flag(&cpu, Flags::N), false);

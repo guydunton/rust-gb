@@ -1,10 +1,12 @@
 mod instruction;
 mod layout;
+mod opcode_writer;
 mod registers;
 mod widgets;
 
 use crate::Gameboy;
 use layout::Layout;
+pub use opcode_writer::OpcodeWriter;
 use std::io;
 use widgets::{AudioWidget, Channel, FlagsWidget, MemoryWidget, OpCodeWidget, RegistersWidget};
 

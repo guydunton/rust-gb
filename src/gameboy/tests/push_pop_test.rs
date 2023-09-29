@@ -13,7 +13,7 @@ fn pop_instruction_moves_the_stack_pointer() {
     // setup the stack pointer
     gb.set_register_16(RegisterLabel16::StackPointer, 0x02);
 
-    let cycles = gb.step_once();
+    let cycles = gb.step_once().unwrap();
 
     // section("The stack shrinks upwards") {
     // The stack grows downwards so the pop instruction
@@ -35,7 +35,7 @@ fn push_instruction_tests_push_moves_2_bytes_onto_the_stack() {
     gb.set_register_16(RegisterLabel16::BC, 0x1234);
     gb.set_register_16(RegisterLabel16::StackPointer, 0x03);
 
-    let cycles = gb.step_once();
+    let cycles = gb.step_once().unwrap();
 
     assert_eq!(gb.get_memory_at(1), 0x34);
     assert_eq!(gb.get_memory_at(2), 0x12);

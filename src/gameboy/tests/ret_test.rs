@@ -23,7 +23,7 @@ fn ret_jumps_back_to_correct_place() {
     // at the top of the stack is 0x1234
     gb.set_register_16(RegisterLabel16::StackPointer, 0x01);
 
-    let cycles = gb.step_once();
+    let cycles = gb.step_once().unwrap();
 
     // RET takes 16 cycles
     assert_eq!(cycles, 16);
@@ -84,7 +84,9 @@ fn ret_can_have_nz_check() {
     write_flag(&mut cpu, Flags::Z, true);
 
     // Don't jump of zero flag is true
-    let cycles = opcode.run(&mut cpu, MemoryAdapter::new(&mut memory));
+    let cycles = opcode
+        .run(&mut cpu, MemoryAdapter::new(&mut memory))
+        .unwrap();
     assert_eq!(cpu.read_16_bits(RegisterLabel16::ProgramCounter), 0x01);
     assert_eq!(cycles, 8);
 
@@ -94,7 +96,9 @@ fn ret_can_have_nz_check() {
     cpu.write_16_bits(RegisterLabel16::StackPointer, 0x01);
     write_flag(&mut cpu, Flags::Z, false);
 
-    let cycles = opcode.run(&mut cpu, MemoryAdapter::new(&mut memory));
+    let cycles = opcode
+        .run(&mut cpu, MemoryAdapter::new(&mut memory))
+        .unwrap();
     assert_eq!(cpu.read_16_bits(RegisterLabel16::ProgramCounter), 0x1234);
     assert_eq!(cycles, 20);
 }
@@ -154,7 +158,7 @@ fn reti_returns_and_enables_interrupts() {
     assert!(!gb.get_ime_flag()); // Interrupts are initially disabled
 
     // Run the ret instruction
-    let cycles = gb.step_once();
+    let cycles = gb.step_once().unwrap();
 
     assert_eq!(cycles, 16);
 

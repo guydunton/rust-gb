@@ -14,7 +14,7 @@ mod load8_test {
             let mut gb = Gameboy::new(vec![0x32, 0x00]);
             gb.set_register_16(RegisterLabel16::HL, 0x0001);
             gb.set_register_8(RegisterLabel8::A, 0x01);
-            let cycles = gb.step_once();
+            let cycles = gb.step_once().unwrap();
 
             assert_eq!(gb.get_register_16(RegisterLabel16::HL), 0x0000);
             assert_eq!(gb.get_memory_at(1), 0x01);
@@ -48,7 +48,7 @@ mod load8_test {
             let mut gb = Gameboy::new(vec![0x1A, 0x01]);
             gb.set_register_16(RegisterLabel16::DE, 0x01);
 
-            let cycles = gb.step_once();
+            let cycles = gb.step_once().unwrap();
             assert_eq!(cycles, 8);
             assert_eq!(gb.get_register_8(RegisterLabel8::A), 0x01);
             assert_eq!(gb.get_register_16(RegisterLabel16::ProgramCounter), 0x01);
@@ -62,7 +62,7 @@ mod load8_test {
         gb.set_register_16(RegisterLabel16::HL, 0x0001);
         gb.set_register_8(RegisterLabel8::A, 0x12);
 
-        let cycles = gb.step_once();
+        let cycles = gb.step_once().unwrap();
 
         assert_eq!(cycles, 8);
         assert_eq!(gb.get_register_16(RegisterLabel16::HL), 0x02);
@@ -76,7 +76,7 @@ mod load8_test {
         let mut gb = Gameboy::new(vec![0xE0, 0x01]);
         gb.set_register_8(RegisterLabel8::A, 0x02);
 
-        let cycles = gb.step_once();
+        let cycles = gb.step_once().unwrap();
 
         assert_eq!(gb.get_memory_at(0xFF01) as usize, 0x02);
         assert_eq!(cycles, 12);
@@ -88,7 +88,7 @@ mod load8_test {
         let mut gb = Gameboy::new(vec![0xF0, 0x02]);
         gb.set_memory_at(0xFF02, 0x34);
 
-        let cycles = gb.step_once();
+        let cycles = gb.step_once().unwrap();
 
         println!("A register: {:?}", gb.get_register_8(RegisterLabel8::A));
 
@@ -103,7 +103,7 @@ mod load8_test {
 
         gb.set_register_8(RegisterLabel8::A, 0xFF);
 
-        let cycles = gb.step_once();
+        let cycles = gb.step_once().unwrap();
 
         assert_eq!(cycles, 16);
         assert_eq!(gb.get_register_16(RegisterLabel16::ProgramCounter), 0x03);
@@ -114,7 +114,7 @@ mod load8_test {
     fn ld8_hl_d8() {
         let mut gb = Gameboy::new(vec![0x36, 0x12]);
         gb.set_register_16(RegisterLabel16::HL, 0xFF15);
-        let cycles = gb.step_once();
+        let cycles = gb.step_once().unwrap();
 
         assert_eq!(cycles, 12);
         assert_eq!(gb.get_register_16(RegisterLabel16::ProgramCounter), 0x02);
@@ -126,7 +126,7 @@ mod load8_test {
         let mut gb = Gameboy::new(vec![0x2A]);
         gb.set_register_16(RegisterLabel16::HL, 0xFF00);
         gb.set_memory_at(0xFF00, 0x12);
-        let cycles = gb.step_once();
+        let cycles = gb.step_once().unwrap();
 
         assert_eq!(cycles, 8);
         assert_eq!(gb.get_register_16(RegisterLabel16::ProgramCounter), 0x01);
@@ -149,7 +149,9 @@ mod load8_test {
 
         cpu.write_8_bits(RegisterLabel8::B, 0x01);
 
-        let cycles = opcode.run(&mut cpu, MemoryAdapter::new(&mut memory));
+        let cycles = opcode
+            .run(&mut cpu, MemoryAdapter::new(&mut memory))
+            .unwrap();
 
         // Check the result
         assert_eq!(cpu.read_8_bits(RegisterLabel8::A), 0x01);
@@ -202,7 +204,9 @@ mod load8_test {
         memory[0xFF00] = 0x01;
         cpu.write_16_bits(RegisterLabel16::HL, 0xFF00);
 
-        let cycles = opcode.run(&mut cpu, MemoryAdapter::new(&mut memory));
+        let cycles = opcode
+            .run(&mut cpu, MemoryAdapter::new(&mut memory))
+            .unwrap();
 
         // Check the result
         assert_eq!(cpu.read_8_bits(RegisterLabel8::A), 0x01);
@@ -228,7 +232,9 @@ mod load8_test {
         cpu.write_16_bits(RegisterLabel16::HL, 0xFF00);
         cpu.write_8_bits(RegisterLabel8::B, 0x12);
 
-        let cycles = opcode.run(&mut cpu, MemoryAdapter::new(&mut memory));
+        let cycles = opcode
+            .run(&mut cpu, MemoryAdapter::new(&mut memory))
+            .unwrap();
 
         assert_eq!(cycles, 8);
         assert_eq!(memory[0xFF00], 0x12);
@@ -250,7 +256,9 @@ mod load8_test {
 
         memory[0xFF00] = 0x12;
 
-        let cycles = opcode.run(&mut cpu, MemoryAdapter::new(&mut memory));
+        let cycles = opcode
+            .run(&mut cpu, MemoryAdapter::new(&mut memory))
+            .unwrap();
 
         assert_eq!(cycles, 16);
         assert_eq!(cpu.read_16_bits(RegisterLabel16::ProgramCounter), 0x3);
@@ -273,7 +281,9 @@ mod load8_test {
         cpu.write_16_bits(RegisterLabel16::HL, 0xFF00);
         memory[0xFF00] = 0x12;
 
-        let cycles = opcode.run(&mut cpu, MemoryAdapter::new(&mut memory));
+        let cycles = opcode
+            .run(&mut cpu, MemoryAdapter::new(&mut memory))
+            .unwrap();
 
         assert_eq!(cpu.read_8_bits(RegisterLabel8::A), 0x12);
         assert_eq!(cpu.read_16_bits(RegisterLabel16::HL), 0xFEFF);
@@ -324,7 +334,9 @@ mod load8_test {
         let mut cpu = CPU::new();
         let mut memory = vec![0x0; 0xFFFF];
 
-        let cycles = opcode.run(&mut cpu, MemoryAdapter::new(&mut memory));
+        let cycles = opcode
+            .run(&mut cpu, MemoryAdapter::new(&mut memory))
+            .unwrap();
 
         assert_eq!(cycles, 8);
         assert_eq!(cpu.read_16_bits(RegisterLabel16::ProgramCounter), 2);

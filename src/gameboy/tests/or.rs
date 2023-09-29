@@ -18,7 +18,7 @@ fn or_r8_test() {
         gb.set_register_8(*register, 0x1);
         gb.set_register_8(RegisterLabel8::A, 0x0);
 
-        let cycles = gb.step_once();
+        let cycles = gb.step_once().unwrap();
 
         // Check the flags are zero
         assert_eq!(gb.get_register_8(RegisterLabel8::F), 0);

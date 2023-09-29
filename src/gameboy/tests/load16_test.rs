@@ -19,7 +19,9 @@ mod load16_test {
         let mut memory = vec![0; 0xFFFF];
         let mut cpu = CPU::new();
 
-        let cycles = opcode.run(&mut cpu, MemoryAdapter::new(&mut memory));
+        let cycles = opcode
+            .run(&mut cpu, MemoryAdapter::new(&mut memory))
+            .unwrap();
 
         assert_eq!(cpu.read_16_bits(RegisterLabel16::StackPointer), 0x1234);
         assert_eq!(cycles, 12);
@@ -42,7 +44,9 @@ mod load16_test {
 
         cpu.write_16_bits(RegisterLabel16::StackPointer, 0x1234);
 
-        let cycles = opcode.run(&mut cpu, MemoryAdapter::new(&mut memory));
+        let cycles = opcode
+            .run(&mut cpu, MemoryAdapter::new(&mut memory))
+            .unwrap();
 
         assert_eq!(memory[0x03], 0x34);
         assert_eq!(memory[0x04], 0x12);
@@ -66,7 +70,9 @@ mod load16_test {
 
         cpu.write_16_bits(RegisterLabel16::HL, 0x1234);
 
-        let cycles = opcode.run(&mut cpu, MemoryAdapter::new(&mut memory));
+        let cycles = opcode
+            .run(&mut cpu, MemoryAdapter::new(&mut memory))
+            .unwrap();
 
         assert_eq!(cpu.read_16_bits(RegisterLabel16::StackPointer), 0x1234);
         assert_eq!(cycles, 8);
@@ -94,7 +100,9 @@ mod load16_test {
         // Make sure the flags are reset
         cpu.write_8_bits(RegisterLabel8::F, 0xFF);
 
-        let cycles = opcode.run(&mut cpu, MemoryAdapter::new(&mut memory));
+        let cycles = opcode
+            .run(&mut cpu, MemoryAdapter::new(&mut memory))
+            .unwrap();
 
         assert_eq!(cpu.read_16_bits(RegisterLabel16::HL), 0x4);
         assert_eq!(cycles, 12);

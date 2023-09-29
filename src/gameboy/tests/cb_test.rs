@@ -58,7 +58,9 @@ fn swap_switches_top_and_bottom_nibbles_of_register() {
 
     cpu.write_8_bits(RegisterLabel8::A, 0xDE);
 
-    let cycles = opcode.run(&mut cpu, MemoryAdapter::new(&mut memory));
+    let cycles = opcode
+        .run(&mut cpu, MemoryAdapter::new(&mut memory))
+        .unwrap();
 
     assert_eq!(cycles, 8);
     assert_eq!(cpu.read_16_bits(RegisterLabel16::ProgramCounter), 0x1);
@@ -85,7 +87,9 @@ fn swap_switches_top_and_bottom_nibble_of_offset() {
 
     cpu.write_16_bits(RegisterLabel16::HL, 0xFF00);
 
-    let cycles = opcode.run(&mut cpu, MemoryAdapter::new(&mut memory));
+    let cycles = opcode
+        .run(&mut cpu, MemoryAdapter::new(&mut memory))
+        .unwrap();
 
     assert_eq!(cycles, 16);
     assert_eq!(memory[0xFF00], 0xED);

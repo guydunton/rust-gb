@@ -14,7 +14,7 @@ fn xor_instruction() {
     gb.set_register_8(RegisterLabel8::A, 0x01);
     gb.set_register_8(RegisterLabel8::F, 0b1111_0000);
 
-    let cycles = gb.step_once();
+    let cycles = gb.step_once().unwrap();
 
     assert_eq!(gb.get_register_8(RegisterLabel8::A), 0x00);
     assert_eq!(gb.get_register_16(RegisterLabel16::ProgramCounter), 0x01);
@@ -43,7 +43,9 @@ fn xor_sets_flags_based_on_result() {
     cpu.write_8_bits(RegisterLabel8::A, 0x01);
     cpu.write_8_bits(RegisterLabel8::F, 0b1111_0000);
 
-    let cycles = opcode.run(&mut cpu, MemoryAdapter::new(&mut memory));
+    let cycles = opcode
+        .run(&mut cpu, MemoryAdapter::new(&mut memory))
+        .unwrap();
 
     assert_eq!(cpu.read_8_bits(RegisterLabel8::A), 0x00);
     assert_eq!(cpu.read_16_bits(RegisterLabel16::ProgramCounter), 0x01);

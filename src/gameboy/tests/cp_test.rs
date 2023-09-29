@@ -32,7 +32,7 @@ mod cp_test {
         }
 
         fn step(&mut self) -> u32 {
-            self.gb.step_once()
+            self.gb.step_once().unwrap()
         }
     }
 

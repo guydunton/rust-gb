@@ -16,7 +16,7 @@ mod sub_test {
         gb.set_register_8(RegisterLabel8::A, 5);
         gb.set_register_8(RegisterLabel8::B, 1);
 
-        let cycles = gb.step_once();
+        let cycles = gb.step_once().unwrap();
 
         assert_eq!(cycles, 4);
         assert_eq!(gb.get_register_16(RegisterLabel16::ProgramCounter), 0x01);
