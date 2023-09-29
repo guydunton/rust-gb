@@ -19,9 +19,7 @@ impl OpcodeWriter {
     }
 
     pub fn store_opcode(&mut self, address: u16, opcode: String) {
-        if !self.opcode_record.contains_key(&address) {
-            let _ = self.opcode_record.insert(address, opcode);
-        }
+        let _ = self.opcode_record.insert(address, opcode);
     }
 
     pub fn write_file(&mut self) {
