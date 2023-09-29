@@ -127,15 +127,27 @@ impl<'a> Gameboy<'a> {
 
     #[allow(dead_code)]
     pub fn tick(&mut self, dt: f64) -> TickResult {
-        self.tick_with_breaks(dt, &[])
+        let mut callback = None;
+        self.tick_with_breaks(dt, &[], &mut callback)
     }
 
     #[allow(dead_code)]
-    pub fn tick_with_breaks(&mut self, dt: f64, breakpoints: &[u16]) -> TickResult {
+    pub fn tick_with_breaks(
+        &mut self,
+        dt: f64,
+        breakpoints: &[u16],
+        opcode_writer: &mut Option<Box<dyn FnMut(u16, String) -> () + 'a>>,
+    ) -> TickResult {
         let cycles_to_use = (dt * 4194304f64) as u32;
         let mut total_cycles_used = 0;
 
         loop {
+            if let Some(writer) = opcode_writer {
+                if let Ok((opcode, address)) = self.get_opcode_with_offset(0) {
+                    writer(address, opcode);
+                }
+            }
+
             match self.step_once() {
                 Some(cycles) => {
                     total_cycles_used += cycles;
