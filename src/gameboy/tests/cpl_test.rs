@@ -12,7 +12,7 @@ fn run_cpl() {
     let mut cpu = CPU::new();
     let mut memory = vec![0x0; 0xFFFF];
 
-    let a_value = 0xAA;
+    let a_value = 0b1111_0000;
 
     cpu.write_8_bits(RegisterLabel8::A, a_value);
 
@@ -22,7 +22,7 @@ fn run_cpl() {
 
     assert_eq!(cycles, 4);
     assert_eq!(cpu.read_16_bits(RegisterLabel16::ProgramCounter), 1);
-    assert_eq!(cpu.read_8_bits(RegisterLabel8::A), a_value ^ a_value);
+    assert_eq!(cpu.read_8_bits(RegisterLabel8::A), 0b0000_1111);
 
     assert_eq!(read_flag(&cpu, Flags::N), true);
     assert_eq!(read_flag(&cpu, Flags::H), true);
