@@ -76,6 +76,30 @@ fn xor_sets_a_to_result() {
 }
 
 #[test]
+fn xor_sets_a_to_result2() {
+    let opcode = OpCode::new(
+        Category::XOR,
+        [
+            Argument::Register8Constant(RegisterLabel8::B),
+            Argument::None,
+        ],
+    );
+
+    let mut cpu = CPU::new();
+    let mut memory = vec![0x0; 0xFFFF];
+
+    cpu.write_8_bits(RegisterLabel8::A, 0x01);
+    cpu.write_8_bits(RegisterLabel8::B, 0x00);
+    cpu.write_8_bits(RegisterLabel8::F, 0b1111_0000);
+
+    opcode.run(&mut cpu, MemoryAdapter::new(&mut memory));
+
+    assert_eq!(cpu.read_8_bits(RegisterLabel8::A), 0x01);
+
+    assert_eq!(read_flag(&cpu, Flags::Z), false);
+}
+
+#[test]
 fn decode_xor_test() {
     let xor_opcode = |register| {
         OpCode::new(

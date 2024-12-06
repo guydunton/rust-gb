@@ -5,12 +5,12 @@ authors = ["Guy Dunton PC <guy.dunton@gmail.com>"]
 edition = "2021"
 
 [dependencies]
-piston_window = "0.127"
-image = "0.24"
-cpal = "0.15"
-lazy_static = "1.4.0"
-rand = "0.8"
-clap = "4"
+piston_window = "0.132.0"
+image = "0.25.5"
+cpal = "0.15.3"
+lazy_static = "1.5.0"
+rand = "0.8.5"
+clap = "4.5.23"
 
 [profile.release]
 debug = true
