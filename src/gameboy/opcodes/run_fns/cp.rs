@@ -5,6 +5,8 @@ use super::super::Argument;
 use crate::gameboy::RegisterLabel8;
 
 pub fn run_cp(args: &[Argument], cpu: &mut CPU, memory: &mut [u8]) -> u32 {
+    let mut cycles = 4;
+
     // Clear all the flags
     cpu.write_8_bits(RegisterLabel8::F, 0);
 
@@ -13,11 +15,16 @@ pub fn run_cp(args: &[Argument], cpu: &mut CPU, memory: &mut [u8]) -> u32 {
 
     // Get the argument
     let arg_val = match args[0] {
-        Argument::SmallValue(val) => val,
+        Argument::SmallValue(val) => {
+            cycles += 4;
+            val
+        }
         Argument::RegisterIndirect(register) => {
             let addr = cpu.read_16_bits(register);
+            cycles += 4;
             memory[addr as usize]
         }
+        Argument::Register8Constant(register) => cpu.read_8_bits(register),
         _ => {
             panic!("Unknown argument in CP instruction");
         }
@@ -44,5 +51,5 @@ pub fn run_cp(args: &[Argument], cpu: &mut CPU, memory: &mut [u8]) -> u32 {
     // Set the N flag to 1
     write_flag(cpu, Flags::N, true);
 
-    8
+    cycles
 }

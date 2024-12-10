@@ -1,6 +1,13 @@
 #[cfg(test)]
 mod cp_test {
-    use crate::gameboy::{Flags, Gameboy, RegisterLabel16, RegisterLabel8};
+    use crate::gameboy::{
+        cpu::CPU,
+        memory_adapter::MemoryAdapter,
+        opcodes::{Argument, Category},
+        read_flag,
+        tests::decode_util::decode,
+        Flags, Gameboy, OpCode, RegisterLabel16, RegisterLabel8,
+    };
 
     struct CPFixture<'a> {
         gb: Gameboy<'a>,
@@ -107,5 +114,44 @@ mod cp_test {
         let mut f = CPFixture::setup(vec![0xBE]).set_a(0x3).set_source(0x3);
         f.step();
         assert!(f.gb.get_flag(Flags::Z));
+    }
+
+    #[test]
+    fn decode_cp() {
+        let cp_x = |register: RegisterLabel8| {
+            OpCode::new(
+                Category::CP,
+                [Argument::Register8Constant(register), Argument::None],
+            )
+        };
+        assert_eq!(decode(&[0xB8]), cp_x(RegisterLabel8::B));
+        assert_eq!(decode(&[0xB9]), cp_x(RegisterLabel8::C));
+        assert_eq!(decode(&[0xBA]), cp_x(RegisterLabel8::D));
+        assert_eq!(decode(&[0xBB]), cp_x(RegisterLabel8::E));
+        assert_eq!(decode(&[0xBC]), cp_x(RegisterLabel8::H));
+        assert_eq!(decode(&[0xBD]), cp_x(RegisterLabel8::L));
+        assert_eq!(decode(&[0xBF]), cp_x(RegisterLabel8::A));
+    }
+
+    #[test]
+    fn cp_works_with_register_constants() {
+        let opcode = OpCode::new(
+            Category::CP,
+            [
+                Argument::Register8Constant(RegisterLabel8::H),
+                Argument::None,
+            ],
+        );
+
+        let mut cpu = CPU::new();
+        let mut memory = vec![0x00; 0xFF];
+        cpu.write_8_bits(RegisterLabel8::H, 0x99);
+        cpu.write_8_bits(RegisterLabel8::A, 0x99);
+
+        let cycles = opcode.run(&mut cpu, MemoryAdapter::new(&mut memory));
+
+        assert_eq!(cycles.unwrap(), 4);
+        assert_eq!(read_flag(&cpu, Flags::Z), true);
+        assert_eq!(read_flag(&cpu, Flags::H), true);
     }
 }
