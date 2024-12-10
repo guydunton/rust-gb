@@ -1,6 +1,7 @@
 mod add_test;
 mod alu_test;
 mod and_test;
+mod call_test;
 mod cb_test;
 mod cp_test;
 mod cpl_test;
@@ -102,69 +103,6 @@ fn nop_instruction() {
 
     assert_eq!(gb.get_register_16(RegisterLabel16::ProgramCounter), 0x1);
     assert_eq!(cycles, 4);
-}
-
-#[test]
-fn call_moves_the_program_counter_to_the_call_location() {
-    // call 0x0004        0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06
-    let mut gb = Gameboy::new(vec![0xCD, 0x04, 0x00, 0x03, 0x04, 0x05, 0x06]);
-    gb.set_register_16(RegisterLabel16::StackPointer, 0x07);
-
-    /*
-    0x00 : instruction
-    0x01 : arg part 2
-    0x02 : arg part 1
-    0x03 : return point and location added to the stack
-    0x04 : point where we call to
-    0x05 : Part 2 of the stack
-    0x06 : part 1 of the stack
-    */
-    let _ = gb.step_once();
-    assert_eq!(gb.get_register_16(RegisterLabel16::ProgramCounter), 0x04);
-}
-
-#[test]
-fn call_sets_the_stack_value_correctly() {
-    // call 0x0004        0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06
-    let mut gb = Gameboy::new(vec![0xCD, 0x04, 0x00, 0x03, 0x04, 0x05, 0x06]);
-    gb.set_register_16(RegisterLabel16::StackPointer, 0x07);
-
-    /*
-    0x00 : instruction
-    0x01 : arg part 2
-    0x02 : arg part 1
-    0x03 : return point and location added to the stack
-    0x04 : point where we call to
-    0x05 : Part 2 of the stack
-    0x06 : part 1 of the stack
-    */
-    // We push 0x0003 onto the stack
-    // decrements stack and pushed 0x00
-    // decrements again and pushed 0x03
-    let _ = gb.step_once();
-    assert_eq!(gb.get_memory_at(0x05), 0x03);
-    assert_eq!(gb.get_memory_at(0x06), 0x00);
-
-    assert_eq!(gb.get_register_16(RegisterLabel16::StackPointer), 0x05);
-}
-
-#[test]
-fn call_instruction_takes_24_cycles() {
-    // call 0x0004        0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06
-    let mut gb = Gameboy::new(vec![0xCD, 0x04, 0x00, 0x03, 0x04, 0x05, 0x06]);
-    gb.set_register_16(RegisterLabel16::StackPointer, 0x07);
-
-    /*
-    0x00 : instruction
-    0x01 : arg part 2
-    0x02 : arg part 1
-    0x03 : return point and location added to the stack
-    0x04 : point where we call to
-    0x05 : Part 2 of the stack
-    0x06 : part 1 of the stack
-    */
-    let cycles = gb.step_once().unwrap();
-    assert_eq!(cycles, 24);
 }
 
 #[test]

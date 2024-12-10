@@ -11,16 +11,10 @@ pub fn run_jmp(args: &[Argument], cpu: &mut CPU, _memory: &mut [u8]) -> u32 {
     assert!(args.len() <= 2);
 
     let should_jump = match args[0] {
-        Argument::JumpCondition(condition) => {
-            let zero_flag = read_flag(cpu, Flags::Z);
-            let carry_flag = read_flag(cpu, Flags::C);
-            match condition {
-                JumpCondition::NotZero => !zero_flag,
-                JumpCondition::Zero => zero_flag,
-                JumpCondition::Carry => carry_flag,
-                JumpCondition::NotCarry => !carry_flag,
-            }
-        }
+        Argument::JumpCondition(JumpCondition::Carry) => read_flag(cpu, Flags::C),
+        Argument::JumpCondition(JumpCondition::NotCarry) => !read_flag(cpu, Flags::C),
+        Argument::JumpCondition(JumpCondition::Zero) => read_flag(cpu, Flags::Z),
+        Argument::JumpCondition(JumpCondition::NotZero) => !read_flag(cpu, Flags::Z),
         _ => true,
     };
 
