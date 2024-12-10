@@ -18,7 +18,7 @@ pub fn run_jmp(args: &[Argument], cpu: &mut CPU, _memory: &mut [u8]) -> u32 {
                 JumpCondition::NotZero => !zero_flag,
                 JumpCondition::Zero => zero_flag,
                 JumpCondition::Carry => carry_flag,
-                JumpCondition::NotCarry => panic!("Not yet implemented"),
+                JumpCondition::NotCarry => !carry_flag,
             }
         }
         _ => true,

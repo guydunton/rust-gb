@@ -140,7 +140,49 @@ fn decode_jump_tests() {
                 Argument::Label(0x1234)
             ]
         )
-    )
+    );
+    assert_eq!(
+        decode(&[0xD2, 0x34, 0x12]),
+        OpCode::new(
+            Category::JP,
+            [
+                Argument::JumpCondition(JumpCondition::NotCarry),
+                Argument::Label(0x1234)
+            ]
+        )
+    );
+}
+
+#[test]
+fn jp_nc_jumps() {
+    let opcode = OpCode::new(
+        Category::JP,
+        [
+            Argument::JumpCondition(JumpCondition::NotCarry),
+            Argument::Label(0x1234),
+        ],
+    );
+
+    let mut cpu = CPU::new();
+    let mut memory = vec![0x00, 0xFF];
+
+    write_flag(&mut cpu, Flags::C, false);
+
+    opcode
+        .run(&mut cpu, MemoryAdapter::new(&mut memory))
+        .unwrap();
+
+    assert_eq!(cpu.read_16_bits(RegisterLabel16::ProgramCounter), 0x01234);
+
+    // Reset & run again
+    cpu.write_16_bits(RegisterLabel16::ProgramCounter, 0x0000);
+    write_flag(&mut cpu, Flags::C, true);
+
+    opcode
+        .run(&mut cpu, MemoryAdapter::new(&mut memory))
+        .unwrap();
+
+    assert_eq!(cpu.read_16_bits(RegisterLabel16::ProgramCounter), 0x0003);
 }
 
 #[test]
