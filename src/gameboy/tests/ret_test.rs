@@ -62,6 +62,16 @@ fn decode_ret_instructions() {
             [Argument::JumpCondition(JumpCondition::Zero), Argument::None]
         )
     );
+    assert_eq!(
+        decode(&[0xD0]),
+        OpCode::new(
+            Category::RET,
+            [
+                Argument::JumpCondition(JumpCondition::NotCarry),
+                Argument::None
+            ]
+        )
+    );
 }
 
 #[test]
@@ -120,6 +130,30 @@ fn ret_with_zero_check() {
     write_flag(&mut cpu, Flags::Z, true);
 
     // Jump when zero flag is true
+    opcode.run(&mut cpu, MemoryAdapter::new(&mut memory));
+    assert_eq!(cpu.read_16_bits(RegisterLabel16::ProgramCounter), 0x1234);
+}
+
+#[test]
+fn ret_with_not_carry_check() {
+    let opcode = OpCode::new(
+        Category::RET,
+        [
+            Argument::JumpCondition(JumpCondition::NotCarry),
+            Argument::None,
+        ],
+    );
+
+    let mut memory = vec![0x00; 0xFF];
+    memory[0x01] = 0x34;
+    memory[0x02] = 0x12;
+
+    let mut cpu = CPU::new();
+
+    cpu.write_16_bits(RegisterLabel16::StackPointer, 0x01);
+    write_flag(&mut cpu, Flags::C, false);
+
+    // Jump when carry flag is false
     opcode.run(&mut cpu, MemoryAdapter::new(&mut memory));
     assert_eq!(cpu.read_16_bits(RegisterLabel16::ProgramCounter), 0x1234);
 }

@@ -49,6 +49,7 @@ pub enum JumpCondition {
     NotZero,
     Zero,
     Carry,
+    NotCarry,
 }
 
 impl fmt::Display for Argument {
@@ -120,6 +121,7 @@ pub fn arg_from_str(arg: &str, index: u16, memory: &[u8]) -> Result<Argument, &'
         "NZ" => Argument::JumpCondition(JumpCondition::NotZero),
         "Z" => Argument::JumpCondition(JumpCondition::Zero),
         "CA" => Argument::JumpCondition(JumpCondition::Carry),
+        "NC" => Argument::JumpCondition(JumpCondition::NotCarry),
         "r8" => Argument::JumpDistance(memory[(index + 1) as usize] as i8),
         "SP+r8" => Argument::SPOffset(memory[(index + 1) as usize] as i8),
         "7" => Argument::Bit(7),
