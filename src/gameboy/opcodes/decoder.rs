@@ -55,7 +55,7 @@ fn parts_from_dictionary(
     code: u8,
     dictionary: &'static [(u8, Vec<&'static str>)],
     error: DecodingError,
-) -> Result<&std::vec::Vec<&str>, DecodingError> {
+) -> Result<&'static std::vec::Vec<&'static str>, DecodingError> {
     dictionary
         .iter()
         .find(|(c, _)| *c == code)
