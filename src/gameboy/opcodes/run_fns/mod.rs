@@ -1,3 +1,4 @@
+mod adc;
 mod add;
 mod add16;
 mod and;
@@ -24,6 +25,7 @@ mod sub;
 mod swap;
 mod xor;
 
+pub use self::adc::run_adc;
 pub use self::add::run_add;
 pub use self::add16::run_add16;
 pub use self::and::run_and;

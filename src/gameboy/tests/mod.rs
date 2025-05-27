@@ -1,3 +1,4 @@
+mod adc_test;
 mod add_test;
 mod alu_test;
 mod and_test;
