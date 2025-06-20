@@ -1,9 +1,10 @@
 use crate::gameboy::{
+    Flags, Gameboy, OpCode, RegisterLabel8, RegisterLabel16,
     cpu::CPU,
     memory_adapter::MemoryAdapter,
     opcodes::{Argument, Category, JumpCondition},
     tests::decode_util::decode,
-    write_flag, Flags, Gameboy, OpCode, RegisterLabel16, RegisterLabel8,
+    write_flag,
 };
 
 #[test]
@@ -148,6 +149,16 @@ fn decode_jump_tests() {
             [
                 Argument::JumpCondition(JumpCondition::NotCarry),
                 Argument::Label(0x1234)
+            ]
+        )
+    );
+    assert_eq!(
+        decode(&[0x38, 0x01]),
+        OpCode::new(
+            Category::JP,
+            [
+                Argument::JumpCondition(JumpCondition::Carry),
+                Argument::JumpDistance(0x01)
             ]
         )
     );
