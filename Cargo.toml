@@ -5,12 +5,16 @@ authors = ["Guy Dunton <guy.dunton@gmail.com>"]
 edition = "2024"
 
 [dependencies]
-piston_window = "0.132.0"
 image = "0.25.9"
 cpal = "0.16.0"
 lazy_static = "1.5.0"
 rand = "0.8.5"
 clap = "4.5.23"
+piston = "1.0.0"
+piston2d-opengl_graphics = "0.89.0"
+piston2d-graphics = "0.45.0"
+pistoncore-glutin_window = "0.72.0"
+gl = "0.14.0"
 
 [profile.release]
 debug = true

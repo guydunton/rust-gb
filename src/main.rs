@@ -8,17 +8,26 @@ extern crate lazy_static;
 mod debug_cli;
 mod gameboy;
 
-use crate::debug_cli::{update, DebugControls, OpcodeWriter};
+use crate::debug_cli::{DebugControls, OpcodeWriter, update};
 use crate::gameboy::{Gameboy, ScreenColor, TickResult};
-use clap::{value_parser, Arg, ArgAction};
+use clap::{Arg, ArgAction, value_parser};
 use cpal::traits::{DeviceTrait, HostTrait, StreamTrait};
 use cpal::{SampleRate, StreamConfig};
 use fs::File;
-use piston_window::*;
+use graphics::{Image, Transformed};
 use std::fs;
 use std::io::Read;
 use std::path::PathBuf;
-use std::sync::mpsc::{channel, Receiver};
+use std::sync::mpsc::{Receiver, channel};
+
+// use piston_window::*;
+use gl::load_with;
+use glutin_window::GlutinWindow;
+use opengl_graphics::{GlGraphics, OpenGL, Texture, TextureSettings};
+use piston::OpenGLWindow;
+use piston::event_loop::{EventSettings, Events};
+use piston::input::{RenderArgs, RenderEvent, UpdateArgs, UpdateEvent};
+use piston::window::WindowSettings;
 
 fn screen_color_to_color(c: ScreenColor) -> [u8; 4] {
     match c {
@@ -42,7 +51,7 @@ enum AppResult {
 type OpcodeCallback<'a> = Box<dyn FnMut(u16, String) -> () + 'a>;
 
 pub struct App<'a> {
-    texture_context: G2dTextureContext,
+    gl: GlGraphics,
     gb: Gameboy<'a>,
     is_debug: bool,
     breakpoints: Vec<u16>,
@@ -50,7 +59,7 @@ pub struct App<'a> {
 }
 
 impl<'a> App<'a> {
-    fn render(&mut self, c: Context, g: &mut piston_window::G2d) {
+    fn render(&mut self, args: &RenderArgs) {
         let mut buffer: Vec<u8> = vec![0x00; (SCREEN_WIDTH * SCREEN_HEIGHT * 4) as usize];
 
         // Put the screen data into the buffer
@@ -70,18 +79,21 @@ impl<'a> App<'a> {
         let canvas = img::ImageBuffer::from_vec(SCREEN_WIDTH, SCREEN_HEIGHT, buffer).unwrap();
 
         let mut texture_settings = TextureSettings::new();
-        texture_settings.set_filter(Filter::Nearest);
+        texture_settings.set_filter(opengl_graphics::Filter::Nearest);
 
         // Transform into a texture so piston can use it.
-        let texture: G2dTexture =
-            Texture::from_image(&mut self.texture_context, &canvas, &texture_settings).unwrap();
+        let texture: Texture = Texture::from_image(&canvas, &texture_settings);
 
-        piston_window::image(
-            &texture,
-            c.transform
-                .scale(WINDOW_SCALING as f64, WINDOW_SCALING as f64),
-            g,
-        );
+        self.gl.draw(args.viewport(), |c, g| {
+            graphics::clear([0.0, 0.0, 0.0, 1.0], g);
+            Image::new().draw(
+                &texture,
+                &c.draw_state,
+                c.transform
+                    .scale(WINDOW_SCALING as f64, WINDOW_SCALING as f64),
+                g,
+            );
+        });
     }
 
     fn update(&mut self, args: UpdateArgs) -> AppResult {
@@ -195,17 +207,22 @@ fn main() {
         }
     };
 
-    let mut window: PistonWindow = WindowSettings::new(
+    let opengl = OpenGL::V3_2;
+
+    let mut window: GlutinWindow = WindowSettings::new(
         "Gameboy",
         [
             gb_screen_width * WINDOW_SCALING,
             gb_screen_height * WINDOW_SCALING,
         ],
     )
+    .graphics_api(opengl)
     .exit_on_esc(true)
     .resizable(false)
     .build()
     .unwrap();
+
+    load_with(|symbol| window.get_proc_address(symbol) as *const _);
 
     let is_debug = matches.get_flag("debug");
     let mut opcode_writer = matches
@@ -231,7 +248,7 @@ fn main() {
         });
 
         let mut app = App {
-            texture_context: window.create_texture_context(),
+            gl: GlGraphics::new(opengl),
             gb: Gameboy::new_with_bootloader(audio_callback, &rom_bytes),
             is_debug,
             breakpoints: vec![],
@@ -247,10 +264,8 @@ fn main() {
 
         let mut events = Events::new(EventSettings::new());
         while let Some(e) = events.next(&mut window) {
-            if let Some(_r) = e.render_args() {
-                window.draw_2d(&e, |context, g, _| {
-                    app.render(context, g);
-                });
+            if let Some(args) = e.render_args() {
+                app.render(&args);
             }
 
             if let Some(u) = e.update_args() {
