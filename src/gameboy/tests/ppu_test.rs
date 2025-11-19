@@ -1,5 +1,5 @@
 use super::infinite_loop_gb;
-use crate::gameboy::{Gameboy, Labels, RegisterLabel16, RegisterLabel8, ScreenColor};
+use crate::gameboy::{Gameboy, Labels, RegisterLabel8, RegisterLabel16, ScreenColor};
 
 // Default palette:
 // 0 => White
@@ -12,7 +12,7 @@ fn ppu_infinite_loop_gb() -> Gameboy<'static> {
     let mut gb = infinite_loop_gb();
 
     // Turn the screen on & set the palette
-    gb.set_memory_at(Labels::LCD_CONTROLS, 0x80);
+    gb.set_memory_at(Labels::LCD_CONTROLS, 0b1001_0001);
     gb.set_memory_at(Labels::BG_PALETTE, DEFAULT_PALLETE);
 
     gb
@@ -33,6 +33,7 @@ fn tiles_are_displayed_correctly() {
     let mut gb = Gameboy::new(vec![]);
 
     gb.set_memory_at(Labels::BG_PALETTE, DEFAULT_PALLETE);
+    gb.set_memory_at(Labels::LCD_CONTROLS, 0b1001_0001);
 
     // Tiles go at 8000
     gb.set_memory_at(Labels::CHARACTER_RAM_START + 0x10, 0xFF);
@@ -51,6 +52,7 @@ fn tile_gets_drawn_the_right_way_around() {
     let mut gb = Gameboy::new(vec![]);
 
     gb.set_memory_at(Labels::BG_PALETTE, DEFAULT_PALLETE);
+    gb.set_memory_at(Labels::LCD_CONTROLS, 0b1001_0001);
 
     // Draw the ® symbol
     gb.set_memory_at(Labels::CHARACTER_RAM_START + 0x0, 0x3C);
@@ -90,6 +92,7 @@ fn a_tile_with_multiple_shades_comes_out_correctly() {
     gb.set_memory_at(Labels::CHARACTER_RAM_START + 1, 0x33);
 
     gb.set_memory_at(Labels::BG_PALETTE, DEFAULT_PALLETE);
+    gb.set_memory_at(Labels::LCD_CONTROLS, 0b1001_0001);
 
     let vram: Vec<ScreenColor> = gb.get_vram_data().into_iter().take(8).collect();
     assert_eq!(vram, colors(vec![0, 1, 2, 3, 0, 1, 2, 3]));
@@ -101,6 +104,7 @@ fn setting_the_palette_color_sets_the_colors_of_the_sprites() {
 
     // BG palette is FF47
     gb.set_memory_at(Labels::BG_PALETTE, 0xFC);
+    gb.set_memory_at(Labels::LCD_CONTROLS, 0b1001_0001);
 
     // This will set the palette to:
     // 1111_1100
@@ -130,6 +134,7 @@ fn use_instruction_to_load_a_palette() {
     let mut gb = Gameboy::new(vec![0x77]);
     gb.set_register_8(RegisterLabel8::A, DEFAULT_PALLETE);
     gb.set_register_16(RegisterLabel16::HL, Labels::BG_PALETTE);
+    gb.set_memory_at(Labels::LCD_CONTROLS, 0b1001_0001);
 
     gb.step_once();
 
@@ -288,7 +293,7 @@ fn test_that_vlank_is_triggered() {
     let mut gb = Gameboy::new(vec![0xFB, 0x00, 0x00, 0x18, 0xFD]);
 
     // Turn the screen on & set the palette
-    gb.set_memory_at(Labels::LCD_CONTROLS, 0x80);
+    gb.set_memory_at(Labels::LCD_CONTROLS, 0b1001_0001);
     gb.set_memory_at(Labels::BG_PALETTE, DEFAULT_PALLETE);
 
     // Enable vblank interrupt
@@ -311,7 +316,7 @@ fn vblank_triggered_only_once() {
     let mut gb = Gameboy::new(vec![0xFB, 0x00, 0x00, 0x18, 0xFD]);
 
     // Turn the screen on & set the palette
-    gb.set_memory_at(Labels::LCD_CONTROLS, 0x80);
+    gb.set_memory_at(Labels::LCD_CONTROLS, 0b1001_0001);
     gb.set_memory_at(Labels::BG_PALETTE, DEFAULT_PALLETE);
 
     // Enable vblank interrupt
@@ -339,6 +344,34 @@ fn vblank_triggered_only_once() {
     assert_ne!(gb.get_register_16(RegisterLabel16::ProgramCounter), 0x40);
 }
 
+#[test]
+fn lcdc_controls_set_where_tile_data_comes_from() {
+    let mut gb = ppu_infinite_loop_gb();
+    // change the LCDC mode to 8800 (signed) mode
+    gb.set_memory_at(Labels::LCD_CONTROLS, 0b1000_0001);
+
+    // Create a sprite in 0x9010
+    let sprite1 = [
+        0x50, 0x30, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
+    ];
+    add_sprite_to_vram(&mut gb, 1, &sprite1);
+
+    // Set the tile data in 9800
+    gb.set_memory_at(Labels::BG_MAP_DATA_1_START, 1);
+
+    // Render the first line
+    render_line(&mut gb);
+
+    // Check that the correct pixel was set
+    // The result should be 0,1,2,3
+    let screen_data_post = gb.get_screen_data();
+    let first_part: Vec<ScreenColor> = screen_data_post.iter().take(4).map(|x| *x).collect();
+    assert_eq!(first_part, colors(vec![0, 1, 2, 3]));
+}
+
+#[test]
+fn lcdc_controls_where_tile_map_data_comes_from() {}
+
 fn render_line(gb: &mut Gameboy) {
     // Tick the gb for 456 clocks at which point the
     // first line of the screen will have been rendered
@@ -361,12 +394,16 @@ fn colors(cols: Vec<i32>) -> Vec<ScreenColor> {
         .collect::<Vec<ScreenColor>>()
 }
 
-fn add_sprite_to_vram(gb: &mut Gameboy, tile_index: u16, sprite_data: &[u8]) {
+fn add_sprite_to_vram(gb: &mut Gameboy, tile_index: u8, sprite_data: &[u8]) {
+    let lcdc_controls = gb.get_memory_at(Labels::LCD_CONTROLS);
     for (index, val) in sprite_data.iter().enumerate() {
-        gb.set_memory_at(
-            Labels::CHARACTER_RAM_START + tile_index * 16 + index as u16,
-            *val,
-        );
+        let address = match (lcdc_controls & 0b0001_0000) != 0 {
+            true => Labels::CHARACTER_RAM_START + ((tile_index * 16 + index as u8) as u8) as u16,
+            false => {
+                Labels::CHARACTER_RAM_START_BLOCK_2 + ((tile_index * 16 + index as u8) as i8) as u16
+            }
+        };
+        gb.set_memory_at(address, *val);
     }
 }
 
