@@ -20,10 +20,6 @@ use std::io::Read;
 use std::path::PathBuf;
 use std::sync::mpsc::{Receiver, channel};
 
-<<<<<<< Updated upstream
-// use piston_window::*;
-=======
->>>>>>> Stashed changes
 use gl::load_with;
 use glutin_window::GlutinWindow;
 use opengl_graphics::{GlGraphics, OpenGL, Texture, TextureSettings};
