@@ -1,6 +1,6 @@
-use super::memory_view::MemoryView;
 use super::Labels;
 use super::ScreenColor;
+use super::memory_view::MemoryView;
 
 #[allow(clippy::upper_case_acronyms)]
 pub struct PPU {
@@ -200,12 +200,37 @@ fn find_tile_index(vram_x: u32, vram_y: u32) -> u16 {
 }
 
 fn get_tile_data(tile_index: u16, memory: &[u8]) -> &[u8] {
-    // Get the tile_data_start
-    let tile_data_start = (Labels::CHARACTER_RAM_START
-        + memory[(Labels::BG_MAP_DATA_1_START + tile_index) as usize] as u16 * 16)
-        as usize;
+    /*
+    This is more complicated depending on the addressing mode LCDC.4:
+    if 0 then we use signed addressing or:
+        0-127 means block 2 (0x9000-97FF)
+        128-255 means block 1 (0x8800-8FFF)
+    if 1 then unsigned addressing or:
+        0-127 means block 0 (0x8000-87FF)
+        128-255 means block 1 (0x8800-8FFF)
+    */
+    // Get the tile_data_start. Assuming LCDC.3 == 0 & LCDC.4 == 1
+    let is_mode_8000 = memory[Labels::LCD_CONTROLS as usize] & 0b0001_0000 != 0;
+    if is_mode_8000 {
+        let tile_data_start = (Labels::CHARACTER_RAM_START
+            + memory[(Labels::BG_MAP_DATA_1_START + tile_index) as usize] as u16 * 16)
+            as usize;
 
-    &memory[tile_data_start..(tile_data_start + 16)]
+        &memory[tile_data_start..(tile_data_start + 16)]
+    } else {
+        let tile_index_value = memory[(Labels::BG_MAP_DATA_1_START + tile_index) as usize];
+
+        let tile_data_start =
+            (Labels::CHARACTER_RAM_START_BLOCK_2 + (tile_index_value as i8) as u16 * 16) as usize;
+        &memory[tile_data_start..(tile_data_start + 16)]
+    }
+
+    // old code
+    // let tile_data_start = (Labels::CHARACTER_RAM_START
+    //     + memory[(Labels::BG_MAP_DATA_1_START + tile_index) as usize] as u16 * 16)
+    //     as usize;
+
+    // &memory[tile_data_start..(tile_data_start + 16)]
 }
 
 fn get_pixel_value_from_sprite(x: u8, y: u8, sprite_data: &[u8]) -> u8 {

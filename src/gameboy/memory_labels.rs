@@ -1,6 +1,8 @@
 #[allow(non_snake_case)]
 pub mod Labels {
     pub const CHARACTER_RAM_START: u16 = 0x8000;
+    // pub const CHARACTER_RAM_START_BLOCK_1: u16 = 0x8800; // not needed yet
+    pub const CHARACTER_RAM_START_BLOCK_2: u16 = 0x9000;
     pub const BG_MAP_DATA_1_START: u16 = 0x9800;
     pub const INTERRUPT_TRIGGER: u16 = 0xFF0F;
     pub const BG_PALETTE: u16 = 0xFF47;

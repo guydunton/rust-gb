@@ -44,3 +44,7 @@ I wrote up how I implemented the bootstrap sounds on my website: https://www.guy
 ## Cycles accurate instructions
 
 - https://github.com/AntonioND/giibiiadvance/blob/master/docs/TCAGBD.pdf
+
+## ROMs
+
+- Good Hello-world example ROM: https://github.com/dusterherz/gb-hello-world/blob/master/helloworld/main.asm
