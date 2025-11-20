@@ -20,7 +20,10 @@ use std::io::Read;
 use std::path::PathBuf;
 use std::sync::mpsc::{Receiver, channel};
 
+<<<<<<< Updated upstream
 // use piston_window::*;
+=======
+>>>>>>> Stashed changes
 use gl::load_with;
 use glutin_window::GlutinWindow;
 use opengl_graphics::{GlGraphics, OpenGL, Texture, TextureSettings};
@@ -132,7 +135,7 @@ fn build_audio_event_loop() -> impl DeviceTrait {
     host.default_output_device().unwrap()
 }
 
-fn create_audio_thread<T>(device: T, receiver: Receiver<i16>) -> impl StreamTrait
+fn create_audio_thread<T>(device: T, receiver: Receiver<i16>) -> Option<impl StreamTrait>
 where
     T: DeviceTrait + Send + Sync + 'static,
 {
@@ -160,7 +163,7 @@ where
             move |_err| {},
             None,
         )
-        .unwrap()
+        .ok()
 }
 
 fn load_rom(file_name: &str) -> std::io::Result<Vec<u8>> {
@@ -199,11 +202,15 @@ fn main() {
     // Create a channel which takes audio data
     let (sender, receiver) = channel::<i16>();
 
+    let mut sent_audio_error = false;
     let audio_callback = move |val| match sender.send(val) {
         Ok(_) => {}
         Err(err) => {
-            println!("Error occurred {}", err);
-            panic!("Something went wrong");
+            if !sent_audio_error {
+                println!("Error occurred {}", err);
+                sent_audio_error = true;
+            }
+            //panic!("Something went wrong");
         }
     };
 
@@ -255,11 +262,12 @@ fn main() {
             opcode_writer: writer,
         };
 
-        let stream;
         if !is_debug {
             let device = build_audio_event_loop();
-            stream = create_audio_thread(device, receiver);
-            stream.play().unwrap();
+            let stream = create_audio_thread(device, receiver);
+            if let Some(s) = stream {
+                let _ = s.play();
+            }
         }
 
         let mut events = Events::new(EventSettings::new());
