@@ -206,7 +206,6 @@ fn main() {
                 println!("Error occurred {}", err);
                 sent_audio_error = true;
             }
-            //panic!("Something went wrong");
         }
     };
 
