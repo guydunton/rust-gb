@@ -258,10 +258,11 @@ fn main() {
             opcode_writer: writer,
         };
 
+        let stream; // in this scope to make sure this last through the event loop
         if !is_debug {
             let device = build_audio_event_loop();
-            let stream = create_audio_thread(device, receiver);
-            if let Some(s) = stream {
+            stream = create_audio_thread(device, receiver);
+            if let Some(s) = &stream {
                 let _ = s.play();
             }
         }
