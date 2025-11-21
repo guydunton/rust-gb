@@ -23,10 +23,10 @@ use std::sync::mpsc::{Receiver, channel};
 use gl::load_with;
 use glutin_window::GlutinWindow;
 use opengl_graphics::{GlGraphics, OpenGL, Texture, TextureSettings};
-use piston::OpenGLWindow;
 use piston::event_loop::{EventSettings, Events};
 use piston::input::{RenderArgs, RenderEvent, UpdateArgs, UpdateEvent};
 use piston::window::WindowSettings;
+use piston::{EventLoop, OpenGLWindow};
 
 fn screen_color_to_color(c: ScreenColor) -> [u8; 4] {
     match c {
@@ -266,7 +266,7 @@ fn main() {
             }
         }
 
-        let mut events = Events::new(EventSettings::new());
+        let mut events = Events::new(EventSettings::new().ups(30));
         while let Some(e) = events.next(&mut window) {
             if let Some(args) = e.render_args() {
                 app.render(&args);
