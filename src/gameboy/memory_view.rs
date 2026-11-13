@@ -3,7 +3,7 @@ pub struct MemoryView<'a> {
 }
 
 impl<'a> MemoryView<'a> {
-    pub fn new(memory: &[u8]) -> MemoryView {
+    pub fn new(memory: &[u8]) -> MemoryView<'_> {
         MemoryView { memory }
     }
 

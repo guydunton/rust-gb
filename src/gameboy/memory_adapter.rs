@@ -8,7 +8,7 @@ pub struct MemoryAdapter<'a> {
 }
 
 impl<'a> MemoryAdapter<'a> {
-    pub fn new(memory: &mut Vec<u8>) -> MemoryAdapter {
+    pub fn new(memory: &mut Vec<u8>) -> MemoryAdapter<'_> {
         MemoryAdapter {
             memory,
             callback_conditions: vec![],
