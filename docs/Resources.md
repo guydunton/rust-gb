@@ -48,3 +48,4 @@ I wrote up how I implemented the bootstrap sounds on my website: https://www.guy
 ## ROMs
 
 - Good Hello-world example ROM: https://github.com/dusterherz/gb-hello-world/blob/master/helloworld/main.asm
+- A rendering test: https://github.com/mattcurrie/dmg-acid2

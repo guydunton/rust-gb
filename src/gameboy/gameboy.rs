@@ -7,7 +7,7 @@ use super::memory_view::MemoryView;
 use super::opcodes::Decoder;
 use super::ppu::PPU;
 use super::screen::ScreenColor;
-use super::{read_flag, write_flag, Flags, OpCode, RegisterLabel16, RegisterLabel8};
+use super::{Flags, OpCode, RegisterLabel8, RegisterLabel16, read_flag, write_flag};
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum TickResult {
@@ -350,7 +350,7 @@ impl<'a> Gameboy<'a> {
 
             match added_counter {
                 Some(value) => {
-                    if value == u16::max_value() {
+                    if value == u16::MAX {
                         return Err(());
                     }
                     let opcode = self.get_opcode_at(value);
@@ -372,7 +372,7 @@ impl<'a> Gameboy<'a> {
                 let opcode = self.get_opcode_at(value);
                 return opcode
                     .map(|op| (op.to_string().trim().to_owned(), value))
-                    .map_err(|_| ({}));
+                    .map_err(|_| {});
             }
             None => {
                 return Err(());
