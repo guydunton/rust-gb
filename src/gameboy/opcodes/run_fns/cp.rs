@@ -1,6 +1,6 @@
 use crate::gameboy::cpu::CPU;
 
-use super::super::super::{write_flag, Flags};
+use super::super::super::{Flags, write_flag};
 use super::super::Argument;
 use crate::gameboy::RegisterLabel8;
 
@@ -33,11 +33,12 @@ pub fn run_cp(args: &[Argument], cpu: &mut CPU, memory: &mut [u8]) -> u32 {
     // Remove argument from A and check the result
     let result = a.checked_sub(arg_val);
 
-    if let Some(r) = result {
-        if a >= 0b0001_0000 && r <= 0b0000_1111 {
-            // Set the H flag
-            write_flag(cpu, Flags::H, true);
-        }
+    if let Some(r) = result
+        && a >= 0b0001_0000
+        && r <= 0b0000_1111
+    {
+        // Set the H flag
+        write_flag(cpu, Flags::H, true);
     }
 
     if arg_val == a {

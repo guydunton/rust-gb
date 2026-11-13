@@ -1,7 +1,7 @@
 use crate::gameboy::cpu::CPU;
 
 use crate::gameboy::opcodes::{Argument, JumpCondition};
-use crate::gameboy::{read_flag, Flags, RegisterLabel16};
+use crate::gameboy::{Flags, RegisterLabel16, read_flag};
 
 pub fn run_ret(args: &[Argument], cpu: &mut CPU, memory: &mut [u8]) -> u32 {
     // If there is a condition then check it
@@ -23,9 +23,9 @@ pub fn run_ret(args: &[Argument], cpu: &mut CPU, memory: &mut [u8]) -> u32 {
 
     if should_return {
         perform_return(cpu, memory);
-        return 16 + extra_cycles;
+        16 + extra_cycles
     } else {
-        return 8;
+        8
     }
 }
 

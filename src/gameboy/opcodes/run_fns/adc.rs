@@ -1,4 +1,4 @@
-use crate::gameboy::{cpu::CPU, read_flag, write_flag, Flags, RegisterLabel8};
+use crate::gameboy::{Flags, RegisterLabel8, cpu::CPU, read_flag, write_flag};
 
 use super::super::argument::Argument;
 
@@ -63,5 +63,5 @@ pub fn run_adc(args: &[Argument], cpu: &mut CPU, _memory: &mut [u8]) -> u32 {
 
     cpu.write_8_bits(RegisterLabel8::A, result);
 
-    return 4;
+    4
 }

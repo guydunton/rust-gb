@@ -136,16 +136,16 @@ impl<'a> Gameboy<'a> {
         &mut self,
         dt: f64,
         breakpoints: &[u16],
-        opcode_writer: &mut Option<Box<dyn FnMut(u16, String) -> () + 'a>>,
+        opcode_writer: &mut Option<Box<dyn FnMut(u16, String) + 'a>>,
     ) -> TickResult {
         let cycles_to_use = (dt * 4194304f64) as u32;
         let mut total_cycles_used = 0;
 
         loop {
-            if let Some(writer) = opcode_writer {
-                if let Ok((opcode, address)) = self.get_opcode_with_offset(0) {
-                    writer(address, opcode);
-                }
+            if let Some(writer) = opcode_writer
+                && let Ok((opcode, address)) = self.get_opcode_with_offset(0)
+            {
+                writer(address, opcode);
             }
 
             match self.step_once() {
@@ -190,9 +190,8 @@ impl<'a> Gameboy<'a> {
                     let cycles = self.call_routine(interrupt.routine_address);
 
                     // Reset interrupt trigger
-                    self.memory[Labels::INTERRUPT_TRIGGER as usize] = self.memory
-                        [Labels::INTERRUPT_TRIGGER as usize]
-                        & !(0b0000_0001 << interrupt.bit);
+                    self.memory[Labels::INTERRUPT_TRIGGER as usize] &=
+                        !(0b0000_0001 << interrupt.bit);
 
                     // disable interrupts in the process
                     self.cpu.disable_interrupts();
@@ -236,10 +235,7 @@ impl<'a> Gameboy<'a> {
                 if let Some(source) = perform_dma_copy {
                     let start = ((source as u16) << 8) as usize;
                     let end = (((source as u16) << 8) + 0x9F) as usize;
-                    let block: Vec<u8> = self.memory[start..end]
-                        .iter()
-                        .map(|val| val.clone())
-                        .collect();
+                    let block: Vec<u8> = self.memory[start..end].to_vec();
                     self.memory[0xFE00..0xFE9F].clone_from_slice(&block[..]);
                 }
 
@@ -400,8 +396,8 @@ impl<'a> Gameboy<'a> {
 
         let return_addr_bytes = return_address.to_le_bytes();
 
-        self.memory[(stack_address.checked_sub(1).unwrap_or(0)) as usize] = return_addr_bytes[1];
-        self.memory[(stack_address.checked_sub(2).unwrap_or(0)) as usize] = return_addr_bytes[0];
+        self.memory[(stack_address.saturating_sub(1)) as usize] = return_addr_bytes[1];
+        self.memory[(stack_address.saturating_sub(2)) as usize] = return_addr_bytes[0];
 
         self.cpu.write_16_bits(
             RegisterLabel16::StackPointer,

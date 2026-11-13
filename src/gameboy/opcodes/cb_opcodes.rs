@@ -2,7 +2,7 @@ lazy_static! {
     // This comment won't be needed once the vector gets long enough
     //#[rustfmt_skip]
     pub static ref CB_DICTIONARY: Vec<(u8, Vec<&'static str>)> =
-        vec![
+        [
             (0x11, "RL C"),
             (0x30, "SWAP B"),
             (0x31, "SWAP C"),

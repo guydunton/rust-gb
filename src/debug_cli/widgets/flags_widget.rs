@@ -12,9 +12,9 @@ impl<'a> FlagsWidget<'a> {
 
     pub fn print_flags(&self) -> Vec<String> {
         use crate::gameboy::Flags;
-        let flags = vec![Flags::Z, Flags::N, Flags::H, Flags::C];
+        let flags = [Flags::Z, Flags::N, Flags::H, Flags::C];
 
-        let flag_data = flags
+        flags
             .iter()
             .map(|f| (format!("{:?}", f), f))
             .map(|(label, flag)| {
@@ -27,9 +27,7 @@ impl<'a> FlagsWidget<'a> {
                 )
             })
             .map(|(label, text)| format!("{}: {}", label, text))
-            .collect::<Vec<String>>();
-
-        flag_data
+            .collect::<Vec<String>>()
     }
 }
 

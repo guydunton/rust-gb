@@ -70,10 +70,10 @@ impl RegisterPair {
     }
 
     pub fn contains_8_bit_register(&self, label: RegisterLabel8) -> bool {
-        matches!(
-            self.labels_8_bit.iter().find(|pair| pair.label == label),
-            Some(_)
-        )
+        self.labels_8_bit
+            .iter()
+            .find(|pair| pair.label == label)
+            .is_some()
     }
 
     pub fn contains_16_bit_register(&self, label: RegisterLabel16) -> bool {

@@ -175,8 +175,7 @@ impl PPU {
                     // Set vblank interrupt but not if already done
                     if !self.vblank_triggered {
                         // Trigger vblank
-                        memory[Labels::INTERRUPT_TRIGGER as usize] =
-                            memory[Labels::INTERRUPT_TRIGGER as usize] | 0b0000_0001;
+                        memory[Labels::INTERRUPT_TRIGGER as usize] |= 0b0000_0001;
                         self.vblank_triggered = true;
                     }
                 }

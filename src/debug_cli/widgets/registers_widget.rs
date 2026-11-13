@@ -1,7 +1,7 @@
 use super::super::layout::Print;
 use super::super::registers::Registers;
 use crate::gameboy::Gameboy;
-use crate::gameboy::{RegisterLabel16, RegisterLabel8};
+use crate::gameboy::{RegisterLabel8, RegisterLabel16};
 use std::collections::HashMap;
 
 pub struct RegistersWidget<'a> {
@@ -19,7 +19,7 @@ impl<'a> RegistersWidget<'a> {
             "A".to_string(),
             format!("{:#X}", self.gb.get_register_8(RegisterLabel8::A)),
         );
-        let registers8 = vec![
+        let registers8 = [
             ("A", RegisterLabel8::A),
             ("F", RegisterLabel8::F),
             ("B", RegisterLabel8::B),
@@ -29,7 +29,7 @@ impl<'a> RegistersWidget<'a> {
             ("H", RegisterLabel8::H),
             ("L", RegisterLabel8::L),
         ];
-        let registers16 = vec![
+        let registers16 = [
             ("AF", RegisterLabel16::AF),
             ("BC", RegisterLabel16::BC),
             ("DE", RegisterLabel16::DE),

@@ -47,7 +47,7 @@ enum AppResult {
     Finish,
 }
 
-type OpcodeCallback<'a> = Box<dyn FnMut(u16, String) -> () + 'a>;
+type OpcodeCallback<'a> = Box<dyn FnMut(u16, String) + 'a>;
 
 pub struct App<'a> {
     gl: GlGraphics,
@@ -121,7 +121,7 @@ impl<'a> App<'a> {
                 _ => {}
             }
         }
-        return AppResult::Continue;
+        AppResult::Continue
     }
 }
 
@@ -272,10 +272,10 @@ fn main() {
                 app.render(&args);
             }
 
-            if let Some(u) = e.update_args() {
-                if app.update(u) == AppResult::Finish {
-                    break;
-                }
+            if let Some(u) = e.update_args()
+                && app.update(u) == AppResult::Finish
+            {
+                break;
             }
         }
     }

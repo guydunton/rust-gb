@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::Write;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 pub struct OpcodeWriter {
     opcode_record: HashMap<u16, String>,
@@ -9,12 +9,12 @@ pub struct OpcodeWriter {
 }
 
 impl OpcodeWriter {
-    pub fn new(filename: &PathBuf) -> Self {
+    pub fn new(filename: &Path) -> Self {
         let mut opcode_record: HashMap<u16, String> = HashMap::new();
         opcode_record.reserve(4000);
         Self {
             opcode_record,
-            filename: filename.clone(),
+            filename: filename.to_path_buf(),
         }
     }
 
@@ -24,12 +24,12 @@ impl OpcodeWriter {
 
     pub fn write_file(&mut self) {
         let mut file = File::create(&self.filename).unwrap();
-        let mut keys: Vec<u16> = self.opcode_record.keys().map(|val| *val).collect();
+        let mut keys: Vec<u16> = self.opcode_record.keys().copied().collect();
         keys.sort();
 
         for key in keys {
             let opcode = self.opcode_record.entry(key).or_default();
-            write!(file, "{:#06x}: {}\n", key, opcode).unwrap();
+            writeln!(file, "{:#06x}: {}", key, opcode).unwrap();
         }
     }
 }
