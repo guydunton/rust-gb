@@ -20,6 +20,7 @@ mod opcode_printer_test;
 mod or;
 mod ppu_test;
 mod push_pop_test;
+mod res_test;
 mod ret_test;
 mod sub_test;
 mod timing;

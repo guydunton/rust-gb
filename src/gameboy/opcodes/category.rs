@@ -18,6 +18,7 @@ pub enum Category {
     RETI,
     PUSH,
     POP,
+    RES,
     RL,
     RLA,
     SUB,
@@ -32,7 +33,7 @@ pub enum Category {
 }
 
 fn is_cb_category(category: Category) -> bool {
-    matches!(category, Category::RL | Category::BIT)
+    matches!(category, Category::RL | Category::BIT | Category::RES)
 }
 
 pub fn category_from_str(cat: &str) -> Category {
@@ -51,6 +52,7 @@ pub fn category_from_str(cat: &str) -> Category {
         "INC" => Category::INC,
         "DEC" => Category::DEC,
         "CALL" => Category::CALL,
+        "RES" => Category::RES,
         "RET" => Category::RET,
         "RETI" => Category::RETI,
         "PUSH" => Category::PUSH,

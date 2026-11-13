@@ -1,7 +1,7 @@
 use super::super::cpu::CPU;
 use super::super::memory_adapter::MemoryAdapter;
-use super::argument::{size_in_bytes, Argument};
-use super::category::{category_size, Category};
+use super::argument::{Argument, size_in_bytes};
+use super::category::{Category, category_size};
 use super::run_fns::*;
 use crate::gameboy::RegisterLabel16;
 use std::fmt;
@@ -83,6 +83,9 @@ impl OpCode {
             }
             Category::DEC => {
                 cycles += run_dec(&self.args, cpu, &mut memory);
+            }
+            Category::RES => {
+                cycles += run_res(&self.args, cpu, &mut memory);
             }
             Category::RL => {
                 cycles += run_rl(&self.args, cpu, memory.get_memory());
