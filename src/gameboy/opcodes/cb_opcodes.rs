@@ -1,20 +1,94 @@
 lazy_static! {
-    // This comment won't be needed once the vector gets long enough
-    //#[rustfmt_skip]
-    pub static ref CB_DICTIONARY: Vec<(u8, Vec<&'static str>)> =
-        [
-            (0x11, "RL C"),
-            (0x30, "SWAP B"),
-            (0x31, "SWAP C"),
-            (0x32, "SWAP D"),
-            (0x33, "SWAP E"),
-            (0x34, "SWAP H"),
-            (0x35, "SWAP L"),
-            (0x36, "SWAP (HL)"),
-            (0x37, "SWAP A"),
-            (0x7C, "BIT 7 H"),
-        ]
-            .iter()
-            .map(|(i, s)| (*i, s.split(' ').collect::<Vec<&'static str>>()))
-            .collect();
+    pub static ref CB_DICTIONARY: Vec<(u8, Vec<&'static str>)> = [
+        (0x11, "RL C"),
+        (0x30, "SWAP B"),
+        (0x31, "SWAP C"),
+        (0x32, "SWAP D"),
+        (0x33, "SWAP E"),
+        (0x34, "SWAP H"),
+        (0x35, "SWAP L"),
+        (0x36, "SWAP (HL)"),
+        (0x37, "SWAP A"),
+        (0x40, "BIT 0 B"),
+        (0x41, "BIT 0 C"),
+        (0x42, "BIT 0 D"),
+        (0x43, "BIT 0 E"),
+        (0x44, "BIT 0 H"),
+        (0x45, "BIT 0 L"),
+        (0x46, "BIT 0 (HL)"),
+        (0x47, "BIT 0 A"),
+        (0x48, "BIT 1 B"),
+        (0x49, "BIT 1 C"),
+        (0x4A, "BIT 1 D"),
+        (0x4B, "BIT 1 E"),
+        (0x4C, "BIT 1 H"),
+        (0x4D, "BIT 1 L"),
+        (0x4E, "BIT 1 (HL)"),
+        (0x4F, "BIT 1 A"),
+        (0x50, "BIT 2 B"),
+        (0x51, "BIT 2 C"),
+        (0x52, "BIT 2 D"),
+        (0x53, "BIT 2 E"),
+        (0x54, "BIT 2 H"),
+        (0x55, "BIT 2 L"),
+        (0x56, "BIT 2 (HL)"),
+        (0x57, "BIT 2 A"),
+        (0x58, "BIT 3 B"),
+        (0x59, "BIT 3 C"),
+        (0x5A, "BIT 3 D"),
+        (0x5B, "BIT 3 E"),
+        (0x5C, "BIT 3 H"),
+        (0x5D, "BIT 3 L"),
+        (0x5E, "BIT 3 (HL)"),
+        (0x5F, "BIT 3 A"),
+        (0x60, "BIT 4 B"),
+        (0x61, "BIT 4 C"),
+        (0x62, "BIT 4 D"),
+        (0x63, "BIT 4 E"),
+        (0x64, "BIT 4 H"),
+        (0x65, "BIT 4 L"),
+        (0x66, "BIT 4 (HL)"),
+        (0x67, "BIT 4 A"),
+        (0x68, "BIT 5 B"),
+        (0x69, "BIT 5 C"),
+        (0x6A, "BIT 5 D"),
+        (0x6B, "BIT 5 E"),
+        (0x6C, "BIT 5 H"),
+        (0x6D, "BIT 5 L"),
+        (0x6E, "BIT 5 (HL)"),
+        (0x6F, "BIT 5 A"),
+        (0x70, "BIT 6 B"),
+        (0x71, "BIT 6 C"),
+        (0x72, "BIT 6 D"),
+        (0x73, "BIT 6 E"),
+        (0x74, "BIT 6 H"),
+        (0x75, "BIT 6 L"),
+        (0x76, "BIT 6 (HL)"),
+        (0x77, "BIT 6 A"),
+        (0x78, "BIT 7 B"),
+        (0x79, "BIT 7 C"),
+        (0x7A, "BIT 7 D"),
+        (0x7B, "BIT 7 E"),
+        (0x7C, "BIT 7 H"),
+        (0x7D, "BIT 7 L"),
+        (0x7E, "BIT 7 (HL)"),
+        (0x7F, "BIT 7 A")
+    ]
+    .iter()
+    .map(|(i, s)| (*i, s.split(' ').collect::<Vec<&'static str>>()))
+    .collect();
 }
+
+/*
+TODO: Handle these bit codes
+RES
+SET
+SWAP
+SRL
+SLA
+SRA
+RL
+RR
+RLC
+RRC
+ */

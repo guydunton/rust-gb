@@ -1,8 +1,8 @@
 #[cfg(test)]
 mod opcode_printer_tests {
 
-    use crate::gameboy::register::RegisterLabel16;
     use crate::Gameboy;
+    use crate::gameboy::register::RegisterLabel16;
 
     #[test]
     fn can_print_an_instruction_as_a_string() {
@@ -34,7 +34,7 @@ mod opcode_printer_tests {
     fn will_fail_getting_an_instruction_out_of_range() {
         let mut gb = Gameboy::new(vec![0x00]);
         gb.set_register_16(RegisterLabel16::ProgramCounter, 11);
-        let next_instruction = gb.get_opcode_with_offset(u16::max_value() - 10);
+        let next_instruction = gb.get_opcode_with_offset(u16::MAX - 10);
 
         assert!(next_instruction.is_err());
     }

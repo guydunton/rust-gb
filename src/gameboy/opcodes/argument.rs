@@ -1,4 +1,4 @@
-use super::super::{RegisterLabel16, RegisterLabel8};
+use super::super::{RegisterLabel8, RegisterLabel16};
 use std::fmt;
 
 #[derive(PartialEq, Eq, Copy, Clone, Debug)]
@@ -124,6 +124,13 @@ pub fn arg_from_str(arg: &str, index: u16, memory: &[u8]) -> Result<Argument, &'
         "NC" => Argument::JumpCondition(JumpCondition::NotCarry),
         "r8" => Argument::JumpDistance(memory[(index + 1) as usize] as i8),
         "SP+r8" => Argument::SPOffset(memory[(index + 1) as usize] as i8),
+        "0" => Argument::Bit(0),
+        "1" => Argument::Bit(1),
+        "2" => Argument::Bit(2),
+        "3" => Argument::Bit(3),
+        "4" => Argument::Bit(4),
+        "5" => Argument::Bit(5),
+        "6" => Argument::Bit(6),
         "7" => Argument::Bit(7),
         _ => return Err("Unknown argument"),
     };

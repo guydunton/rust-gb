@@ -2,6 +2,7 @@ mod adc_test;
 mod add_test;
 mod alu_test;
 mod and_test;
+mod bit_test;
 mod call_test;
 mod cb_test;
 mod cp_test;
@@ -34,9 +35,9 @@ fn infinite_loop_gb() -> Gameboy<'static> {
     gb
 }
 
-use crate::gameboy::flags_register::*;
-use crate::gameboy::register::{RegisterLabel16, RegisterLabel8};
 use crate::gameboy::Labels;
+use crate::gameboy::flags_register::*;
+use crate::gameboy::register::{RegisterLabel8, RegisterLabel16};
 
 #[test]
 fn i_can_access_all_parts_of_memory() {
@@ -84,7 +85,7 @@ fn bit_instruction() {
         assert_eq!(gb.get_flag(Flags::C), carry_flag); // The carry flag is unaffected
 
         assert_eq!(gb.get_register_16(RegisterLabel16::ProgramCounter), 0x2);
-        assert_eq!(cycles, 12);
+        assert_eq!(cycles, 8);
     }
     {
         // Check the bit flag when the bit is 0
@@ -93,7 +94,7 @@ fn bit_instruction() {
         let cycles = gb.step_once().unwrap();
 
         assert_eq!(gb.get_flag(Flags::Z), true);
-        assert_eq!(cycles, 12);
+        assert_eq!(cycles, 8);
     }
 }
 
