@@ -29,11 +29,15 @@ pub enum Category {
     SWAP,
     CPL,
     SCF,
+    SET,
     RST,
 }
 
 fn is_cb_category(category: Category) -> bool {
-    matches!(category, Category::RL | Category::BIT | Category::RES)
+    matches!(
+        category,
+        Category::RL | Category::BIT | Category::RES | Category::SET
+    )
 }
 
 pub fn category_from_str(cat: &str) -> Category {
@@ -65,6 +69,7 @@ pub fn category_from_str(cat: &str) -> Category {
         "DI" => Category::DI,
         "CPL" => Category::CPL,
         "SWAP" => Category::SWAP,
+        "SET" => Category::SET,
         "SCF" => Category::SCF,
         "RST" => Category::RST,
         _ => {

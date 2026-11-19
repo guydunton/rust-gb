@@ -52,7 +52,7 @@ fn res_n_hl_works_correctly() {
         .unwrap();
 
     assert_eq!(cpu.read_16_bits(RegisterLabel16::ProgramCounter), 0x02);
-    assert_eq!(cpu.read_8_bits(RegisterLabel8::B), 0);
+    assert_eq!(memory[0xC0], 0);
     assert_eq!(cycles, 16);
 }
 

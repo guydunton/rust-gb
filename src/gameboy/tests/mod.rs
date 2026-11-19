@@ -22,6 +22,7 @@ mod ppu_test;
 mod push_pop_test;
 mod res_test;
 mod ret_test;
+mod set_test;
 mod sub_test;
 mod timing;
 mod xor_test;
